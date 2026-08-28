@@ -4,6 +4,7 @@ import httpx
 import pytest
 
 from pipelens.github import GitHubClient
+from pipelens.models import TrustLevel
 
 
 @pytest.mark.asyncio
@@ -14,7 +15,19 @@ async def test_repository_context_uses_pr_files_and_workflow_at_head_sha() -> No
         requested.append(str(request.url))
         path = request.url.path
         if path.endswith("/actions/runs/123"):
-            return httpx.Response(200, json={"workflow_id": 7, "pull_requests": [{"number": 55}]})
+            return httpx.Response(
+                200,
+                json={
+                    "workflow_id": 7,
+                    "pull_requests": [
+                        {
+                            "number": 55,
+                            "head": {"repo": {"id": 2, "full_name": "contributor/widgets"}},
+                            "base": {"repo": {"id": 1, "full_name": "acme/widgets"}},
+                        }
+                    ],
+                },
+            )
         if path.endswith("/pulls/55/files"):
             return httpx.Response(
                 200,
@@ -40,6 +53,7 @@ async def test_repository_context_uses_pr_files_and_workflow_at_head_sha() -> No
     assert context.workflow_path == ".github/workflows/ci.yml"
     assert context.workflow_content == "name: CI"
     assert context.pull_request_number == 55
+    assert context.trust_level is TrustLevel.UNTRUSTED_FORK
     assert any("ref=abc123" in url for url in requested)
 
 

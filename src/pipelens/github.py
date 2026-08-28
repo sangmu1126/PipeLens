@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import httpx
 import jwt
 
-from pipelens.models import ChangedFile, RepositoryContext
+from pipelens.models import ChangedFile, RepositoryContext, TrustLevel
 
 
 class GitHubConfigurationError(RuntimeError):
@@ -169,7 +169,27 @@ class GitHubClient:
             pull_request_number=(
                 run["pull_requests"][0]["number"] if run.get("pull_requests") else None
             ),
+            trust_level=self._trust_level(repository, run),
         )
+
+    @staticmethod
+    def _trust_level(repository: str, run: dict) -> TrustLevel:
+        pull_request = (run.get("pull_requests") or [None])[0]
+        head_repository = run.get("head_repository") or {}
+        if pull_request:
+            head = pull_request.get("head", {}).get("repo") or {}
+            base = pull_request.get("base", {}).get("repo") or {}
+            if head.get("id") is not None and base.get("id") is not None:
+                return (
+                    TrustLevel.UNTRUSTED_FORK
+                    if head["id"] != base["id"]
+                    else TrustLevel.TRUSTED
+                )
+            head_repository = head or head_repository
+        head_full_name = head_repository.get("full_name")
+        if head_full_name and head_full_name.casefold() != repository.casefold():
+            return TrustLevel.UNTRUSTED_FORK
+        return TrustLevel.TRUSTED
 
     async def _changed_files(
         self,

@@ -6,6 +6,7 @@ from pipelens.models import (
     FeedbackAccuracy,
     FeedbackRequest,
     RelatedFile,
+    TrustLevel,
 )
 from pipelens.store import AnalysisStore
 
@@ -126,3 +127,22 @@ def test_store_scopes_analysis_and_feedback_to_installations(tmp_path: Path) -> 
         )
         is None
     )
+
+
+def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=47,
+            delivery_id="delivery-47",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/47",
+        )
+    )
+
+    store.update(47, AnalysisStatus.RUNNING, trust_level=TrustLevel.UNTRUSTED_FORK)
+
+    assert store.get(47).trust_level is TrustLevel.UNTRUSTED_FORK

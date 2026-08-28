@@ -31,6 +31,11 @@ class FeedbackAccuracy(StrEnum):
     INACCURATE = "inaccurate"
 
 
+class TrustLevel(StrEnum):
+    TRUSTED = "trusted"
+    UNTRUSTED_FORK = "untrusted_fork"
+
+
 class Evidence(BaseModel):
     source: str
     content: str
@@ -73,6 +78,7 @@ class RepositoryContext(BaseModel):
     workflow_path: str | None = None
     workflow_content: str | None = None
     pull_request_number: int | None = None
+    trust_level: TrustLevel = TrustLevel.TRUSTED
 
 
 class RelatedFile(BaseModel):
@@ -108,6 +114,7 @@ class AnalysisRecord(BaseModel):
     head_sha: str
     html_url: str
     installation_id: int | None = None
+    trust_level: TrustLevel = TrustLevel.TRUSTED
     status: AnalysisStatus = AnalysisStatus.QUEUED
     classification: Classification | None = None
     diagnosis: Diagnosis | None = None

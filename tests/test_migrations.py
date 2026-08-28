@@ -32,6 +32,7 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
         "related_files",
         "model_name",
         "prompt_version",
+        "trust_level",
     }
     command.check(config)
 

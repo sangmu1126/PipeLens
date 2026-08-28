@@ -31,6 +31,7 @@ from pipelens.models import (
     GitHubInstallation,
     GitHubUser,
     RelatedFile,
+    TrustLevel,
 )
 
 metadata = MetaData()
@@ -45,6 +46,7 @@ analyses = Table(
     Column("head_sha", String(64), nullable=False),
     Column("html_url", Text, nullable=False),
     Column("installation_id", BigInteger),
+    Column("trust_level", String(32), nullable=False, default=TrustLevel.TRUSTED.value),
     Column("status", String(32), nullable=False, index=True),
     Column("classification", JSON),
     Column("diagnosis", JSON),
@@ -141,6 +143,7 @@ class AnalysisStore:
             "head_sha": record.head_sha,
             "html_url": record.html_url,
             "installation_id": record.installation_id,
+            "trust_level": record.trust_level.value,
             "status": record.status.value,
             "classification": _dump_model(record.classification),
             "diagnosis": _dump_model(record.diagnosis),
@@ -169,6 +172,7 @@ class AnalysisStore:
         workflow_path: str | None = None,
         model_name: str | None = None,
         prompt_version: str | None = None,
+        trust_level: TrustLevel | None = None,
         error: str | None = None,
     ) -> None:
         values: dict = {
@@ -188,6 +192,8 @@ class AnalysisStore:
             values["model_name"] = model_name
         if prompt_version is not None:
             values["prompt_version"] = prompt_version
+        if trust_level is not None:
+            values["trust_level"] = trust_level.value
         with self.engine.begin() as connection:
             connection.execute(update(analyses).where(analyses.c.run_id == run_id).values(**values))
 
