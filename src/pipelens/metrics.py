@@ -84,6 +84,12 @@ class Metrics:
             "Orphaned processing jobs restored when a worker starts.",
             registry=self.registry,
         )
+        self.http_retries = Counter(
+            "pipelens_http_retries_total",
+            "Retried outbound HTTP requests by provider and reason.",
+            ("provider", "reason"),
+            registry=self.registry,
+        )
         self.feedback = Counter(
             "pipelens_feedback_total",
             "Submitted user feedback by dimension and value.",

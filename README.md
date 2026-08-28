@@ -105,6 +105,9 @@ PIPELENS_OPENAI_API_KEY=...
 PIPELENS_OPENAI_MODEL=gpt-5.6
 PIPELENS_LLM_INPUT_COST_PER_MILLION=0
 PIPELENS_LLM_OUTPUT_COST_PER_MILLION=0
+PIPELENS_HTTP_RETRY_MAX_ATTEMPTS=3
+PIPELENS_HTTP_RETRY_BASE_SECONDS=1
+PIPELENS_HTTP_RETRY_MAX_SECONDS=60
 ```
 
 GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
@@ -117,6 +120,12 @@ run ID로 기존 게시물을 찾아 갱신하므로 같은 분석이 중복 게
 이 경우 로그·diff·Workflow는 LLM에 전송하지 않고 규칙 기반 진단만 수행합니다. PR 번호를
 확인할 수 있으면 경고가 포함된 PR 코멘트만 게시하며, PR을 확인할 수 없는 fork SHA에는
 Commit Check를 생성하지 않습니다. 대시보드에도 같은 신뢰 경계가 표시됩니다.
+
+GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하고, 없으면 jitter가
+포함된 지수 backoff로 재시도합니다. GitHub의 403은 rate-limit 응답으로 확인된 경우에만
+재시도하고, quota·billing처럼 사용자 조치가 필요한 429는 즉시 실패합니다. 지연이 설정
+상한보다 길면 너무 일찍 다시 요청하지 않고 현재 작업을 실패시킵니다. 재시도 횟수는
+`/metrics`의 `pipelens_http_retries_total`에서 확인할 수 있습니다.
 
 ## API
 

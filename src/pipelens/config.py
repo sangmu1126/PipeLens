@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     queue_name: str = "pipelens:analyses"
     worker_max_attempts: int = 3
     worker_metrics_port: int = 8001
+    http_retry_max_attempts: int = 3
+    http_retry_base_seconds: float = 1.0
+    http_retry_max_seconds: float = 60.0
 
     @property
     def resolved_database_url(self) -> str:
