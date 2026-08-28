@@ -207,15 +207,18 @@ def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None
         )
     )
 
-    started_at = store.begin_analysis(48)
+    start = store.begin_analysis(48)
     store.record_stage(48, AnalysisStage.COLLECTING, StageStatus.STARTED)
     store.record_stage(48, AnalysisStage.COLLECTING, StageStatus.COMPLETED)
-    store.finish_analysis(48, started_at)
+    total_latency = store.finish_analysis(48, start.attempt_started_at)
 
     saved = store.get(48)
     assert saved.analysis_started_at is not None
     assert saved.analysis_completed_at is not None
     assert saved.duration_seconds is not None and saved.duration_seconds >= 0
+    assert saved.queue_wait_seconds is not None and saved.queue_wait_seconds >= 0
+    assert saved.total_latency_seconds == total_latency
+    assert start.first_start is True
     assert [event.status for event in saved.stage_history] == [
         StageStatus.STARTED,
         StageStatus.COMPLETED,
@@ -237,19 +240,19 @@ def test_new_analysis_attempt_fences_stale_worker_updates(tmp_path: Path) -> Non
         )
     )
 
-    first_started = store.begin_analysis(49, "attempt-a")
+    first_start = store.begin_analysis(49, "attempt-a")
     store.record_stage(
         49,
         AnalysisStage.COLLECTING,
         StageStatus.STARTED,
         attempt_token="attempt-a",
     )
-    second_started = store.begin_analysis(49, "attempt-b")
+    second_start = store.begin_analysis(49, "attempt-b")
 
     with pytest.raises(AnalysisAttemptSuperseded):
         store.update(49, AnalysisStatus.RUNNING, error="stale", attempt_token="attempt-a")
     with pytest.raises(AnalysisAttemptSuperseded):
-        store.finish_analysis(49, first_started, attempt_token="attempt-a")
+        store.finish_analysis(49, first_start.attempt_started_at, attempt_token="attempt-a")
     with pytest.raises(AnalysisAttemptSuperseded):
         store.record_stage(
             49,
@@ -261,7 +264,9 @@ def test_new_analysis_attempt_fences_stale_worker_updates(tmp_path: Path) -> Non
     assert store.get(49).stage_history[0].status is StageStatus.FAILED
     assert "Superseded" in store.get(49).stage_history[0].error
 
-    store.finish_analysis(49, second_started, attempt_token="attempt-b")
+    store.finish_analysis(49, second_start.attempt_started_at, attempt_token="attempt-b")
+    assert second_start.first_start is False
+    assert second_start.queue_wait_seconds == first_start.queue_wait_seconds
     with pytest.raises(AnalysisAttemptSuperseded):
         store.begin_analysis(49, "attempt-c")
     assert store.get(49).status is AnalysisStatus.COMPLETED

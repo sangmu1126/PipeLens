@@ -164,6 +164,8 @@ class AnalysisRecord(BaseModel):
     analysis_started_at: datetime | None = None
     analysis_completed_at: datetime | None = None
     duration_seconds: float | None = None
+    queue_wait_seconds: float | None = None
+    total_latency_seconds: float | None = None
     stage_history: list[AnalysisStageEvent] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

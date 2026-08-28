@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy import (
@@ -47,6 +48,13 @@ metadata = MetaData()
 class AnalysisAttemptSuperseded(RuntimeError):
     pass
 
+
+@dataclass(frozen=True)
+class AnalysisStart:
+    attempt_started_at: datetime
+    queue_wait_seconds: float
+    first_start: bool
+
 analyses = Table(
     "analyses",
     metadata,
@@ -71,6 +79,8 @@ analyses = Table(
     Column("analysis_started_at", DateTime(timezone=True)),
     Column("analysis_completed_at", DateTime(timezone=True)),
     Column("duration_seconds", Float),
+    Column("queue_wait_seconds", Float),
+    Column("total_latency_seconds", Float),
     Column("attempt_token", String(64)),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
     Column("updated_at", DateTime(timezone=True), nullable=False),
@@ -191,6 +201,8 @@ class AnalysisStore:
             "analysis_started_at": record.analysis_started_at,
             "analysis_completed_at": record.analysis_completed_at,
             "duration_seconds": record.duration_seconds,
+            "queue_wait_seconds": record.queue_wait_seconds,
+            "total_latency_seconds": record.total_latency_seconds,
             "created_at": record.created_at,
             "updated_at": record.updated_at,
         }
@@ -291,9 +303,23 @@ class AnalysisStore:
             rows = connection.execute(statement).mappings().all()
         return [AnalysisRequest.model_validate(dict(row)) for row in rows]
 
-    def begin_analysis(self, run_id: int, attempt_token: str | None = None) -> datetime:
+    def begin_analysis(self, run_id: int, attempt_token: str | None = None) -> AnalysisStart:
         started_at = datetime.now(UTC)
         with self.engine.begin() as connection:
+            timing = connection.execute(
+                select(
+                    analyses.c.created_at,
+                    analyses.c.analysis_started_at,
+                    analyses.c.queue_wait_seconds,
+                ).where(analyses.c.run_id == run_id)
+            ).mappings().one_or_none()
+            if timing is None:
+                raise AnalysisAttemptSuperseded(f"analysis run {run_id} does not exist")
+            first_start = timing["analysis_started_at"] is None
+            queue_wait = timing["queue_wait_seconds"]
+            if queue_wait is None:
+                created_at = _as_utc(timing["created_at"])
+                queue_wait = max(0.0, (started_at - created_at).total_seconds())
             statement = update(analyses).where(analyses.c.run_id == run_id)
             if attempt_token is not None:
                 statement = statement.where(
@@ -306,9 +332,11 @@ class AnalysisStore:
                     status=AnalysisStatus.RUNNING.value,
                     error=None,
                     attempt_token=attempt_token,
-                    analysis_started_at=started_at,
+                    analysis_started_at=timing["analysis_started_at"] or started_at,
                     analysis_completed_at=None,
                     duration_seconds=None,
+                    queue_wait_seconds=queue_wait,
+                    total_latency_seconds=None,
                     updated_at=started_at,
                 )
             )
@@ -325,7 +353,7 @@ class AnalysisStore:
                         error="Superseded by a newer analysis attempt",
                     )
                 )
-        return started_at
+        return AnalysisStart(started_at, queue_wait, first_start)
 
     def finish_analysis(
         self,
@@ -333,9 +361,15 @@ class AnalysisStore:
         started_at: datetime,
         status: AnalysisStatus = AnalysisStatus.COMPLETED,
         attempt_token: str | None = None,
-    ) -> None:
+    ) -> float:
         completed_at = datetime.now(UTC)
         with self.engine.begin() as connection:
+            created_at = connection.scalar(
+                select(analyses.c.created_at).where(analyses.c.run_id == run_id)
+            )
+            if created_at is None:
+                raise AnalysisAttemptSuperseded(f"analysis run {run_id} does not exist")
+            total_latency = max(0.0, (completed_at - _as_utc(created_at)).total_seconds())
             statement = update(analyses).where(analyses.c.run_id == run_id)
             if attempt_token is not None:
                 statement = statement.where(analyses.c.attempt_token == attempt_token)
@@ -345,10 +379,12 @@ class AnalysisStore:
                     attempt_token=None,
                     analysis_completed_at=completed_at,
                     duration_seconds=(completed_at - started_at).total_seconds(),
+                    total_latency_seconds=total_latency,
                     updated_at=completed_at,
                 )
             )
             self._require_current_attempt(result.rowcount, run_id, attempt_token)
+        return total_latency
 
     def record_stage(
         self,
@@ -593,6 +629,10 @@ def _dump_model(
 
 def _normalize_database_url(value: str) -> str:
     return value if "://" in value else f"sqlite:///{value}"
+
+
+def _as_utc(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
 
 def _analysis_select():

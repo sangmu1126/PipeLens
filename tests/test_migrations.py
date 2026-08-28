@@ -39,6 +39,8 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
         "duration_seconds",
         "attempt_token",
         "execution_context",
+        "queue_wait_seconds",
+        "total_latency_seconds",
     }
     assert "analysis_stage_events" in inspector.get_table_names()
     command.check(config)
