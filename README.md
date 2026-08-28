@@ -20,6 +20,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
 - 분석 이력·근거·관련 diff·피드백과 run 딥링크를 제공하는 React 대시보드
 - GitHub OAuth 로그인, 암호화된 사용자 토큰, installation 단위 분석 접근 제어
+- 외부 Fork 실행 판별과 비신뢰 입력의 LLM·Commit Check 격리
 - PR에는 멱등 코멘트, PR이 없는 실행에는 Commit Check로 진단 결과 게시
 
 ## 로컬 실행
@@ -94,6 +95,11 @@ requests(read/write), Metadata(read)를 사용합니다. `PIPELENS_PUBLISH_CHECK
 연결된 실행은 PR 코멘트로, PR이 없는 실행은 Commit Check로 게시합니다. 재시도 시 workflow
 run ID로 기존 게시물을 찾아 갱신하므로 같은 분석이 중복 게시되지 않습니다. 게시를 먼저
 검증하지 않을 때는 `PIPELENS_PUBLISH_CHECKS=false`로 두어도 분석 결과가 API에 저장됩니다.
+
+외부 Fork의 head 저장소가 base 저장소와 다르면 해당 실행은 `untrusted_fork`로 기록합니다.
+이 경우 로그·diff·Workflow는 LLM에 전송하지 않고 규칙 기반 진단만 수행합니다. PR 번호를
+확인할 수 있으면 경고가 포함된 PR 코멘트만 게시하며, PR을 확인할 수 없는 fork SHA에는
+Commit Check를 생성하지 않습니다. 대시보드에도 같은 신뢰 경계가 표시됩니다.
 
 ## API
 

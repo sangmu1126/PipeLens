@@ -77,6 +77,8 @@ tbody tr { transition: background .15s ease; } tbody tr:hover, tbody tr.selected
 .detail-topline a { color: var(--blue); font-size: 10px; text-decoration: none; }
 .detail-content > h2 { margin: 25px 0 8px; font-size: 26px; line-height: 1.18; letter-spacing: -.045em; }
 .run-id { margin: 0 0 30px; color: var(--muted); font-size: 9px; }
+.trust-warning { display: grid; gap: 5px; margin: -12px 0 26px; padding: 12px 14px; color: #7b2f23; background: #fae6e1; border-left: 3px solid var(--danger); }
+.trust-warning strong { font-size: 11px; }.trust-warning span { font-size: 10px; line-height: 1.55; }
 .detail-section { padding: 23px 0; border-top: 1px solid var(--line); }
 .detail-section > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
 .detail-section > header span { color: var(--blue); font: 9px "DM Mono", monospace; }.detail-section h3 { margin: 0; font-size: 13px; }

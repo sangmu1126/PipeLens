@@ -40,6 +40,7 @@ export interface Analysis {
   workflow_name: string;
   head_sha: string;
   html_url: string;
+  trust_level: "trusted" | "untrusted_fork";
   status: AnalysisStatus;
   classification: {
     category: string;

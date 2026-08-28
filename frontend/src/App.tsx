@@ -177,7 +177,7 @@ function App() {
                       <td>
                         <button className="run-select" onClick={() => selectRun(analysis.run_id)}>
                           <strong>{analysis.repository}</strong>
-                          <span>{analysis.workflow_name} · {analysis.head_sha.slice(0, 7)}</span>
+                          <span>{analysis.trust_level === "untrusted_fork" ? "외부 Fork · " : ""}{analysis.workflow_name} · {analysis.head_sha.slice(0, 7)}</span>
                         </button>
                       </td>
                       <td><StatusBadge status={analysis.status} /></td>
@@ -242,6 +242,12 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
       <div className="detail-topline"><StatusBadge status={analysis.status} /><a href={analysis.html_url} target="_blank" rel="noreferrer">GitHub에서 보기 ↗</a></div>
       <h2>{diagnosis?.summary ?? "분석 결과를 기다리는 중입니다."}</h2>
       <p className="run-id">RUN #{analysis.run_id} · {analysis.workflow_name}</p>
+      {analysis.trust_level === "untrusted_fork" && (
+        <div className="trust-warning">
+          <strong>외부 Fork의 비신뢰 실행</strong>
+          <span>Fork에서 생성된 로그·코드·Workflow는 LLM에 전송하지 않았으며 규칙 기반 결과만 제공합니다.</span>
+        </div>
+      )}
 
       {diagnosis && <>
         <DetailSection number="01" title="추정 원인">
