@@ -191,22 +191,36 @@ class AnalysisStore:
         with self.engine.begin() as connection:
             connection.execute(update(analyses).where(analyses.c.run_id == run_id).values(**values))
 
-    def get(self, run_id: int) -> AnalysisRecord | None:
+    def get(
+        self, run_id: int, installation_ids: set[int] | None = None
+    ) -> AnalysisRecord | None:
+        statement = _analysis_select().where(analyses.c.run_id == run_id)
+        if installation_ids is not None:
+            if not installation_ids:
+                return None
+            statement = statement.where(analyses.c.installation_id.in_(installation_ids))
         with self.engine.connect() as connection:
-            row = (
-                connection.execute(_analysis_select().where(analyses.c.run_id == run_id))
-                .mappings()
-                .first()
-            )
+            row = connection.execute(statement).mappings().first()
         return self._to_record(row) if row else None
 
-    def list(self, limit: int = 50) -> list[AnalysisRecord]:
+    def list(
+        self, limit: int = 50, installation_ids: set[int] | None = None
+    ) -> list[AnalysisRecord]:
+        if installation_ids is not None and not installation_ids:
+            return []
         statement = _analysis_select().order_by(analyses.c.created_at.desc()).limit(limit)
+        if installation_ids is not None:
+            statement = statement.where(analyses.c.installation_id.in_(installation_ids))
         with self.engine.connect() as connection:
             rows = connection.execute(statement).mappings().all()
         return [self._to_record(row) for row in rows]
 
-    def save_feedback(self, run_id: int, request: FeedbackRequest) -> FeedbackRecord | None:
+    def save_feedback(
+        self,
+        run_id: int,
+        request: FeedbackRequest,
+        installation_ids: set[int] | None = None,
+    ) -> FeedbackRecord | None:
         now = datetime.now(UTC)
         values = {
             "accuracy": request.accuracy.value if request.accuracy else None,
@@ -214,13 +228,15 @@ class AnalysisStore:
             "comment": request.comment,
             "updated_at": now,
         }
+        analysis_statement = select(analyses.c.run_id).where(analyses.c.run_id == run_id)
+        if installation_ids is not None:
+            if not installation_ids:
+                return None
+            analysis_statement = analysis_statement.where(
+                analyses.c.installation_id.in_(installation_ids)
+            )
         with self.engine.begin() as connection:
-            if (
-                connection.execute(
-                    select(analyses.c.run_id).where(analyses.c.run_id == run_id)
-                ).first()
-                is None
-            ):
+            if connection.execute(analysis_statement).first() is None:
                 return None
             existing = connection.execute(
                 select(feedback.c.run_id).where(feedback.c.run_id == run_id)

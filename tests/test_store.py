@@ -98,3 +98,31 @@ def test_store_rejects_feedback_for_unknown_analysis(tmp_path: Path) -> None:
     result = store.save_feedback(999, FeedbackRequest(accuracy=FeedbackAccuracy.INACCURATE))
 
     assert result is None
+
+
+def test_store_scopes_analysis_and_feedback_to_installations(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    for run_id, installation_id in [(45, 7), (46, 8)]:
+        store.create_if_absent(
+            AnalysisRecord(
+                run_id=run_id,
+                delivery_id=f"delivery-{run_id}",
+                repository="acme/example",
+                workflow_name="CI",
+                head_sha="abc123",
+                html_url=f"https://github.com/acme/example/actions/runs/{run_id}",
+                installation_id=installation_id,
+            )
+        )
+
+    assert [record.run_id for record in store.list(installation_ids={7})] == [45]
+    assert store.get(46, installation_ids={7}) is None
+    assert (
+        store.save_feedback(
+            46,
+            FeedbackRequest(accuracy=FeedbackAccuracy.ACCURATE),
+            installation_ids={7},
+        )
+        is None
+    )

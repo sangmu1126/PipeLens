@@ -8,7 +8,7 @@ from pipelens.models import AnalysisRecord
 
 
 def test_feedback_endpoint_updates_analysis_and_metrics(tmp_path: Path) -> None:
-    app = create_app(Settings(database_path=str(tmp_path / "db.sqlite")))
+    app = create_app(Settings(database_path=str(tmp_path / "db.sqlite"), auth_required=False))
 
     with TestClient(app) as client:
         app.state.store.create_if_absent(
@@ -35,7 +35,7 @@ def test_feedback_endpoint_updates_analysis_and_metrics(tmp_path: Path) -> None:
 
 
 def test_feedback_endpoint_validates_input_and_run(tmp_path: Path) -> None:
-    app = create_app(Settings(database_path=str(tmp_path / "db.sqlite")))
+    app = create_app(Settings(database_path=str(tmp_path / "db.sqlite"), auth_required=False))
 
     with TestClient(app) as client:
         invalid = client.put("/api/analyses/999/feedback", json={})

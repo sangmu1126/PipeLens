@@ -66,6 +66,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=401, detail="GitHub login required")
         return session
 
+    def analysis_access(request: Request) -> set[int] | None:
+        if not settings.auth_required:
+            return None
+        session = require_session(request)
+        return {
+            item.installation_id
+            for item in store.installations_for_user(session.user.github_user_id)
+        }
+
     @app.get("/healthz", tags=["system"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
@@ -228,15 +237,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/analyses", response_model=list[AnalysisRecord], tags=["analyses"])
     async def list_analyses(
         analysis_store: Annotated[AnalysisStore, Depends(get_store)],
+        installation_ids: Annotated[set[int] | None, Depends(analysis_access)],
         limit: Annotated[int, Query(ge=1, le=100)] = 50,
     ) -> list[AnalysisRecord]:
-        return analysis_store.list(limit)
+        return analysis_store.list(limit, installation_ids)
 
     @app.get("/api/analyses/{run_id}", response_model=AnalysisRecord, tags=["analyses"])
     async def get_analysis(
-        run_id: int, analysis_store: Annotated[AnalysisStore, Depends(get_store)]
+        run_id: int,
+        analysis_store: Annotated[AnalysisStore, Depends(get_store)],
+        installation_ids: Annotated[set[int] | None, Depends(analysis_access)],
     ) -> AnalysisRecord:
-        record = analysis_store.get(run_id)
+        record = analysis_store.get(run_id, installation_ids)
         if not record:
             raise HTTPException(status_code=404, detail="analysis not found")
         return record
@@ -250,8 +262,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         run_id: int,
         feedback: FeedbackRequest,
         analysis_store: Annotated[AnalysisStore, Depends(get_store)],
+        installation_ids: Annotated[set[int] | None, Depends(analysis_access)],
     ) -> FeedbackRecord:
-        saved = analysis_store.save_feedback(run_id, feedback)
+        saved = analysis_store.save_feedback(run_id, feedback, installation_ids)
         if saved is None:
             raise HTTPException(status_code=404, detail="analysis not found")
         if feedback.accuracy is not None:

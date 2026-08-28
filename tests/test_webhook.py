@@ -30,7 +30,13 @@ def _failure_payload() -> dict:
 
 
 def test_webhook_rejects_bad_signature(tmp_path: Path) -> None:
-    app = create_app(Settings(webhook_secret="secret", database_path=str(tmp_path / "db.sqlite")))
+    app = create_app(
+        Settings(
+            webhook_secret="secret",
+            database_path=str(tmp_path / "db.sqlite"),
+            auth_required=False,
+        )
+    )
 
     with TestClient(app) as client:
         response = client.post(
@@ -47,7 +53,9 @@ def test_webhook_rejects_bad_signature(tmp_path: Path) -> None:
 
 
 def test_webhook_accepts_failure_once(tmp_path: Path) -> None:
-    settings = Settings(webhook_secret="secret", database_path=str(tmp_path / "db.sqlite"))
+    settings = Settings(
+        webhook_secret="secret", database_path=str(tmp_path / "db.sqlite"), auth_required=False
+    )
     app = create_app(settings)
     app.state.queue.enqueue = AsyncMock()
     body = json.dumps(_failure_payload()).encode()
@@ -76,7 +84,9 @@ def test_webhook_accepts_failure_once(tmp_path: Path) -> None:
 
 
 def test_webhook_ignores_successful_run(tmp_path: Path) -> None:
-    settings = Settings(webhook_secret="secret", database_path=str(tmp_path / "db.sqlite"))
+    settings = Settings(
+        webhook_secret="secret", database_path=str(tmp_path / "db.sqlite"), auth_required=False
+    )
     app = create_app(settings)
     payload = _failure_payload()
     payload["workflow_run"]["conclusion"] = "success"
