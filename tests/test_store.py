@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from pipelens.models import (
     AnalysisRecord,
     AnalysisStage,
@@ -10,7 +12,7 @@ from pipelens.models import (
     StageStatus,
     TrustLevel,
 )
-from pipelens.store import AnalysisStore
+from pipelens.store import AnalysisAttemptSuperseded, AnalysisStore
 
 
 def test_store_deduplicates_workflow_run(tmp_path: Path) -> None:
@@ -206,3 +208,48 @@ def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None
         StageStatus.STARTED,
         StageStatus.COMPLETED,
     ]
+
+
+def test_new_analysis_attempt_fences_stale_worker_updates(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=49,
+            delivery_id="delivery-49",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/49",
+            installation_id=7,
+        )
+    )
+
+    first_started = store.begin_analysis(49, "attempt-a")
+    store.record_stage(
+        49,
+        AnalysisStage.COLLECTING,
+        StageStatus.STARTED,
+        attempt_token="attempt-a",
+    )
+    second_started = store.begin_analysis(49, "attempt-b")
+
+    with pytest.raises(AnalysisAttemptSuperseded):
+        store.update(49, AnalysisStatus.RUNNING, error="stale", attempt_token="attempt-a")
+    with pytest.raises(AnalysisAttemptSuperseded):
+        store.finish_analysis(49, first_started, attempt_token="attempt-a")
+    with pytest.raises(AnalysisAttemptSuperseded):
+        store.record_stage(
+            49,
+            AnalysisStage.COLLECTING,
+            StageStatus.COMPLETED,
+            attempt_token="attempt-a",
+        )
+
+    assert store.get(49).stage_history[0].status is StageStatus.FAILED
+    assert "Superseded" in store.get(49).stage_history[0].error
+
+    store.finish_analysis(49, second_started, attempt_token="attempt-b")
+    with pytest.raises(AnalysisAttemptSuperseded):
+        store.begin_analysis(49, "attempt-c")
+    assert store.get(49).status is AnalysisStatus.COMPLETED

@@ -42,6 +42,10 @@ from pipelens.models import (
 
 metadata = MetaData()
 
+
+class AnalysisAttemptSuperseded(RuntimeError):
+    pass
+
 analyses = Table(
     "analyses",
     metadata,
@@ -65,6 +69,7 @@ analyses = Table(
     Column("analysis_started_at", DateTime(timezone=True)),
     Column("analysis_completed_at", DateTime(timezone=True)),
     Column("duration_seconds", Float),
+    Column("attempt_token", String(64)),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
@@ -206,6 +211,7 @@ class AnalysisStore:
         trust_level: TrustLevel | None = None,
         baseline_sha: str | None = None,
         error: str | None = None,
+        attempt_token: str | None = None,
     ) -> None:
         values: dict = {
             "status": status.value,
@@ -229,7 +235,11 @@ class AnalysisStore:
         if baseline_sha is not None:
             values["baseline_sha"] = baseline_sha
         with self.engine.begin() as connection:
-            connection.execute(update(analyses).where(analyses.c.run_id == run_id).values(**values))
+            statement = update(analyses).where(analyses.c.run_id == run_id)
+            if attempt_token is not None:
+                statement = statement.where(analyses.c.attempt_token == attempt_token)
+            result = connection.execute(statement.values(**values))
+            self._require_current_attempt(result.rowcount, run_id, attempt_token)
 
     def get(
         self, run_id: int, installation_ids: set[int] | None = None
@@ -275,21 +285,40 @@ class AnalysisStore:
             rows = connection.execute(statement).mappings().all()
         return [AnalysisRequest.model_validate(dict(row)) for row in rows]
 
-    def begin_analysis(self, run_id: int) -> datetime:
+    def begin_analysis(self, run_id: int, attempt_token: str | None = None) -> datetime:
         started_at = datetime.now(UTC)
         with self.engine.begin() as connection:
-            connection.execute(
-                update(analyses)
-                .where(analyses.c.run_id == run_id)
-                .values(
+            statement = update(analyses).where(analyses.c.run_id == run_id)
+            if attempt_token is not None:
+                statement = statement.where(
+                    analyses.c.status.in_(
+                        [AnalysisStatus.QUEUED.value, AnalysisStatus.RUNNING.value]
+                    )
+                )
+            result = connection.execute(
+                statement.values(
                     status=AnalysisStatus.RUNNING.value,
                     error=None,
+                    attempt_token=attempt_token,
                     analysis_started_at=started_at,
                     analysis_completed_at=None,
                     duration_seconds=None,
                     updated_at=started_at,
                 )
             )
+            self._require_current_attempt(result.rowcount, run_id, attempt_token)
+            if attempt_token is not None:
+                connection.execute(
+                    update(analysis_stage_events)
+                    .where(
+                        analysis_stage_events.c.run_id == run_id,
+                        analysis_stage_events.c.status == StageStatus.STARTED.value,
+                    )
+                    .values(
+                        status=StageStatus.FAILED.value,
+                        error="Superseded by a newer analysis attempt",
+                    )
+                )
         return started_at
 
     def finish_analysis(
@@ -297,19 +326,23 @@ class AnalysisStore:
         run_id: int,
         started_at: datetime,
         status: AnalysisStatus = AnalysisStatus.COMPLETED,
+        attempt_token: str | None = None,
     ) -> None:
         completed_at = datetime.now(UTC)
         with self.engine.begin() as connection:
-            connection.execute(
-                update(analyses)
-                .where(analyses.c.run_id == run_id)
-                .values(
+            statement = update(analyses).where(analyses.c.run_id == run_id)
+            if attempt_token is not None:
+                statement = statement.where(analyses.c.attempt_token == attempt_token)
+            result = connection.execute(
+                statement.values(
                     status=status.value,
+                    attempt_token=None,
                     analysis_completed_at=completed_at,
                     duration_seconds=(completed_at - started_at).total_seconds(),
                     updated_at=completed_at,
                 )
             )
+            self._require_current_attempt(result.rowcount, run_id, attempt_token)
 
     def record_stage(
         self,
@@ -317,8 +350,20 @@ class AnalysisStore:
         stage: AnalysisStage,
         status: StageStatus,
         error: str | None = None,
+        attempt_token: str | None = None,
     ) -> None:
         with self.engine.begin() as connection:
+            if attempt_token is not None:
+                current = connection.execute(
+                    select(analyses.c.run_id).where(
+                        analyses.c.run_id == run_id,
+                        analyses.c.attempt_token == attempt_token,
+                    )
+                ).first()
+                if current is None:
+                    raise AnalysisAttemptSuperseded(
+                        f"analysis attempt for run {run_id} is no longer current"
+                    )
             connection.execute(
                 insert(analysis_stage_events).values(
                     run_id=run_id,
@@ -327,6 +372,15 @@ class AnalysisStore:
                     error=error,
                     occurred_at=datetime.now(UTC),
                 )
+            )
+
+    @staticmethod
+    def _require_current_attempt(
+        rowcount: int, run_id: int, attempt_token: str | None
+    ) -> None:
+        if attempt_token is not None and rowcount != 1:
+            raise AnalysisAttemptSuperseded(
+                f"analysis attempt for run {run_id} is no longer current"
             )
 
     def save_feedback(
