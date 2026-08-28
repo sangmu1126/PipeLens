@@ -1,12 +1,14 @@
 import asyncio
 import logging
 from contextlib import suppress
+from time import perf_counter
 
 from pipelens.classifier import classify_log, extract_error_context
 from pipelens.config import Settings
 from pipelens.diagnosis import build_rule_based_diagnosis, validate_diagnosis
 from pipelens.github import GitHubClient
 from pipelens.llm import PROMPT_VERSION, LLMContext, LLMProvider, validate_llm_analysis
+from pipelens.metrics import Metrics
 from pipelens.models import AnalysisRequest, AnalysisStatus, RepositoryContext
 from pipelens.relevance import correlate_changed_files
 from pipelens.sanitizer import sanitize_log
@@ -22,11 +24,13 @@ class AnalysisPipeline:
         store: AnalysisStore,
         github: GitHubClient,
         llm_provider: LLMProvider | None = None,
+        metrics: Metrics | None = None,
     ) -> None:
         self.settings = settings
         self.store = store
         self.github = github
         self.llm_provider = llm_provider
+        self.metrics = metrics or Metrics()
         self.queue: asyncio.Queue[AnalysisRequest] = asyncio.Queue()
         self._worker: asyncio.Task[None] | None = None
 
@@ -41,10 +45,12 @@ class AnalysisPipeline:
 
     async def enqueue(self, request: AnalysisRequest) -> None:
         await self.queue.put(request)
+        self.metrics.queue_depth.set(self.queue.qsize())
 
     async def _run(self) -> None:
         while True:
             request = await self.queue.get()
+            self.metrics.queue_depth.set(self.queue.qsize())
             try:
                 await self.analyze(request)
             except Exception as exc:
@@ -54,6 +60,17 @@ class AnalysisPipeline:
                 self.queue.task_done()
 
     async def analyze(self, request: AnalysisRequest) -> None:
+        started = perf_counter()
+        try:
+            await self._analyze(request)
+        except Exception:
+            self.metrics.analyses.labels(status="failed").inc()
+            self.metrics.analysis_duration.observe(perf_counter() - started)
+            raise
+        self.metrics.analyses.labels(status="completed").inc()
+        self.metrics.analysis_duration.observe(perf_counter() - started)
+
+    async def _analyze(self, request: AnalysisRequest) -> None:
         self.store.update(request.run_id, AnalysisStatus.RUNNING)
         token = await self.github.installation_token(request.installation_id)
         failed_jobs, logs, repository_context = await asyncio.gather(
@@ -64,11 +81,18 @@ class AnalysisPipeline:
         matching_logs = [log for log in logs if any(name in log.job_name for name in failed_jobs)]
         selected = matching_logs or logs
         combined = "\n".join(log.text for log in selected)
-        sanitized, _redactions = sanitize_log(combined)
+        sanitized, redactions = sanitize_log(combined)
+        self.metrics.record_redactions(redactions)
         context = extract_error_context(sanitized, self.settings.error_context_lines)
         classification = classify_log(context, related_step=", ".join(failed_jobs) or None)
+        self.metrics.error_categories.labels(category=classification.category.value).inc()
+        sanitized_changed_files = []
+        for changed in repository_context.changed_files:
+            patch, patch_redactions = sanitize_log(changed.patch or "")
+            self.metrics.record_redactions(patch_redactions)
+            sanitized_changed_files.append(changed.model_copy(update={"patch": patch or None}))
         related_files = correlate_changed_files(
-            context, repository_context.changed_files, classification.category
+            context, sanitized_changed_files, classification.category
         )
         repository_files = {item.filename for item in repository_context.changed_files}
         if repository_context.workflow_path:
@@ -82,7 +106,10 @@ class AnalysisPipeline:
         if self.llm_provider:
             model_name = self.llm_provider.model_name
             prompt_version = PROMPT_VERSION
-            workflow_content, _ = sanitize_log(repository_context.workflow_content or "")
+            workflow_content, workflow_redactions = sanitize_log(
+                repository_context.workflow_content or ""
+            )
+            self.metrics.record_redactions(workflow_redactions)
             llm_context = LLMContext(
                 classification=classification,
                 log=context,
@@ -90,10 +117,24 @@ class AnalysisPipeline:
                 workflow_path=repository_context.workflow_path,
                 workflow_content=workflow_content or None,
             )
+            llm_started = perf_counter()
             try:
                 llm_result = await self.llm_provider.analyze(llm_context)
-                diagnosis = validate_llm_analysis(llm_result, llm_context)
+                diagnosis = validate_llm_analysis(llm_result.analysis, llm_context)
+                estimated_cost = (
+                    llm_result.input_tokens * self.settings.llm_input_cost_per_million
+                    + llm_result.output_tokens * self.settings.llm_output_cost_per_million
+                ) / 1_000_000
+                self.metrics.record_llm(
+                    model_name,
+                    "success",
+                    perf_counter() - llm_started,
+                    llm_result.input_tokens,
+                    llm_result.output_tokens,
+                    estimated_cost,
+                )
             except Exception:
+                self.metrics.record_llm(model_name, "failed", perf_counter() - llm_started)
                 logger.warning(
                     "LLM diagnosis failed for run %s; using rule-based result",
                     request.run_id,

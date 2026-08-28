@@ -3,10 +3,12 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from pipelens.config import Settings, get_settings
 from pipelens.github import GitHubClient
 from pipelens.llm import OpenAIResponsesProvider
+from pipelens.metrics import Metrics
 from pipelens.models import AnalysisRecord, AnalysisRequest
 from pipelens.pipeline import AnalysisPipeline
 from pipelens.security import InvalidSignatureError, verify_github_signature
@@ -19,6 +21,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     github = GitHubClient(
         settings.github_app_id, settings.github_private_key, settings.max_log_bytes
     )
+    metrics = Metrics()
     llm_provider = None
     if settings.llm_provider == "openai":
         if not settings.openai_api_key:
@@ -28,7 +31,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
     elif settings.llm_provider != "none":
         raise ValueError(f"unsupported LLM provider: {settings.llm_provider}")
-    pipeline = AnalysisPipeline(settings, store, github, llm_provider)
+    pipeline = AnalysisPipeline(settings, store, github, llm_provider, metrics)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -40,6 +43,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="PipeLens API", version="0.1.0", lifespan=lifespan)
     app.state.store = store
     app.state.pipeline = pipeline
+    app.state.metrics = metrics
 
     def get_store(request: Request) -> AnalysisStore:
         return request.app.state.store
@@ -47,6 +51,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/healthz", tags=["system"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/metrics", include_in_schema=False)
+    async def prometheus_metrics() -> Response:
+        return Response(
+            content=generate_latest(metrics.registry),
+            headers={"Content-Type": CONTENT_TYPE_LATEST},
+        )
 
     @app.post("/webhooks/github", status_code=status.HTTP_202_ACCEPTED, tags=["github"])
     async def github_webhook(
@@ -60,23 +71,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             verify_github_signature(body, x_hub_signature_256, settings.webhook_secret)
         except InvalidSignatureError as exc:
+            metrics.webhooks.labels(outcome="invalid_signature").inc()
             raise HTTPException(status_code=401, detail=str(exc)) from exc
 
         if x_github_event != "workflow_run":
+            metrics.webhooks.labels(outcome="ignored_event").inc()
             return Response(status_code=status.HTTP_204_NO_CONTENT)
         if not x_github_delivery:
+            metrics.webhooks.labels(outcome="invalid_payload").inc()
             raise HTTPException(status_code=400, detail="missing X-GitHub-Delivery header")
         try:
             payload = json.loads(body)
             run = payload["workflow_run"]
             repository = payload["repository"]["full_name"]
         except (json.JSONDecodeError, KeyError, TypeError) as exc:
+            metrics.webhooks.labels(outcome="invalid_payload").inc()
             raise HTTPException(status_code=400, detail="invalid workflow_run payload") from exc
         if run.get("conclusion") != "failure" or payload.get("action") != "completed":
+            metrics.webhooks.labels(outcome="ignored_run").inc()
             return Response(status_code=status.HTTP_204_NO_CONTENT)
 
         installation_id = payload.get("installation", {}).get("id")
         if installation_id is None:
+            metrics.webhooks.labels(outcome="invalid_payload").inc()
             raise HTTPException(status_code=400, detail="payload has no GitHub App installation id")
         record = AnalysisRecord(
             run_id=run["id"],
@@ -97,6 +114,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     head_sha=record.head_sha,
                 )
             )
+        metrics.webhooks.labels(outcome="accepted" if created else "duplicate").inc()
         return Response(
             content=json.dumps({"accepted": created, "run_id": record.run_id}),
             media_type="application/json",

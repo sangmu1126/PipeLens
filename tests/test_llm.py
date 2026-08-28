@@ -102,6 +102,7 @@ async def test_openai_provider_requests_strict_structured_output() -> None:
             200,
             json={
                 "status": "completed",
+                "usage": {"input_tokens": 120, "output_tokens": 30},
                 "output": [
                     {
                         "type": "message",
@@ -117,7 +118,9 @@ async def test_openai_provider_requests_strict_structured_output() -> None:
 
     result = await provider.analyze(_context())
 
-    assert result.category is ErrorCategory.MISSING_ENV
+    assert result.analysis.category is ErrorCategory.MISSING_ENV
+    assert result.input_tokens == 120
+    assert result.output_tokens == 30
     assert captured["model"] == "test-model"
     assert captured["text"]["format"]["type"] == "json_schema"
     assert captured["text"]["format"]["strict"] is True

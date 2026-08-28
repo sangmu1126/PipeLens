@@ -62,12 +62,16 @@ def test_webhook_accepts_failure_once(tmp_path: Path) -> None:
         first = client.post("/webhooks/github", content=body, headers=headers)
         second = client.post("/webhooks/github", content=body, headers=headers)
         detail = client.get("/api/analyses/1234")
+        metrics = client.get("/metrics")
 
     assert first.status_code == 202
     assert first.json() == {"accepted": True, "run_id": 1234}
     assert second.json() == {"accepted": False, "run_id": 1234}
     assert detail.status_code == 200
     assert detail.json()["repository"] == "acme/widgets"
+    assert metrics.status_code == 200
+    assert 'pipelens_webhooks_total{outcome="accepted"} 1.0' in metrics.text
+    assert 'pipelens_webhooks_total{outcome="duplicate"} 1.0' in metrics.text
     app.state.pipeline.enqueue.assert_awaited_once()
 
 

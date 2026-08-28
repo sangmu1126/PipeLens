@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from prometheus_client import generate_latest
 
 from pipelens.config import Settings
 from pipelens.github import JobLog
@@ -47,6 +48,9 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     assert result.status is AnalysisStatus.COMPLETED
     assert result.classification.category == "test_failure"
     assert result.diagnosis.notes == ["로그와 직접 연결되는 변경 파일을 찾지 못했습니다."]
+    metrics = generate_latest(pipeline.metrics.registry).decode()
+    assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
+    assert 'pipelens_error_categories_total{category="test_failure"} 1.0' in metrics
 
 
 @pytest.mark.asyncio
@@ -92,3 +96,5 @@ async def test_llm_failure_records_attempt_and_uses_rule_fallback(tmp_path: Path
     assert "LLM 분석에 실패" in result.diagnosis.notes[0]
     assert result.model_name == "test-model"
     assert result.prompt_version == "diagnosis-v1"
+    metrics = generate_latest(pipeline.metrics.registry).decode()
+    assert 'pipelens_llm_requests_total{model="test-model",status="failed"} 1.0' in metrics

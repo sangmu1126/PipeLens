@@ -62,10 +62,16 @@ class LLMContext(BaseModel):
     workflow_content: str | None = None
 
 
+class LLMProviderResult(BaseModel):
+    analysis: LLMAnalysis
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+
 class LLMProvider(Protocol):
     model_name: str
 
-    async def analyze(self, context: LLMContext) -> LLMAnalysis: ...
+    async def analyze(self, context: LLMContext) -> LLMProviderResult: ...
 
 
 class OpenAIResponsesProvider:
@@ -83,7 +89,7 @@ class OpenAIResponsesProvider:
         self.max_input_chars = max_input_chars
         self.transport = transport
 
-    async def analyze(self, context: LLMContext) -> LLMAnalysis:
+    async def analyze(self, context: LLMContext) -> LLMProviderResult:
         input_json = _bounded_context_json(context, self.max_input_chars)
         payload = {
             "model": self.model_name,
@@ -113,9 +119,15 @@ class OpenAIResponsesProvider:
             raise LLMError("OpenAI response was incomplete")
         output_text = _response_output_text(body)
         try:
-            return LLMAnalysis.model_validate_json(output_text)
+            analysis = LLMAnalysis.model_validate_json(output_text)
         except ValueError as exc:
             raise LLMError("OpenAI response did not match the diagnosis schema") from exc
+        usage = body.get("usage") or {}
+        return LLMProviderResult(
+            analysis=analysis,
+            input_tokens=usage.get("input_tokens", 0),
+            output_tokens=usage.get("output_tokens", 0),
+        )
 
 
 def validate_llm_analysis(result: LLMAnalysis, context: LLMContext) -> Diagnosis:

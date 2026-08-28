@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_model: str = "gpt-5.6"
     max_llm_input_chars: int = 30_000
+    llm_input_cost_per_million: float = 0
+    llm_output_cost_per_million: float = 0
 
 
 @lru_cache
