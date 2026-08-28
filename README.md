@@ -152,6 +152,9 @@ Redis worker는 인스턴스별 processing 목록과 TTL lease를 사용합니�
 lease가 만료된 worker의 작업만 다른 worker가 원자적으로 pending queue에 복구하므로 여러
 worker replica를 실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS`는
 `PIPELENS_WORKER_LEASE_SECONDS`보다 충분히 작게 유지해야 합니다.
+큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과 pending 적재가
+원자적으로 수행됩니다. DB 기록 후 큐 장애가 발생하면 webhook 재전달이 해당 `queued`
+분석을 다시 적재하고, API 시작 시에도 DB의 미처리 분석을 큐와 재조정합니다.
 분석 API는 기본적으로 인증이 필요하며 사용자가 접근할 수 있는 GitHub App installation의
 결과만 반환합니다. 로컬 API 테스트처럼 인증을 의도적으로 끄려면
 `PIPELENS_AUTH_REQUIRED=false`를 명시합니다. 규칙 기반 진단은 LLM 장애 시에도 항상

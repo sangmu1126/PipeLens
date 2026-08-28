@@ -31,6 +31,29 @@ def test_store_deduplicates_workflow_run(tmp_path: Path) -> None:
     assert store.get(42).status == AnalysisStatus.QUEUED
 
 
+def test_store_lists_only_runnable_queued_analyses(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    for run_id, installation_id in [(50, 7), (51, 7), (52, None)]:
+        store.create_if_absent(
+            AnalysisRecord(
+                run_id=run_id,
+                delivery_id=f"delivery-{run_id}",
+                repository="acme/example",
+                workflow_name="CI",
+                head_sha=f"sha-{run_id}",
+                html_url=f"https://github.com/acme/example/actions/runs/{run_id}",
+                installation_id=installation_id,
+            )
+        )
+    store.update(51, AnalysisStatus.COMPLETED)
+
+    queued = store.queued_requests()
+
+    assert [request.run_id for request in queued] == [50]
+    assert queued[0].installation_id == 7
+
+
 def test_store_persists_repository_correlation(tmp_path: Path) -> None:
     store = AnalysisStore(str(tmp_path / "test.db"))
     store.initialize()

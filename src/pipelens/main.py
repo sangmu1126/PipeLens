@@ -13,13 +13,23 @@ from pipelens.github import GitHubConfigurationError
 from pipelens.models import (
     AnalysisRecord,
     AnalysisRequest,
+    AnalysisStatus,
     CurrentUser,
     FeedbackRecord,
     FeedbackRequest,
 )
+from pipelens.queue import AnalysisQueue
 from pipelens.security import InvalidSignatureError, verify_github_signature
 from pipelens.store import AnalysisStore
 from pipelens.worker import AnalysisWorker
+
+
+async def reconcile_queued_analyses(store: AnalysisStore, queue: AnalysisQueue) -> int:
+    reconciled = 0
+    for analysis_request in store.queued_requests():
+        if await queue.enqueue(analysis_request):
+            reconciled += 1
+    return reconciled
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -43,6 +53,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         store.initialize()
+        reconciled = await reconcile_queued_analyses(store, runtime.queue)
+        if reconciled:
+            metrics.queue_reconciled.inc(reconciled)
+        metrics.queue_depth.set(await runtime.queue.size())
         if local_worker:
             await local_worker.start()
         yield
@@ -224,19 +238,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             installation_id=installation_id,
         )
         created = analysis_store.create_if_absent(record)
-        if created:
-            await request.app.state.queue.enqueue(
-                AnalysisRequest(
-                    run_id=record.run_id,
-                    repository=record.repository,
-                    installation_id=installation_id,
-                    head_sha=record.head_sha,
+        existing = record if created else analysis_store.get(record.run_id)
+        enqueued = False
+        if (
+            existing
+            and existing.status is AnalysisStatus.QUEUED
+            and existing.installation_id is not None
+        ):
+            try:
+                enqueued = await request.app.state.queue.enqueue(
+                    AnalysisRequest(
+                        run_id=existing.run_id,
+                        repository=existing.repository,
+                        installation_id=existing.installation_id,
+                        head_sha=existing.head_sha,
+                    )
                 )
-            )
+            except Exception as exc:
+                metrics.webhooks.labels(outcome="queue_error").inc()
+                raise HTTPException(status_code=503, detail="analysis queue unavailable") from exc
             metrics.queue_depth.set(await request.app.state.queue.size())
-        metrics.webhooks.labels(outcome="accepted" if created else "duplicate").inc()
+        outcome = "accepted" if created else "recovered" if enqueued else "duplicate"
+        metrics.webhooks.labels(outcome=outcome).inc()
         return Response(
-            content=json.dumps({"accepted": created, "run_id": record.run_id}),
+            content=json.dumps({"accepted": created or enqueued, "run_id": record.run_id}),
             media_type="application/json",
             status_code=status.HTTP_202_ACCEPTED,
         )

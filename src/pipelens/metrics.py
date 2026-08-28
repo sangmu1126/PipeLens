@@ -81,7 +81,12 @@ class Metrics:
         )
         self.queue_recovered = Counter(
             "pipelens_queue_recovered_total",
-            "Orphaned processing jobs restored when a worker starts.",
+            "Orphaned processing jobs restored after worker lease expiry.",
+            registry=self.registry,
+        )
+        self.queue_reconciled = Counter(
+            "pipelens_queue_reconciled_total",
+            "Queued database records restored to the analysis queue on startup.",
             registry=self.registry,
         )
         self.http_retries = Counter(

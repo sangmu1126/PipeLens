@@ -25,6 +25,7 @@ from sqlalchemy.exc import IntegrityError
 
 from pipelens.models import (
     AnalysisRecord,
+    AnalysisRequest,
     AnalysisStage,
     AnalysisStageEvent,
     AnalysisStatus,
@@ -255,6 +256,24 @@ class AnalysisStore:
             rows = connection.execute(statement).mappings().all()
             stages = self._stage_history(connection, [row["run_id"] for row in rows])
         return [self._to_record(row, stages.get(row["run_id"], [])) for row in rows]
+
+    def queued_requests(self) -> list[AnalysisRequest]:
+        statement = (
+            select(
+                analyses.c.run_id,
+                analyses.c.repository,
+                analyses.c.installation_id,
+                analyses.c.head_sha,
+            )
+            .where(
+                analyses.c.status == AnalysisStatus.QUEUED.value,
+                analyses.c.installation_id.is_not(None),
+            )
+            .order_by(analyses.c.created_at)
+        )
+        with self.engine.connect() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return [AnalysisRequest.model_validate(dict(row)) for row in rows]
 
     def begin_analysis(self, run_id: int) -> datetime:
         started_at = datetime.now(UTC)
