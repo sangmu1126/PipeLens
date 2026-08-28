@@ -1,0 +1,5 @@
+2026-08-29T01:02:00Z Run npm ci
+npm ERR! code ERESOLVE
+npm ERR! ERESOLVE unable to resolve dependency tree
+npm ERR! peer react@"^18" from legacy-widget@2.0.0
+Tests were not run because setup failed.

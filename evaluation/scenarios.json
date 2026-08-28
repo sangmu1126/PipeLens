@@ -1,0 +1,12 @@
+[
+  {"case_id":"pytest-assertion","log_file":"logs/01-test.log","expected_category":"test_failure","expected_evidence":"AssertionError"},
+  {"case_id":"typescript-compile","log_file":"logs/02-build.log","expected_category":"build_failure","expected_evidence":"TypeError"},
+  {"case_id":"npm-resolution","log_file":"logs/03-dependency.log","expected_category":"dependency_installation_failure","expected_evidence":"ERESOLVE"},
+  {"case_id":"ruff-lint","log_file":"logs/04-lint.log","expected_category":"lint_or_formatter_failure","expected_evidence":"ruff check failed"},
+  {"case_id":"docker-build","log_file":"logs/05-docker.log","expected_category":"docker_build_failure","expected_evidence":"failed to solve"},
+  {"case_id":"deploy-auth","log_file":"logs/06-deploy-auth.log","expected_category":"deployment_authentication_failure","expected_evidence":"invalid credentials"},
+  {"case_id":"missing-env","log_file":"logs/07-missing-env.log","expected_category":"missing_environment_variable","expected_evidence":"DATABASE_URL"},
+  {"case_id":"job-timeout","log_file":"logs/08-timeout.log","expected_category":"timeout","expected_evidence":"timed out"},
+  {"case_id":"runner-disk","log_file":"logs/09-resource.log","expected_category":"resource_exhaustion","expected_evidence":"no space left on device"},
+  {"case_id":"workflow-yaml","log_file":"logs/10-workflow.log","expected_category":"github_actions_workflow_error","expected_evidence":"Invalid workflow file"}
+]

@@ -1,0 +1,4 @@
+2026-08-29T01:06:00Z Run python -m app
+RuntimeError: required environment variable DATABASE_URL not set
+Application startup failed.
+Error: Process completed with exit code 1.

@@ -29,6 +29,9 @@ dev = [
   "ruff>=0.8,<1",
 ]
 
+[project.scripts]
+pipelens-evaluate = "pipelens.evaluation:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/pipelens"]
 

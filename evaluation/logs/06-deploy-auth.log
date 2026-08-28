@@ -1,0 +1,4 @@
+2026-08-29T01:05:00Z Run deploy production
+Uploading release bundle...
+deploy failed: invalid credentials for production account
+Error: Process completed with exit code 1.

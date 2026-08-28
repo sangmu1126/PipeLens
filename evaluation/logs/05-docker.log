@@ -1,0 +1,4 @@
+2026-08-29T01:04:00Z Run docker build -t app .
+#8 [builder 4/6] RUN npm run build
+#8 ERROR: process "/bin/sh -c npm run build" did not complete successfully
+failed to solve: process "/bin/sh -c npm run build" exited with code 2

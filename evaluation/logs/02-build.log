@@ -1,0 +1,4 @@
+2026-08-29T01:01:00Z Run npm run build
+src/api/client.ts(42,9): TypeError: Type 'string' is not assignable to type 'number'.
+Found 1 error.
+npm ERR! Lifecycle script `build` failed with error.
