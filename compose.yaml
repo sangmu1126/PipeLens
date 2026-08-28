@@ -6,13 +6,13 @@ services:
     env_file:
       - path: .env
         required: false
-    volumes:
-      - pipelens-data:/data
     environment:
-      PIPELENS_DATABASE_PATH: /data/pipelens.db
+      PIPELENS_DATABASE_URL: postgresql+psycopg://pipelens:pipelens@postgres:5432/pipelens
       PIPELENS_QUEUE_BACKEND: redis
       PIPELENS_REDIS_URL: redis://redis:6379/0
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
 
@@ -24,15 +24,38 @@ services:
         required: false
     ports:
       - "8001:8001"
-    volumes:
-      - pipelens-data:/data
     environment:
-      PIPELENS_DATABASE_PATH: /data/pipelens.db
+      PIPELENS_DATABASE_URL: postgresql+psycopg://pipelens:pipelens@postgres:5432/pipelens
       PIPELENS_QUEUE_BACKEND: redis
       PIPELENS_REDIS_URL: redis://redis:6379/0
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      PIPELENS_DATABASE_URL: postgresql+psycopg://pipelens:pipelens@postgres:5432/pipelens
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pipelens
+      POSTGRES_USER: pipelens
+      POSTGRES_PASSWORD: pipelens
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pipelens -d pipelens"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -43,4 +66,4 @@ services:
       retries: 10
 
 volumes:
-  pipelens-data:
+  postgres-data:
