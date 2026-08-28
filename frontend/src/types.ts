@@ -81,7 +81,9 @@ export interface Analysis {
   error: string | null;
   analysis_started_at: string | null;
   analysis_completed_at: string | null;
+  queue_wait_seconds: number | null;
   duration_seconds: number | null;
+  total_latency_seconds: number | null;
   stage_history: {
     stage: "collecting" | "sanitizing" | "classifying" | "correlating" | "diagnosing" | "publishing";
     status: "started" | "completed" | "failed";

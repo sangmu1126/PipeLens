@@ -259,7 +259,12 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
       <p className="run-id">RUN #{analysis.run_id} · {analysis.workflow_name}</p>
       {latestStages.length > 0 && (
         <div className="stage-summary">
-          <div><span>분석 과정</span><strong>{formatDuration(analysis.duration_seconds)}</strong></div>
+          <div>
+            <span>분석 소요 시간</span>
+            <strong>
+              대기 {formatDuration(analysis.queue_wait_seconds)} · 분석 {formatDuration(analysis.duration_seconds)} · 전체 {formatDuration(analysis.total_latency_seconds)}
+            </strong>
+          </div>
           <ol>
             {latestStages.map((event) => (
               <li className={`stage-${event.status}`} key={event.stage} title={event.error ?? undefined}>
