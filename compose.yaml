@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - pipelens-data:/data
+    environment:
+      PIPELENS_DATABASE_PATH: /data/pipelens.db
+
+volumes:
+  pipelens-data:
