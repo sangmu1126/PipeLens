@@ -9,6 +9,7 @@ from pipelens.github import GitHubClient
 from pipelens.llm import PROMPT_VERSION, LLMContext, LLMProvider, validate_llm_analysis
 from pipelens.metrics import Metrics
 from pipelens.models import AnalysisRequest, AnalysisStatus, RepositoryContext
+from pipelens.publication import render_github_diagnosis
 from pipelens.relevance import correlate_changed_files
 from pipelens.sanitizer import sanitize_log
 from pipelens.store import AnalysisStore
@@ -128,24 +129,30 @@ class AnalysisPipeline:
             prompt_version=prompt_version,
         )
         if self.settings.publish_checks:
-            evidence = "\n\n".join(f"> {item.content}" for item in diagnosis.evidence)
-            suggestions = "\n".join(f"- {item.description}" for item in diagnosis.suggestions)
-            summary = (
-                f"{diagnosis.root_cause}\n\n### 근거\n{evidence}\n\n### 권장 조치\n{suggestions}"
+            details_url = (
+                f"{self.settings.public_url.rstrip('/')}/?run_id={request.run_id}"
             )
-            if related_files:
-                files = "\n".join(
-                    f"- `{item.filename}` ({item.score:.0%}): {', '.join(item.reasons)}"
-                    for item in related_files
+            body = render_github_diagnosis(
+                request.run_id, classification, diagnosis, related_files, details_url
+            )
+            if repository_context.pull_request_number is not None:
+                await self.github.upsert_pull_request_comment(
+                    request.repository,
+                    repository_context.pull_request_number,
+                    request.run_id,
+                    token,
+                    body,
                 )
-                summary += f"\n\n### 관련 변경 파일\n{files}"
             else:
-                summary += (
-                    "\n\n### 관련 변경 파일\n로그와 직접 연결되는 변경 파일을 찾지 못했습니다."
+                await self.github.upsert_check(
+                    request.repository,
+                    request.head_sha,
+                    request.run_id,
+                    token,
+                    diagnosis.summary,
+                    body,
+                    details_url,
                 )
-            await self.github.create_check(
-                request.repository, request.head_sha, token, diagnosis.summary, summary
-            )
 
     async def _repository_context(
         self, repository: str, run_id: int, head_sha: str, token: str
