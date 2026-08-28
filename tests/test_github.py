@@ -123,6 +123,23 @@ async def test_failed_jobs_include_failed_step_names() -> None:
 
 
 @pytest.mark.asyncio
+async def test_failed_jobs_retries_github_rate_limit() -> None:
+    calls = 0
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(403, headers={"Retry-After": "0"})
+        return httpx.Response(200, json={"jobs": []})
+
+    github = GitHubClient(None, None, 1024, transport=httpx.MockTransport(handler))
+
+    assert await github.failed_jobs("acme/widgets", 123, "token") == []
+    assert calls == 2
+
+
+@pytest.mark.asyncio
 async def test_repository_context_compares_from_previous_successful_run() -> None:
     requested: list[str] = []
 

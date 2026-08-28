@@ -1,10 +1,12 @@
 import json
+import uuid
 from enum import StrEnum
 from typing import Protocol
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
+from pipelens.http_retry import RetryObserver, RetryPolicy, request_with_retry
 from pipelens.models import (
     Classification,
     Diagnosis,
@@ -83,11 +85,15 @@ class OpenAIResponsesProvider:
         model_name: str,
         max_input_chars: int,
         transport: httpx.AsyncBaseTransport | None = None,
+        retry_policy: RetryPolicy | None = None,
+        on_retry: RetryObserver | None = None,
     ) -> None:
         self.api_key = api_key
         self.model_name = model_name
         self.max_input_chars = max_input_chars
         self.transport = transport
+        self.retry_policy = retry_policy or RetryPolicy()
+        self.on_retry = on_retry
 
     async def analyze(self, context: LLMContext) -> LLMProviderResult:
         input_json = _bounded_context_json(context, self.max_input_chars)
@@ -105,11 +111,20 @@ class OpenAIResponsesProvider:
                     "schema": LLMAnalysis.model_json_schema(),
                 }
             },
+            "store": False,
         }
+        request_id = str(uuid.uuid4())
         async with httpx.AsyncClient(timeout=60, transport=self.transport) as client:
-            response = await client.post(
+            response = await request_with_retry(
+                client,
+                "POST",
                 self.api_url,
-                headers={"Authorization": f"Bearer {self.api_key}"},
+                policy=self.retry_policy,
+                on_retry=self.on_retry,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "X-Client-Request-Id": request_id,
+                },
                 json=payload,
             )
         if response.is_error:

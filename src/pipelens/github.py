@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 import httpx
 import jwt
 
+from pipelens.http_retry import RetryObserver, RetryPolicy, request_with_retry
 from pipelens.models import ChangedFile, RepositoryContext, TrustLevel
 
 
@@ -37,11 +38,15 @@ class GitHubClient:
         private_key: str | None,
         max_log_bytes: int,
         transport: httpx.AsyncBaseTransport | None = None,
+        retry_policy: RetryPolicy | None = None,
+        on_retry: RetryObserver | None = None,
     ) -> None:
         self.app_id = app_id
         self.private_key = private_key.replace("\\n", "\n") if private_key else None
         self.max_log_bytes = max_log_bytes
         self.transport = transport
+        self.retry_policy = retry_policy or RetryPolicy()
+        self.on_retry = on_retry
 
     @classmethod
     def authorization_url(cls, client_id: str, redirect_uri: str, state: str) -> str:
@@ -56,7 +61,9 @@ class GitHubClient:
         redirect_uri: str,
     ) -> dict:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            response = await client.post(
+            response = await self._request(
+                client,
+                "POST",
                 f"{self.web_url}/login/oauth/access_token",
                 headers={"Accept": "application/json"},
                 data={
@@ -76,7 +83,9 @@ class GitHubClient:
 
     async def authenticated_user(self, token: str) -> dict:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            response = await client.get(f"{self.api_url}/user", headers=self._headers(token))
+            response = await self._request(
+                client, "GET", f"{self.api_url}/user", headers=self._headers(token)
+            )
             response.raise_for_status()
         return response.json()
 
@@ -85,7 +94,9 @@ class GitHubClient:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             page = 1
             while True:
-                response = await client.get(
+                response = await self._request(
+                    client,
+                    "GET",
                     f"{self.api_url}/user/installations",
                     headers=self._headers(token),
                     params={"per_page": 100, "page": page},
@@ -111,7 +122,9 @@ class GitHubClient:
     async def installation_token(self, installation_id: int) -> str:
         headers = self._headers(self._app_jwt())
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            response = await client.post(
+            response = await self._request(
+                client,
+                "POST",
                 f"{self.api_url}/app/installations/{installation_id}/access_tokens", headers=headers
             )
             response.raise_for_status()
@@ -122,7 +135,9 @@ class GitHubClient:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             page = 1
             while True:
-                response = await client.get(
+                response = await self._request(
+                    client,
+                    "GET",
                     f"{self.api_url}/repos/{repository}/actions/runs/{run_id}/jobs",
                     headers=self._headers(token),
                     params={"filter": "latest", "per_page": 100, "page": page},
@@ -151,7 +166,9 @@ class GitHubClient:
         async with httpx.AsyncClient(
             timeout=60, follow_redirects=True, transport=self.transport
         ) as client:
-            response = await client.get(
+            response = await self._request(
+                client,
+                "GET",
                 f"{self.api_url}/repos/{repository}/actions/runs/{run_id}/logs",
                 headers=self._headers(token),
             )
@@ -173,7 +190,9 @@ class GitHubClient:
     ) -> RepositoryContext:
         headers = self._headers(token)
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            run_response = await client.get(
+            run_response = await self._request(
+                client,
+                "GET",
                 f"{self.api_url}/repos/{repository}/actions/runs/{run_id}", headers=headers
             )
             run_response.raise_for_status()
@@ -226,7 +245,9 @@ class GitHubClient:
         pull_requests = run.get("pull_requests", [])
         if pull_requests:
             number = pull_requests[0]["number"]
-            response = await client.get(
+            response = await self._request(
+                client,
+                "GET",
                 f"{self.api_url}/repos/{repository}/pulls/{number}/files",
                 headers=headers,
                 params={"per_page": 100},
@@ -239,7 +260,9 @@ class GitHubClient:
                 client, repository, run, headers
             )
             if baseline_sha:
-                response = await client.get(
+                response = await self._request(
+                    client,
+                    "GET",
                     f"{self.api_url}/repos/{repository}/compare/{baseline_sha}...{head_sha}",
                     headers=headers,
                     params={"per_page": 100},
@@ -247,7 +270,9 @@ class GitHubClient:
                 response.raise_for_status()
                 files = response.json().get("files", [])
             else:
-                response = await client.get(
+                response = await self._request(
+                    client,
+                    "GET",
                     f"{self.api_url}/repos/{repository}/commits/{head_sha}", headers=headers
                 )
                 response.raise_for_status()
@@ -278,7 +303,9 @@ class GitHubClient:
         if workflow_id is None or not branch:
             return None
         for page in range(1, 11):
-            response = await client.get(
+            response = await self._request(
+                client,
+                "GET",
                 f"{self.api_url}/repos/{repository}/actions/workflows/{workflow_id}/runs",
                 headers=headers,
                 params={
@@ -307,14 +334,18 @@ class GitHubClient:
     ) -> tuple[str | None, str | None]:
         if workflow_id is None:
             return None, None
-        response = await client.get(
+        response = await self._request(
+            client,
+            "GET",
             f"{self.api_url}/repos/{repository}/actions/workflows/{workflow_id}", headers=headers
         )
         response.raise_for_status()
         workflow_path = response.json().get("path")
         if not workflow_path:
             return None, None
-        content_response = await client.get(
+        content_response = await self._request(
+            client,
+            "GET",
             f"{self.api_url}/repos/{repository}/contents/{workflow_path}",
             headers={**headers, "Accept": "application/vnd.github.raw+json"},
             params={"ref": head_sha},
@@ -344,7 +375,9 @@ class GitHubClient:
             "output": {"title": title[:255], "summary": summary[:65535]},
         }
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            existing = await client.get(
+            existing = await self._request(
+                client,
+                "GET",
                 f"{self.api_url}/repos/{repository}/commits/{head_sha}/check-runs",
                 headers=self._headers(token),
                 params={"check_name": body["name"], "filter": "latest", "per_page": 100},
@@ -359,13 +392,17 @@ class GitHubClient:
                 None,
             )
             if check:
-                response = await client.patch(
+                response = await self._request(
+                    client,
+                    "PATCH",
                     f"{self.api_url}/repos/{repository}/check-runs/{check['id']}",
                     headers=self._headers(token),
                     json={key: value for key, value in body.items() if key != "head_sha"},
                 )
             else:
-                response = await client.post(
+                response = await self._request(
+                    client,
+                    "POST",
                     f"{self.api_url}/repos/{repository}/check-runs",
                     headers=self._headers(token),
                     json=body,
@@ -386,7 +423,9 @@ class GitHubClient:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             page = 1
             while existing_comment is None:
-                response = await client.get(
+                response = await self._request(
+                    client,
+                    "GET",
                     f"{self.api_url}/repos/{repository}/issues/{pull_request_number}/comments",
                     headers=self._headers(token),
                     params={"per_page": 100, "page": page},
@@ -405,13 +444,17 @@ class GitHubClient:
                     break
                 page += 1
             if existing_comment:
-                response = await client.patch(
+                response = await self._request(
+                    client,
+                    "PATCH",
                     f"{self.api_url}/repos/{repository}/issues/comments/{existing_comment['id']}",
                     headers=self._headers(token),
                     json={"body": comment_body},
                 )
             else:
-                response = await client.post(
+                response = await self._request(
+                    client,
+                    "POST",
                     f"{self.api_url}/repos/{repository}/issues/{pull_request_number}/comments",
                     headers=self._headers(token),
                     json={"body": comment_body},
@@ -421,6 +464,19 @@ class GitHubClient:
     def _is_own_comment(self, comment: dict) -> bool:
         app = comment.get("performed_via_github_app") or {}
         return bool(self.app_id and str(app.get("id")) == str(self.app_id))
+
+    async def _request(
+        self, client: httpx.AsyncClient, method: str, url: str, **kwargs: object
+    ) -> httpx.Response:
+        return await request_with_retry(
+            client,
+            method,
+            url,
+            policy=self.retry_policy,
+            retry_rate_limited_403=True,
+            on_retry=self.on_retry,
+            **kwargs,
+        )
 
     @staticmethod
     def _headers(token: str) -> dict[str, str]:

@@ -95,9 +95,11 @@ def test_validate_llm_analysis_rejects_invented_evidence() -> None:
 @pytest.mark.asyncio
 async def test_openai_provider_requests_strict_structured_output() -> None:
     captured: dict = {}
+    captured_headers: dict[str, str] = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
         captured.update(json.loads(request.content))
+        captured_headers.update(request.headers)
         return httpx.Response(
             200,
             json={
@@ -124,6 +126,39 @@ async def test_openai_provider_requests_strict_structured_output() -> None:
     assert captured["model"] == "test-model"
     assert captured["text"]["format"]["type"] == "json_schema"
     assert captured["text"]["format"]["strict"] is True
+    assert captured["store"] is False
+    assert captured_headers["x-client-request-id"]
+
+
+@pytest.mark.asyncio
+async def test_openai_provider_retries_rate_limit_with_stable_request_id() -> None:
+    request_ids: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        request_ids.append(request.headers["x-client-request-id"])
+        if len(request_ids) == 1:
+            return httpx.Response(429, headers={"Retry-After": "0"})
+        return httpx.Response(
+            200,
+            json={
+                "status": "completed",
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [{"type": "output_text", "text": _analysis().model_dump_json()}],
+                    }
+                ],
+            },
+        )
+
+    provider = OpenAIResponsesProvider(
+        "test-key", "test-model", 30_000, transport=httpx.MockTransport(handler)
+    )
+
+    await provider.analyze(_context())
+
+    assert len(request_ids) == 2
+    assert request_ids[0] == request_ids[1]
 
 
 @pytest.mark.asyncio
