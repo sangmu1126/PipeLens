@@ -8,6 +8,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - `workflow_run.completed` webhook 수신 및 HMAC-SHA256 서명 검증
 - 실패한 workflow만 수집하고 workflow run ID로 중복 분석 방지
 - GitHub App installation token으로 실패 job·step과 로그 수집
+- 실패 job의 workflow·branch·runner labels를 마스킹해 LLM 입력과 대시보드에 제공
 - PR 변경 파일 또는 직전 성공 실행 이후 diff와 실행 시점 workflow 수집
 - ANSI/타임스탬프 제거 및 주요 secret/개인정보 마스킹
 - 대용량 로그의 청크별 마스킹·오류 구간 추출과 최초 규칙 오류 우선 판정

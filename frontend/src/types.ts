@@ -66,6 +66,15 @@ export interface Analysis {
     patch_excerpt: string | null;
   }[];
   workflow_path: string | null;
+  execution_context: {
+    workflow_name: string | null;
+    head_branch: string | null;
+    failed_jobs: {
+      name: string;
+      failed_steps: string[];
+      runner_labels: string[];
+    }[];
+  } | null;
   model_name: string | null;
   prompt_version: string | null;
   feedback: Feedback | null;

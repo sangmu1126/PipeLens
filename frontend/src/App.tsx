@@ -282,6 +282,23 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
           {analysis.classification?.related_step && (
             <p className="step-location"><span>실패 위치</span>{analysis.classification.related_step}</p>
           )}
+          {analysis.execution_context && (
+            <div className="execution-context">
+              <div>
+                <span>실행 환경</span>
+                <strong>{analysis.execution_context.workflow_name ?? analysis.workflow_name}</strong>
+                {analysis.execution_context.head_branch && <code>{analysis.execution_context.head_branch}</code>}
+              </div>
+              {analysis.execution_context.failed_jobs.map((job, index) => (
+                <p key={`${job.name}-${index}`}>
+                  <strong>{job.name}</strong>
+                  <small>
+                    {[...job.failed_steps, ...job.runner_labels].join(" · ") || "환경 정보 없음"}
+                  </small>
+                </p>
+              ))}
+            </div>
+          )}
           <Confidence value={diagnosis.confidence} />
           {diagnosis.conflicts.map((conflict) => <p className="conflict" key={conflict}>{conflict}</p>)}
           {diagnosis.notes.map((note) => <p className="note" key={note}>{note}</p>)}
