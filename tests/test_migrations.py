@@ -18,7 +18,7 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
 
     engine = create_engine(database_url)
     inspector = inspect(engine)
-    assert "analyses" in inspector.get_table_names()
+    assert {"analyses", "analysis_feedback"} <= set(inspector.get_table_names())
     assert {column["name"] for column in inspector.get_columns("analyses")} >= {
         "run_id",
         "classification",
@@ -31,6 +31,7 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
 
     command.downgrade(config, "base")
     assert "analyses" not in inspect(engine).get_table_names()
+    assert "analysis_feedback" not in inspect(engine).get_table_names()
     engine.dispose()
 
 

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class AnalysisStatus(StrEnum):
@@ -23,6 +23,12 @@ class ErrorCategory(StrEnum):
     RESOURCE = "resource_exhaustion"
     WORKFLOW = "github_actions_workflow_error"
     UNKNOWN = "unknown"
+
+
+class FeedbackAccuracy(StrEnum):
+    ACCURATE = "accurate"
+    PARTIAL = "partial"
+    INACCURATE = "inaccurate"
 
 
 class Evidence(BaseModel):
@@ -75,6 +81,24 @@ class RelatedFile(BaseModel):
     patch_excerpt: str | None = None
 
 
+class FeedbackRequest(BaseModel):
+    accuracy: FeedbackAccuracy | None = None
+    suggestion_resolved: bool | None = None
+    comment: str | None = Field(default=None, max_length=2_000)
+
+    @model_validator(mode="after")
+    def require_feedback_value(self) -> "FeedbackRequest":
+        if self.accuracy is None and self.suggestion_resolved is None:
+            raise ValueError("accuracy or suggestion_resolved is required")
+        return self
+
+
+class FeedbackRecord(FeedbackRequest):
+    run_id: int
+    created_at: datetime
+    updated_at: datetime
+
+
 class AnalysisRecord(BaseModel):
     run_id: int
     delivery_id: str
@@ -90,6 +114,7 @@ class AnalysisRecord(BaseModel):
     workflow_path: str | None = None
     model_name: str | None = None
     prompt_version: str | None = None
+    feedback: FeedbackRecord | None = None
     error: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

@@ -7,7 +7,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from pipelens.bootstrap import create_runtime
 from pipelens.config import Settings, get_settings
-from pipelens.models import AnalysisRecord, AnalysisRequest
+from pipelens.models import AnalysisRecord, AnalysisRequest, FeedbackRecord, FeedbackRequest
 from pipelens.security import InvalidSignatureError, verify_github_signature
 from pipelens.store import AnalysisStore
 from pipelens.worker import AnalysisWorker
@@ -138,6 +138,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not record:
             raise HTTPException(status_code=404, detail="analysis not found")
         return record
+
+    @app.put(
+        "/api/analyses/{run_id}/feedback",
+        response_model=FeedbackRecord,
+        tags=["feedback"],
+    )
+    async def save_feedback(
+        run_id: int,
+        feedback: FeedbackRequest,
+        analysis_store: Annotated[AnalysisStore, Depends(get_store)],
+    ) -> FeedbackRecord:
+        saved = analysis_store.save_feedback(run_id, feedback)
+        if saved is None:
+            raise HTTPException(status_code=404, detail="analysis not found")
+        if feedback.accuracy is not None:
+            metrics.feedback.labels(dimension="accuracy", value=feedback.accuracy.value).inc()
+        if feedback.suggestion_resolved is not None:
+            metrics.feedback.labels(
+                dimension="suggestion_resolved",
+                value=str(feedback.suggestion_resolved).lower(),
+            ).inc()
+        return saved
 
     return app
 

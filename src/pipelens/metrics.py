@@ -72,6 +72,12 @@ class Metrics:
             "Orphaned processing jobs restored when a worker starts.",
             registry=self.registry,
         )
+        self.feedback = Counter(
+            "pipelens_feedback_total",
+            "Submitted user feedback by dimension and value.",
+            ("dimension", "value"),
+            registry=self.registry,
+        )
 
     def record_redactions(self, counts: dict[str, int]) -> None:
         for kind, count in counts.items():

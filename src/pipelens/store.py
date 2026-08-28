@@ -3,8 +3,10 @@ from datetime import UTC, datetime
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     Column,
     DateTime,
+    ForeignKey,
     MetaData,
     String,
     Table,
@@ -18,7 +20,15 @@ from sqlalchemy import (
 from sqlalchemy.engine import Engine, RowMapping
 from sqlalchemy.exc import IntegrityError
 
-from pipelens.models import AnalysisRecord, AnalysisStatus, Classification, Diagnosis, RelatedFile
+from pipelens.models import (
+    AnalysisRecord,
+    AnalysisStatus,
+    Classification,
+    Diagnosis,
+    FeedbackRecord,
+    FeedbackRequest,
+    RelatedFile,
+)
 
 metadata = MetaData()
 
@@ -41,6 +51,22 @@ analyses = Table(
     Column("prompt_version", String(255)),
     Column("error", Text),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+feedback = Table(
+    "analysis_feedback",
+    metadata,
+    Column(
+        "run_id",
+        BigInteger,
+        ForeignKey("analyses.run_id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column("accuracy", String(32)),
+    Column("suggestion_resolved", Boolean),
+    Column("comment", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
 
@@ -122,17 +148,49 @@ class AnalysisStore:
     def get(self, run_id: int) -> AnalysisRecord | None:
         with self.engine.connect() as connection:
             row = (
-                connection.execute(select(analyses).where(analyses.c.run_id == run_id))
+                connection.execute(_analysis_select().where(analyses.c.run_id == run_id))
                 .mappings()
                 .first()
             )
         return self._to_record(row) if row else None
 
     def list(self, limit: int = 50) -> list[AnalysisRecord]:
-        statement = select(analyses).order_by(analyses.c.created_at.desc()).limit(limit)
+        statement = _analysis_select().order_by(analyses.c.created_at.desc()).limit(limit)
         with self.engine.connect() as connection:
             rows = connection.execute(statement).mappings().all()
         return [self._to_record(row) for row in rows]
+
+    def save_feedback(self, run_id: int, request: FeedbackRequest) -> FeedbackRecord | None:
+        now = datetime.now(UTC)
+        values = {
+            "accuracy": request.accuracy.value if request.accuracy else None,
+            "suggestion_resolved": request.suggestion_resolved,
+            "comment": request.comment,
+            "updated_at": now,
+        }
+        with self.engine.begin() as connection:
+            if (
+                connection.execute(
+                    select(analyses.c.run_id).where(analyses.c.run_id == run_id)
+                ).first()
+                is None
+            ):
+                return None
+            existing = connection.execute(
+                select(feedback.c.run_id).where(feedback.c.run_id == run_id)
+            ).first()
+            if existing:
+                connection.execute(
+                    update(feedback).where(feedback.c.run_id == run_id).values(**values)
+                )
+            else:
+                connection.execute(insert(feedback).values(run_id=run_id, created_at=now, **values))
+            row = (
+                connection.execute(select(feedback).where(feedback.c.run_id == run_id))
+                .mappings()
+                .one()
+            )
+        return FeedbackRecord.model_validate(dict(row))
 
     def delete(self, run_id: int) -> None:
         with self.engine.begin() as connection:
@@ -143,7 +201,20 @@ class AnalysisStore:
 
     @staticmethod
     def _to_record(row: RowMapping) -> AnalysisRecord:
-        return AnalysisRecord.model_validate(dict(row))
+        values = dict(row)
+        feedback_run_id = values.pop("feedback_run_id")
+        feedback_values = {
+            "run_id": feedback_run_id,
+            "accuracy": values.pop("feedback_accuracy"),
+            "suggestion_resolved": values.pop("feedback_suggestion_resolved"),
+            "comment": values.pop("feedback_comment"),
+            "created_at": values.pop("feedback_created_at"),
+            "updated_at": values.pop("feedback_updated_at"),
+        }
+        values["feedback"] = (
+            FeedbackRecord.model_validate(feedback_values) if feedback_run_id else None
+        )
+        return AnalysisRecord.model_validate(values)
 
 
 def _dump_model(value: Classification | Diagnosis | None) -> dict | None:
@@ -152,3 +223,15 @@ def _dump_model(value: Classification | Diagnosis | None) -> dict | None:
 
 def _normalize_database_url(value: str) -> str:
     return value if "://" in value else f"sqlite:///{value}"
+
+
+def _analysis_select():
+    return select(
+        *analyses.c,
+        feedback.c.run_id.label("feedback_run_id"),
+        feedback.c.accuracy.label("feedback_accuracy"),
+        feedback.c.suggestion_resolved.label("feedback_suggestion_resolved"),
+        feedback.c.comment.label("feedback_comment"),
+        feedback.c.created_at.label("feedback_created_at"),
+        feedback.c.updated_at.label("feedback_updated_at"),
+    ).select_from(analyses.outerjoin(feedback, analyses.c.run_id == feedback.c.run_id))

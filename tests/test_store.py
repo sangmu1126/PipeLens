@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from pipelens.models import AnalysisRecord, AnalysisStatus, RelatedFile
+from pipelens.models import (
+    AnalysisRecord,
+    AnalysisStatus,
+    FeedbackAccuracy,
+    FeedbackRequest,
+    RelatedFile,
+)
 from pipelens.store import AnalysisStore
 
 
@@ -50,3 +56,45 @@ def test_store_persists_repository_correlation(tmp_path: Path) -> None:
     assert saved.workflow_path == ".github/workflows/ci.yml"
     assert saved.model_name == "test-model"
     assert saved.prompt_version == "diagnosis-v1"
+
+
+def test_store_creates_and_updates_feedback(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=44,
+            delivery_id="delivery-44",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/44",
+        )
+    )
+
+    created = store.save_feedback(
+        44,
+        FeedbackRequest(
+            accuracy=FeedbackAccuracy.PARTIAL,
+            suggestion_resolved=False,
+            comment="원인 일부만 일치",
+        ),
+    )
+    updated = store.save_feedback(
+        44,
+        FeedbackRequest(accuracy=FeedbackAccuracy.ACCURATE, suggestion_resolved=True),
+    )
+
+    assert created.created_at == updated.created_at
+    assert updated.accuracy is FeedbackAccuracy.ACCURATE
+    assert updated.suggestion_resolved is True
+    assert store.get(44).feedback == updated
+
+
+def test_store_rejects_feedback_for_unknown_analysis(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+
+    result = store.save_feedback(999, FeedbackRequest(accuracy=FeedbackAccuracy.INACCURATE))
+
+    assert result is None
