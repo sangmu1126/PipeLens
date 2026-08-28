@@ -5,44 +5,44 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
+from pipelens.bootstrap import create_runtime
 from pipelens.config import Settings, get_settings
-from pipelens.github import GitHubClient
-from pipelens.llm import OpenAIResponsesProvider
-from pipelens.metrics import Metrics
 from pipelens.models import AnalysisRecord, AnalysisRequest
-from pipelens.pipeline import AnalysisPipeline
 from pipelens.security import InvalidSignatureError, verify_github_signature
 from pipelens.store import AnalysisStore
+from pipelens.worker import AnalysisWorker
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
-    store = AnalysisStore(settings.database_path)
-    github = GitHubClient(
-        settings.github_app_id, settings.github_private_key, settings.max_log_bytes
-    )
-    metrics = Metrics()
-    llm_provider = None
-    if settings.llm_provider == "openai":
-        if not settings.openai_api_key:
-            raise ValueError("PIPELENS_OPENAI_API_KEY is required for the OpenAI provider")
-        llm_provider = OpenAIResponsesProvider(
-            settings.openai_api_key, settings.openai_model, settings.max_llm_input_chars
+    runtime = create_runtime(settings)
+    store, metrics = runtime.store, runtime.metrics
+    local_worker = (
+        AnalysisWorker(
+            runtime.pipeline,
+            runtime.queue,
+            runtime.store,
+            runtime.metrics,
+            settings.worker_max_attempts,
         )
-    elif settings.llm_provider != "none":
-        raise ValueError(f"unsupported LLM provider: {settings.llm_provider}")
-    pipeline = AnalysisPipeline(settings, store, github, llm_provider, metrics)
+        if settings.queue_backend == "memory"
+        else None
+    )
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         store.initialize()
-        await pipeline.start()
+        if local_worker:
+            await local_worker.start()
         yield
-        await pipeline.stop()
+        if local_worker:
+            await local_worker.stop()
+        await runtime.queue.close()
 
     app = FastAPI(title="PipeLens API", version="0.1.0", lifespan=lifespan)
     app.state.store = store
-    app.state.pipeline = pipeline
+    app.state.pipeline = runtime.pipeline
+    app.state.queue = runtime.queue
     app.state.metrics = metrics
 
     def get_store(request: Request) -> AnalysisStore:
@@ -106,7 +106,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         created = analysis_store.create_if_absent(record)
         if created:
-            await request.app.state.pipeline.enqueue(
+            await request.app.state.queue.enqueue(
                 AnalysisRequest(
                     run_id=record.run_id,
                     repository=record.repository,
@@ -114,6 +114,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     head_sha=record.head_sha,
                 )
             )
+            metrics.queue_depth.set(await request.app.state.queue.size())
         metrics.webhooks.labels(outcome="accepted" if created else "duplicate").inc()
         return Response(
             content=json.dumps({"accepted": created, "run_id": record.run_id}),

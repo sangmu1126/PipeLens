@@ -62,6 +62,16 @@ class Metrics:
             "Number of analyses waiting in the in-process queue.",
             registry=self.registry,
         )
+        self.queue_retries = Counter(
+            "pipelens_queue_retries_total",
+            "Analysis jobs returned to the queue after a failed attempt.",
+            registry=self.registry,
+        )
+        self.queue_recovered = Counter(
+            "pipelens_queue_recovered_total",
+            "Orphaned processing jobs restored when a worker starts.",
+            registry=self.registry,
+        )
 
     def record_redactions(self, counts: dict[str, int]) -> None:
         for kind, count in counts.items():

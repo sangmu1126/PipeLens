@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from contextlib import suppress
 from time import perf_counter
 
 from pipelens.classifier import classify_log, extract_error_context
@@ -31,40 +30,13 @@ class AnalysisPipeline:
         self.github = github
         self.llm_provider = llm_provider
         self.metrics = metrics or Metrics()
-        self.queue: asyncio.Queue[AnalysisRequest] = asyncio.Queue()
-        self._worker: asyncio.Task[None] | None = None
-
-    async def start(self) -> None:
-        self._worker = asyncio.create_task(self._run(), name="pipelens-analysis-worker")
-
-    async def stop(self) -> None:
-        if self._worker:
-            self._worker.cancel()
-            with suppress(asyncio.CancelledError):
-                await self._worker
-
-    async def enqueue(self, request: AnalysisRequest) -> None:
-        await self.queue.put(request)
-        self.metrics.queue_depth.set(self.queue.qsize())
-
-    async def _run(self) -> None:
-        while True:
-            request = await self.queue.get()
-            self.metrics.queue_depth.set(self.queue.qsize())
-            try:
-                await self.analyze(request)
-            except Exception as exc:
-                logger.exception("analysis failed for run %s", request.run_id)
-                self.store.update(request.run_id, AnalysisStatus.FAILED, error=str(exc))
-            finally:
-                self.queue.task_done()
 
     async def analyze(self, request: AnalysisRequest) -> None:
         started = perf_counter()
         try:
             await self._analyze(request)
         except Exception:
-            self.metrics.analyses.labels(status="failed").inc()
+            self.metrics.analyses.labels(status="failed_attempt").inc()
             self.metrics.analysis_duration.observe(perf_counter() - started)
             raise
         self.metrics.analyses.labels(status="completed").inc()

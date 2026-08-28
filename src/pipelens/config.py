@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     max_llm_input_chars: int = 30_000
     llm_input_cost_per_million: float = 0
     llm_output_cost_per_million: float = 0
+    queue_backend: str = "memory"
+    redis_url: str = "redis://localhost:6379/0"
+    queue_name: str = "pipelens:analyses"
+    worker_max_attempts: int = 3
+    worker_metrics_port: int = 8001
 
 
 @lru_cache

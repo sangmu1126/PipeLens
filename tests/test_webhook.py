@@ -49,7 +49,7 @@ def test_webhook_rejects_bad_signature(tmp_path: Path) -> None:
 def test_webhook_accepts_failure_once(tmp_path: Path) -> None:
     settings = Settings(webhook_secret="secret", database_path=str(tmp_path / "db.sqlite"))
     app = create_app(settings)
-    app.state.pipeline.enqueue = AsyncMock()
+    app.state.queue.enqueue = AsyncMock()
     body = json.dumps(_failure_payload()).encode()
     headers = {
         "Content-Type": "application/json",
@@ -72,7 +72,7 @@ def test_webhook_accepts_failure_once(tmp_path: Path) -> None:
     assert metrics.status_code == 200
     assert 'pipelens_webhooks_total{outcome="accepted"} 1.0' in metrics.text
     assert 'pipelens_webhooks_total{outcome="duplicate"} 1.0' in metrics.text
-    app.state.pipeline.enqueue.assert_awaited_once()
+    app.state.queue.enqueue.assert_awaited_once()
 
 
 def test_webhook_ignores_successful_run(tmp_path: Path) -> None:
