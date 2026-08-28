@@ -83,6 +83,8 @@ tbody tr { transition: background .15s ease; } tbody tr:hover, tbody tr.selected
 .detail-section > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
 .detail-section > header span { color: var(--blue); font: 9px "DM Mono", monospace; }.detail-section h3 { margin: 0; font-size: 13px; }
 .root-cause { margin: 0 0 14px; font-size: 14px; line-height: 1.7; }
+.step-location { display: flex; gap: 9px; margin: 0 0 14px; color: #46515a; font: 10px "DM Mono", monospace; }
+.step-location span { color: var(--blue); font-family: inherit; }
 .conflict, .note { padding: 10px 12px; margin: 13px 0 0; font-size: 11px; line-height: 1.5; }.conflict { color: #8a382b; background: #fae6e1; }.note { color: #5b625f; background: #eef1ee; }
 .evidence-list { display: grid; gap: 9px; }.evidence { overflow: hidden; border: 1px solid #d5dbd7; background: #11191e; color: #e9eeea; }
 .evidence > div { display: flex; justify-content: space-between; padding: 7px 10px; color: #91a09b; border-bottom: 1px solid #29343a; font: 8px "DM Mono", monospace; text-transform: uppercase; }

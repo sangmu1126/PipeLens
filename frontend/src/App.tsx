@@ -252,6 +252,9 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
       {diagnosis && <>
         <DetailSection number="01" title="추정 원인">
           <p className="root-cause">{diagnosis.root_cause}</p>
+          {analysis.classification?.related_step && (
+            <p className="step-location"><span>실패 위치</span>{analysis.classification.related_step}</p>
+          )}
           <Confidence value={diagnosis.confidence} />
           {diagnosis.conflicts.map((conflict) => <p className="conflict" key={conflict}>{conflict}</p>)}
           {diagnosis.notes.map((note) => <p className="note" key={note}>{note}</p>)}
