@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     database_url: str | None = None
     publish_checks: bool = False
     max_log_bytes: int = 10 * 1024 * 1024
+    log_chunk_chars: int = 200_000
+    max_error_chunks: int = 10
     error_context_lines: int = 8
     llm_provider: str = "none"
     openai_api_key: str | None = None

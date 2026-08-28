@@ -35,3 +35,13 @@ def test_extract_error_context_omits_unrelated_lines() -> None:
     assert "setup 0" not in result
     assert "setup 18" in result
     assert "fatal error here" in result
+
+
+def test_classification_keeps_first_rule_match_over_downstream_failure() -> None:
+    result = classify_log(
+        "npm ERR! ERESOLVE unable to resolve dependency tree\n"
+        "cleanup failed with exit code 137"
+    )
+
+    assert result.category is ErrorCategory.DEPENDENCY
+    assert result.first_error.startswith("npm ERR!")

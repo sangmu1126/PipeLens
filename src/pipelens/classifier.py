@@ -127,6 +127,13 @@ RULES = (
 ERROR_LINE = re.compile(r"(?:error|exception|failed|fatal|panic|timeout|denied|not found)", re.I)
 
 
+def has_error_signal(text: str) -> bool:
+    return bool(
+        ERROR_LINE.search(text)
+        or any(pattern.search(text) for rule in RULES for pattern in rule.patterns)
+    )
+
+
 def classify_log(log: str, related_step: str | None = None) -> Classification:
     lines = [line.strip() for line in log.splitlines() if line.strip()]
     first_error = next(
@@ -134,36 +141,31 @@ def classify_log(log: str, related_step: str | None = None) -> Classification:
         lines[0] if lines else "No error output was captured",
     )
 
-    best_rule: DetectionRule | None = None
-    best_line = first_error
     for line in lines:
-        for rule in RULES:
-            if any(pattern.search(line) for pattern in rule.patterns) and (
-                best_rule is None or rule.confidence > best_rule.confidence
-            ):
-                best_rule = rule
-                best_line = line
-
-    if best_rule is None:
-        return Classification(
-            category=ErrorCategory.UNKNOWN,
-            confidence=0.2,
-            first_error=first_error,
-            related_step=related_step,
-        )
+        matching_rules = [
+            rule for rule in RULES if any(pattern.search(line) for pattern in rule.patterns)
+        ]
+        if matching_rules:
+            best_rule = max(matching_rules, key=lambda rule: rule.confidence)
+            return Classification(
+                category=best_rule.category,
+                confidence=best_rule.confidence,
+                first_error=line,
+                related_step=related_step,
+                matched_rules=[best_rule.rule_id],
+            )
 
     return Classification(
-        category=best_rule.category,
-        confidence=best_rule.confidence,
-        first_error=best_line,
+        category=ErrorCategory.UNKNOWN,
+        confidence=0.2,
+        first_error=first_error,
         related_step=related_step,
-        matched_rules=[best_rule.rule_id],
     )
 
 
 def extract_error_context(log: str, context_lines: int = 8, max_sections: int = 5) -> str:
     lines = log.splitlines()
-    indexes = [index for index, line in enumerate(lines) if ERROR_LINE.search(line)]
+    indexes = [index for index, line in enumerate(lines) if has_error_signal(line)]
     if not indexes:
         return "\n".join(lines[-min(len(lines), context_lines * 2) :])
 
