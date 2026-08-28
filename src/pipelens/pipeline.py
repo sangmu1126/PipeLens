@@ -47,36 +47,61 @@ class AnalysisPipeline:
     async def analyze(self, request: AnalysisRequest) -> None:
         started = perf_counter()
         attempt_token = uuid.uuid4().hex
+        started_at = None
         try:
-            started_at = self.store.begin_analysis(request.run_id, attempt_token)
+            analysis_start = self.store.begin_analysis(request.run_id, attempt_token)
+            started_at = analysis_start.attempt_started_at
+            if analysis_start.first_start:
+                self.metrics.queue_wait.observe(analysis_start.queue_wait_seconds)
+                self.metrics.slo_results.labels(
+                    phase="start",
+                    outcome=(
+                        "met"
+                        if analysis_start.queue_wait_seconds
+                        <= self.settings.analysis_start_slo_seconds
+                        else "breached"
+                    ),
+                ).inc()
             await self._analyze(request, attempt_token)
         except AnalysisAttemptSuperseded:
             self.metrics.analyses.labels(status="superseded").inc()
             self.metrics.analysis_duration.observe(perf_counter() - started)
             return
         except Exception:
-            try:
-                self.store.finish_analysis(
-                    request.run_id,
-                    started_at,
-                    AnalysisStatus.FAILED,
-                    attempt_token,
-                )
-            except AnalysisAttemptSuperseded:
-                self.metrics.analyses.labels(status="superseded").inc()
-                self.metrics.analysis_duration.observe(perf_counter() - started)
-                return
+            if started_at is not None:
+                try:
+                    self.store.finish_analysis(
+                        request.run_id,
+                        started_at,
+                        AnalysisStatus.FAILED,
+                        attempt_token,
+                    )
+                except AnalysisAttemptSuperseded:
+                    self.metrics.analyses.labels(status="superseded").inc()
+                    self.metrics.analysis_duration.observe(perf_counter() - started)
+                    return
             self.metrics.analyses.labels(status="failed_attempt").inc()
             self.metrics.analysis_duration.observe(perf_counter() - started)
             raise
         try:
-            self.store.finish_analysis(request.run_id, started_at, attempt_token=attempt_token)
+            total_latency = self.store.finish_analysis(
+                request.run_id, started_at, attempt_token=attempt_token
+            )
         except AnalysisAttemptSuperseded:
             self.metrics.analyses.labels(status="superseded").inc()
             self.metrics.analysis_duration.observe(perf_counter() - started)
             return
         self.metrics.analyses.labels(status="completed").inc()
         self.metrics.analysis_duration.observe(perf_counter() - started)
+        self.metrics.total_latency.observe(total_latency)
+        self.metrics.slo_results.labels(
+            phase="completion",
+            outcome=(
+                "met"
+                if total_latency <= self.settings.analysis_completion_slo_seconds
+                else "breached"
+            ),
+        ).inc()
 
     async def _analyze(self, request: AnalysisRequest, attempt_token: str) -> None:
         with self._stage(request.run_id, AnalysisStage.COLLECTING, attempt_token):

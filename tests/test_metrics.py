@@ -16,6 +16,9 @@ def test_metrics_record_redactions_and_llm_usage() -> None:
         estimated_cost=0.001,
     )
     metrics.http_retries.labels(provider="github", reason="rate_limit").inc()
+    metrics.queue_wait.observe(0.5)
+    metrics.total_latency.observe(1.5)
+    metrics.slo_results.labels(phase="start", outcome="met").inc()
     output = generate_latest(metrics.registry).decode()
 
     assert 'pipelens_redactions_total{kind="github_token"} 2.0' in output
@@ -27,3 +30,6 @@ def test_metrics_record_redactions_and_llm_usage() -> None:
     assert (
         'pipelens_http_retries_total{provider="github",reason="rate_limit"} 1.0' in output
     )
+    assert "pipelens_queue_wait_seconds_count 1.0" in output
+    assert "pipelens_total_latency_seconds_count 1.0" in output
+    assert 'pipelens_slo_results_total{outcome="met",phase="start"} 1.0' in output

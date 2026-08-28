@@ -18,7 +18,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - LLM 근거·파일 경로·규칙 분류 충돌 검증 및 규칙 기반 fallback
 - 입력 로그에 실제로 존재하는 근거만 허용하는 결과 검증
 - Webhook·분석·오류 범주·마스킹·LLM 사용량과 비용의 Prometheus 지표
-- 수집·정제·분류·연관·진단·게시 단계 이력과 전체 분석 소요 시간 기록
+- 수집·정제·분류·연관·진단·게시 단계 이력과 대기·실행·전체 소요 시간 기록
 - 메모리 또는 Redis queue와 ack·재시도를 지원하는 독립 분석 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
 - 분석 이력·근거·관련 diff·피드백과 run 딥링크를 제공하는 React 대시보드
@@ -109,6 +109,8 @@ PIPELENS_LLM_OUTPUT_COST_PER_MILLION=0
 PIPELENS_HTTP_RETRY_MAX_ATTEMPTS=3
 PIPELENS_HTTP_RETRY_BASE_SECONDS=1
 PIPELENS_HTTP_RETRY_MAX_SECONDS=60
+PIPELENS_ANALYSIS_START_SLO_SECONDS=60
+PIPELENS_ANALYSIS_COMPLETION_SLO_SECONDS=120
 PIPELENS_WORKER_LEASE_SECONDS=60
 PIPELENS_WORKER_HEARTBEAT_SECONDS=15
 ```
@@ -129,6 +131,11 @@ GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하
 재시도하고, quota·billing처럼 사용자 조치가 필요한 429는 즉시 실패합니다. 지연이 설정
 상한보다 길면 너무 일찍 다시 요청하지 않고 현재 작업을 실패시킵니다. 재시도 횟수는
 `/metrics`의 `pipelens_http_retries_total`에서 확인할 수 있습니다.
+
+분석 성능 SLO는 webhook 레코드가 저장된 시점을 기준으로 측정합니다. 기본값은 첫 분석
+시작까지 60초, 성공적인 완료까지 120초이며 위 환경변수로 조정할 수 있습니다.
+`/metrics`에서 `pipelens_queue_wait_seconds`, `pipelens_total_latency_seconds`,
+`pipelens_slo_results_total`을 확인할 수 있습니다.
 
 ## API
 

@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     http_retry_max_attempts: int = 3
     http_retry_base_seconds: float = 1.0
     http_retry_max_seconds: float = 60.0
+    analysis_start_slo_seconds: float = 60.0
+    analysis_completion_slo_seconds: float = 120.0
 
     @property
     def resolved_database_url(self) -> str:
@@ -53,6 +55,8 @@ class Settings(BaseSettings):
             raise ValueError("worker lease must be at least one second")
         if not 0 < self.worker_heartbeat_seconds < self.worker_lease_seconds:
             raise ValueError("worker heartbeat must be positive and shorter than the lease")
+        if self.analysis_start_slo_seconds <= 0 or self.analysis_completion_slo_seconds <= 0:
+            raise ValueError("analysis SLO thresholds must be positive")
         return self
 
 

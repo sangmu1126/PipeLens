@@ -1,4 +1,5 @@
 import asyncio
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
@@ -33,6 +34,7 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
             head_sha="abc123",
             html_url="https://github.com/acme/example/actions/runs/44",
             installation_id=7,
+            created_at=datetime.now(UTC) - timedelta(seconds=180),
         )
     )
     github = MagicMock()
@@ -75,6 +77,10 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     ]
     assert result.diagnosis.notes == ["로그와 직접 연결되는 변경 파일을 찾지 못했습니다."]
     assert result.duration_seconds is not None
+    assert result.queue_wait_seconds is not None
+    assert result.queue_wait_seconds > 60
+    assert result.total_latency_seconds is not None
+    assert result.total_latency_seconds > 120
     completed_stages = [
         event.stage
         for event in result.stage_history
@@ -92,6 +98,11 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
     assert 'pipelens_error_categories_total{category="test_failure"} 1.0' in metrics
     assert 'pipelens_log_chunks_total{kind="processed"} 1.0' in metrics
+    assert 'pipelens_slo_results_total{outcome="breached",phase="start"} 1.0' in metrics
+    assert (
+        'pipelens_slo_results_total{outcome="breached",phase="completion"} 1.0'
+        in metrics
+    )
 
 
 @pytest.mark.asyncio

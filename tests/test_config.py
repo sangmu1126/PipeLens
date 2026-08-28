@@ -14,3 +14,8 @@ def test_worker_lease_settings_accept_safe_interval() -> None:
 
     assert settings.worker_lease_seconds == 60
     assert settings.worker_heartbeat_seconds == 15
+
+
+def test_analysis_slo_thresholds_must_be_positive() -> None:
+    with pytest.raises(ValidationError, match="SLO thresholds must be positive"):
+        Settings(analysis_start_slo_seconds=0)

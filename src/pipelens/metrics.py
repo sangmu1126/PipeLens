@@ -18,7 +18,23 @@ class Metrics:
         )
         self.analysis_duration = Histogram(
             "pipelens_analysis_duration_seconds",
-            "End-to-end analysis duration.",
+            "Duration of an individual analysis attempt.",
+            registry=self.registry,
+        )
+        self.queue_wait = Histogram(
+            "pipelens_queue_wait_seconds",
+            "Time from webhook persistence to the first analysis attempt.",
+            registry=self.registry,
+        )
+        self.total_latency = Histogram(
+            "pipelens_total_latency_seconds",
+            "Time from webhook persistence to successful analysis completion.",
+            registry=self.registry,
+        )
+        self.slo_results = Counter(
+            "pipelens_slo_results_total",
+            "Analysis SLO results by phase and outcome.",
+            ("phase", "outcome"),
             registry=self.registry,
         )
         self.error_categories = Counter(
