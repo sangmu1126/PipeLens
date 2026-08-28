@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Analysis, FeedbackAccuracy } from "./types";
+import type { Analysis, CurrentUser, FeedbackAccuracy } from "./types";
 
 const categoryLabels: Record<string, string> = {
   test_failure: "테스트",
@@ -27,10 +27,15 @@ function App() {
   const [selectedRun, setSelectedRun] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<CurrentUser | null | undefined>(undefined);
 
   const loadAnalyses = useCallback(async () => {
     try {
       const response = await fetch("/api/analyses?limit=100");
+      if (response.status === 401) {
+        setUser(null);
+        return;
+      }
       if (!response.ok) throw new Error(`분석 목록 요청 실패 (${response.status})`);
       const data = (await response.json()) as Analysis[];
       setAnalyses(data);
@@ -44,10 +49,30 @@ function App() {
   }, []);
 
   useEffect(() => {
-    void loadAnalyses();
+    const initialize = async () => {
+      try {
+        const response = await fetch("/api/me");
+        if (response.status === 401) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        if (!response.ok) throw new Error(`사용자 정보 요청 실패 (${response.status})`);
+        setUser((await response.json()) as CurrentUser);
+        await loadAnalyses();
+      } catch (requestError) {
+        setError(requestError instanceof Error ? requestError.message : "연결하지 못했습니다.");
+        setLoading(false);
+      }
+    };
+    void initialize();
+  }, [loadAnalyses]);
+
+  useEffect(() => {
+    if (!user) return;
     const timer = window.setInterval(() => void loadAnalyses(), 30_000);
     return () => window.clearInterval(timer);
-  }, [loadAnalyses]);
+  }, [loadAnalyses, user]);
 
   const selected = analyses.find((analysis) => analysis.run_id === selectedRun) ?? null;
   const stats = useMemo(() => {
@@ -68,6 +93,19 @@ function App() {
     );
   };
 
+  const logout = async () => {
+    await fetch("/auth/logout", { method: "POST" });
+    setUser(null);
+    setAnalyses([]);
+  };
+
+  if (user === undefined) {
+    return <AccessScreen loading error={error} />;
+  }
+  if (user === null) {
+    return <AccessScreen />;
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -76,7 +114,9 @@ function App() {
           <span>PipeLens</span>
         </div>
         <div className="topbar-meta">
-          <span className="live-dot" /> GitHub Actions 진단 시스템
+          {user.avatar_url && <img src={user.avatar_url} alt="" />}
+          <span>{user.login}</span>
+          <button onClick={() => void logout()}>로그아웃</button>
         </div>
       </header>
 
@@ -96,6 +136,15 @@ function App() {
         </section>
 
         {error && <div className="alert"><strong>연결 오류</strong><span>{error}</span></div>}
+
+        {user.installations.length === 0 ? (
+          <section className="install-card">
+            <p className="eyebrow">CONNECT GITHUB APP</p>
+            <h2>분석할 저장소를 연결하세요.</h2>
+            <p>PipeLens GitHub App을 계정 또는 조직에 설치하면 실패한 Workflow 분석이 여기에 표시됩니다.</p>
+            <a href="/github/install">GitHub App 설치하기 ↗</a>
+          </section>
+        ) : (
 
         <section className="workspace">
           <div className="list-panel">
@@ -139,10 +188,23 @@ function App() {
             )}
           </aside>
         </section>
+        )}
       </main>
       <footer><span>PipeLens</span><span>Evidence over assumptions.</span></footer>
     </div>
   );
+}
+
+function AccessScreen({ loading = false, error = null }: { loading?: boolean; error?: string | null }) {
+  return <div className="access-shell">
+    <div className="access-brand"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>PipeLens</div>
+    <main className="access-card">
+      <p className="eyebrow">CI FAILURE INTELLIGENCE</p>
+      <h1>{loading ? "연결 상태를 확인하고 있습니다." : "GitHub와 연결해 분석을 시작하세요."}</h1>
+      <p>{error ?? "접근 가능한 GitHub App 설치만 확인하고, 해당 저장소의 실패 분석만 보여드립니다."}</p>
+      {!loading && <a href="/auth/github/login">GitHub로 로그인 ↗</a>}
+    </main>
+  </div>;
 }
 
 function Stat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {

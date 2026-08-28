@@ -66,13 +66,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=401, detail="GitHub login required")
         return session
 
-    def analysis_access(request: Request) -> set[int] | None:
+    async def analysis_access(request: Request) -> set[int] | None:
         if not settings.auth_required:
             return None
         session = require_session(request)
+        installations = await auth.sync_installations(
+            session.user.github_user_id, session.access_token
+        )
         return {
             item.installation_id
-            for item in store.installations_for_user(session.user.github_user_id)
+            for item in installations
         }
 
     @app.get("/healthz", tags=["system"])
@@ -146,7 +149,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def current_user(
         session: Annotated[AuthenticatedSession, Depends(require_session)],
     ) -> CurrentUser:
-        return auth.current_user(session)
+        installations = await auth.sync_installations(
+            session.user.github_user_id, session.access_token
+        )
+        return CurrentUser(**session.user.model_dump(), installations=installations)
 
     @app.get("/github/install", tags=["github"])
     async def install_github_app(

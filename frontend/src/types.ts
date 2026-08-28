@@ -1,6 +1,18 @@
 export type AnalysisStatus = "queued" | "running" | "completed" | "failed";
 export type FeedbackAccuracy = "accurate" | "partial" | "inaccurate";
 
+export interface CurrentUser {
+  github_user_id: number;
+  login: string;
+  avatar_url: string | null;
+  installations: {
+    installation_id: number;
+    account_login: string;
+    account_type: string;
+    repository_selection: string;
+  }[];
+}
+
 export interface Evidence {
   source: string;
   content: string;

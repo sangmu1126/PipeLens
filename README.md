@@ -19,6 +19,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - 메모리 또는 Redis queue와 ack·재시도를 지원하는 독립 분석 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
 - 분석 이력·근거·관련 diff·피드백을 제공하는 React 대시보드
+- GitHub OAuth 로그인, 암호화된 사용자 토큰, installation 단위 분석 접근 제어
 - SQLite 분석 이력 API와 선택적인 GitHub Check 게시
 
 ## 로컬 실행
@@ -59,12 +60,27 @@ alembic upgrade head
 ## GitHub App 설정
 
 Webhook URL은 `https://<host>/webhooks/github`, 이벤트는 **Workflow run**으로 설정합니다.
-Webhook secret과 아래 환경변수를 구성해야 실제 로그를 가져올 수 있습니다.
+Callback URL은 `https://<host>/auth/github/callback`, Setup URL은
+`https://<host>/github/setup`으로 지정합니다. 사용자가 먼저 PipeLens에 로그인한 뒤 App을
+설치하고 Setup URL로 돌아오는 흐름이므로 **Request user authorization during
+installation**은 끕니다.
+
+Webhook secret과 아래 환경변수를 구성해야 실제 로그를 가져올 수 있습니다. 운영에서는
+HTTPS를 사용하고 `SESSION_COOKIE_SECURE=true`로 설정해야 합니다. Fernet 키는
+`python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'`로
+생성할 수 있습니다.
 
 ```dotenv
 PIPELENS_WEBHOOK_SECRET=...
 PIPELENS_GITHUB_APP_ID=123456
 PIPELENS_GITHUB_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
+PIPELENS_GITHUB_APP_SLUG=pipelens
+PIPELENS_GITHUB_CLIENT_ID=...
+PIPELENS_GITHUB_CLIENT_SECRET=...
+PIPELENS_PUBLIC_URL=https://pipelens.example.com
+PIPELENS_SESSION_SECRET=...
+PIPELENS_TOKEN_ENCRYPTION_KEY=...
+PIPELENS_SESSION_COOKIE_SECURE=true
 PIPELENS_PUBLISH_CHECKS=true
 PIPELENS_LLM_PROVIDER=openai
 PIPELENS_OPENAI_API_KEY=...
@@ -80,6 +96,12 @@ requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 
 ## API
 
 - `POST /webhooks/github`: GitHub webhook endpoint
+- `GET /auth/github/login`: GitHub OAuth 로그인 시작
+- `GET /auth/github/callback`: GitHub OAuth callback
+- `POST /auth/logout`: 현재 세션 종료
+- `GET /github/install`: GitHub App 설치 화면으로 이동
+- `GET /github/setup`: 설치 완료 후 사용자 접근 권한 재검증
+- `GET /api/me`: 로그인 사용자와 접근 가능한 installation
 - `GET /api/analyses`: 최근 분석 목록
 - `GET /api/analyses/{run_id}`: 분석 상세
 - `PUT /api/analyses/{run_id}/feedback`: 정확도·해결 여부 피드백 저장
@@ -92,5 +114,7 @@ requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 
 Redis queue와 별도 worker를 사용하며 worker 지표를 `:8001/metrics`에서 제공합니다.
 현재 processing 목록 복구는 단일 worker 배포를 기준으로 하며, 수평 확장 시에는 lease와
 worker별 processing queue를 추가해야 합니다.
-다음 단계에서는 GitHub App 설치 흐름과 저장소별 접근 제어를 강화합니다. 규칙 기반 진단은
-LLM 장애 시에도 항상 fallback 결과로 유지합니다.
+분석 API는 기본적으로 인증이 필요하며 사용자가 접근할 수 있는 GitHub App installation의
+결과만 반환합니다. 로컬 API 테스트처럼 인증을 의도적으로 끄려면
+`PIPELENS_AUTH_REQUIRED=false`를 명시합니다. 규칙 기반 진단은 LLM 장애 시에도 항상
+fallback 결과로 유지합니다.

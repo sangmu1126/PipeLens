@@ -18,7 +18,13 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
 
     engine = create_engine(database_url)
     inspector = inspect(engine)
-    assert {"analyses", "analysis_feedback"} <= set(inspector.get_table_names())
+    assert {
+        "analyses",
+        "analysis_feedback",
+        "github_users",
+        "auth_sessions",
+        "user_installations",
+    } <= set(inspector.get_table_names())
     assert {column["name"] for column in inspector.get_columns("analyses")} >= {
         "run_id",
         "classification",

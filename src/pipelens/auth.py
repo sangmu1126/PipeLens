@@ -84,7 +84,10 @@ class AuthService:
         installations = await self.sync_installations(user.github_user_id, access_token)
 
         session_token = secrets.token_urlsafe(48)
-        expires_at = datetime.now(UTC) + timedelta(days=self.settings.session_ttl_days)
+        session_ttl = timedelta(days=self.settings.session_ttl_days)
+        if token_payload.get("expires_in") is not None:
+            session_ttl = min(session_ttl, timedelta(seconds=int(token_payload["expires_in"])))
+        expires_at = datetime.now(UTC) + session_ttl
         self.store.create_auth_session(
             _hash_token(session_token),
             user.github_user_id,
