@@ -2,6 +2,7 @@ import io
 import time
 import zipfile
 from dataclasses import dataclass
+from urllib.parse import urlencode
 
 import httpx
 import jwt
@@ -21,6 +22,7 @@ class JobLog:
 
 class GitHubClient:
     api_url = "https://api.github.com"
+    web_url = "https://github.com"
 
     def __init__(
         self,
@@ -33,6 +35,61 @@ class GitHubClient:
         self.private_key = private_key.replace("\\n", "\n") if private_key else None
         self.max_log_bytes = max_log_bytes
         self.transport = transport
+
+    @classmethod
+    def authorization_url(cls, client_id: str, redirect_uri: str, state: str) -> str:
+        query = urlencode({"client_id": client_id, "redirect_uri": redirect_uri, "state": state})
+        return f"{cls.web_url}/login/oauth/authorize?{query}"
+
+    async def exchange_user_code(
+        self,
+        client_id: str,
+        client_secret: str,
+        code: str,
+        redirect_uri: str,
+    ) -> dict:
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
+            response = await client.post(
+                f"{self.web_url}/login/oauth/access_token",
+                headers={"Accept": "application/json"},
+                data={
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "code": code,
+                    "redirect_uri": redirect_uri,
+                },
+            )
+            response.raise_for_status()
+        payload = response.json()
+        if "access_token" not in payload:
+            raise GitHubConfigurationError(
+                f"GitHub OAuth exchange failed: {payload.get('error', 'missing access token')}"
+            )
+        return payload
+
+    async def authenticated_user(self, token: str) -> dict:
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
+            response = await client.get(f"{self.api_url}/user", headers=self._headers(token))
+            response.raise_for_status()
+        return response.json()
+
+    async def user_installations(self, token: str) -> list[dict]:
+        installations: list[dict] = []
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
+            page = 1
+            while True:
+                response = await client.get(
+                    f"{self.api_url}/user/installations",
+                    headers=self._headers(token),
+                    params={"per_page": 100, "page": page},
+                )
+                response.raise_for_status()
+                batch = response.json().get("installations", [])
+                installations.extend(batch)
+                if len(batch) < 100:
+                    break
+                page += 1
+        return installations
 
     def _app_jwt(self) -> str:
         if not self.app_id or not self.private_key:

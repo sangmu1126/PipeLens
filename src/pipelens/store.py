@@ -11,6 +11,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    UniqueConstraint,
     create_engine,
     delete,
     insert,
@@ -27,6 +28,8 @@ from pipelens.models import (
     Diagnosis,
     FeedbackRecord,
     FeedbackRequest,
+    GitHubInstallation,
+    GitHubUser,
     RelatedFile,
 )
 
@@ -68,6 +71,49 @@ feedback = Table(
     Column("comment", Text),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+github_users = Table(
+    "github_users",
+    metadata,
+    Column("github_user_id", BigInteger, primary_key=True),
+    Column("login", String(255), nullable=False),
+    Column("avatar_url", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+auth_sessions = Table(
+    "auth_sessions",
+    metadata,
+    Column("session_hash", String(64), primary_key=True),
+    Column(
+        "github_user_id",
+        BigInteger,
+        ForeignKey("github_users.github_user_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    Column("encrypted_access_token", Text, nullable=False),
+    Column("expires_at", DateTime(timezone=True), nullable=False, index=True),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+user_installations = Table(
+    "user_installations",
+    metadata,
+    Column(
+        "github_user_id",
+        BigInteger,
+        ForeignKey("github_users.github_user_id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column("installation_id", BigInteger, primary_key=True),
+    Column("account_login", String(255), nullable=False),
+    Column("account_type", String(64), nullable=False),
+    Column("repository_selection", String(64), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("github_user_id", "installation_id"),
 )
 
 
@@ -195,6 +241,114 @@ class AnalysisStore:
     def delete(self, run_id: int) -> None:
         with self.engine.begin() as connection:
             connection.execute(delete(analyses).where(analyses.c.run_id == run_id))
+
+    def upsert_github_user(self, user: GitHubUser) -> None:
+        now = datetime.now(UTC)
+        with self.engine.begin() as connection:
+            exists = connection.execute(
+                select(github_users.c.github_user_id).where(
+                    github_users.c.github_user_id == user.github_user_id
+                )
+            ).first()
+            values = {"login": user.login, "avatar_url": user.avatar_url, "updated_at": now}
+            if exists:
+                connection.execute(
+                    update(github_users)
+                    .where(github_users.c.github_user_id == user.github_user_id)
+                    .values(**values)
+                )
+            else:
+                connection.execute(
+                    insert(github_users).values(
+                        github_user_id=user.github_user_id, created_at=now, **values
+                    )
+                )
+
+    def replace_user_installations(
+        self, github_user_id: int, installations: list[GitHubInstallation]
+    ) -> None:
+        now = datetime.now(UTC)
+        with self.engine.begin() as connection:
+            connection.execute(
+                delete(user_installations).where(
+                    user_installations.c.github_user_id == github_user_id
+                )
+            )
+            if installations:
+                connection.execute(
+                    insert(user_installations),
+                    [
+                        {
+                            "github_user_id": github_user_id,
+                            **installation.model_dump(),
+                            "updated_at": now,
+                        }
+                        for installation in installations
+                    ],
+                )
+
+    def create_auth_session(
+        self,
+        session_hash: str,
+        github_user_id: int,
+        encrypted_access_token: str,
+        expires_at: datetime,
+    ) -> None:
+        with self.engine.begin() as connection:
+            connection.execute(
+                insert(auth_sessions).values(
+                    session_hash=session_hash,
+                    github_user_id=github_user_id,
+                    encrypted_access_token=encrypted_access_token,
+                    expires_at=expires_at,
+                    created_at=datetime.now(UTC),
+                )
+            )
+
+    def get_auth_session(self, session_hash: str) -> dict | None:
+        statement = (
+            select(
+                auth_sessions.c.github_user_id,
+                auth_sessions.c.encrypted_access_token,
+                auth_sessions.c.expires_at,
+                github_users.c.login,
+                github_users.c.avatar_url,
+            )
+            .select_from(
+                auth_sessions.join(
+                    github_users,
+                    auth_sessions.c.github_user_id == github_users.c.github_user_id,
+                )
+            )
+            .where(auth_sessions.c.session_hash == session_hash)
+        )
+        with self.engine.connect() as connection:
+            row = connection.execute(statement).mappings().first()
+        return dict(row) if row else None
+
+    def delete_auth_session(self, session_hash: str) -> None:
+        with self.engine.begin() as connection:
+            connection.execute(
+                delete(auth_sessions).where(auth_sessions.c.session_hash == session_hash)
+            )
+
+    def installations_for_user(self, github_user_id: int) -> list[GitHubInstallation]:
+        with self.engine.connect() as connection:
+            rows = (
+                connection.execute(
+                    select(
+                        user_installations.c.installation_id,
+                        user_installations.c.account_login,
+                        user_installations.c.account_type,
+                        user_installations.c.repository_selection,
+                    )
+                    .where(user_installations.c.github_user_id == github_user_id)
+                    .order_by(user_installations.c.account_login)
+                )
+                .mappings()
+                .all()
+            )
+        return [GitHubInstallation.model_validate(dict(row)) for row in rows]
 
     def close(self) -> None:
         self.engine.dispose()

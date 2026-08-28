@@ -9,6 +9,15 @@ class Settings(BaseSettings):
     webhook_secret: str = "development-secret"
     github_app_id: str | None = None
     github_private_key: str | None = None
+    github_app_slug: str | None = None
+    github_client_id: str | None = None
+    github_client_secret: str | None = None
+    public_url: str = "http://localhost:3000"
+    auth_required: bool = True
+    session_secret: str = "development-session-secret"
+    token_encryption_key: str | None = None
+    session_cookie_secure: bool = False
+    session_ttl_days: int = 7
     database_path: str = "./pipelens.db"
     database_url: str | None = None
     publish_checks: bool = False

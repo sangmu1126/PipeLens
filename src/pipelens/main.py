@@ -3,11 +3,20 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
+from fastapi.responses import RedirectResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
+from pipelens.auth import AuthenticatedSession, AuthenticationError, AuthService
 from pipelens.bootstrap import create_runtime
 from pipelens.config import Settings, get_settings
-from pipelens.models import AnalysisRecord, AnalysisRequest, FeedbackRecord, FeedbackRequest
+from pipelens.github import GitHubConfigurationError
+from pipelens.models import (
+    AnalysisRecord,
+    AnalysisRequest,
+    CurrentUser,
+    FeedbackRecord,
+    FeedbackRequest,
+)
 from pipelens.security import InvalidSignatureError, verify_github_signature
 from pipelens.store import AnalysisStore
 from pipelens.worker import AnalysisWorker
@@ -17,6 +26,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     runtime = create_runtime(settings)
     store, metrics = runtime.store, runtime.metrics
+    auth = AuthService(settings, store, runtime.github)
     local_worker = (
         AnalysisWorker(
             runtime.pipeline,
@@ -45,9 +55,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.pipeline = runtime.pipeline
     app.state.queue = runtime.queue
     app.state.metrics = metrics
+    app.state.auth = auth
 
     def get_store(request: Request) -> AnalysisStore:
         return request.app.state.store
+
+    def require_session(request: Request) -> AuthenticatedSession:
+        session = auth.authenticate(request.cookies.get("pipelens_session"))
+        if session is None:
+            raise HTTPException(status_code=401, detail="GitHub login required")
+        return session
 
     @app.get("/healthz", tags=["system"])
     async def health() -> dict[str, str]:
@@ -59,6 +76,91 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             content=generate_latest(metrics.registry),
             headers={"Content-Type": CONTENT_TYPE_LATEST},
         )
+
+    @app.get("/auth/github/login", tags=["auth"])
+    async def github_login() -> RedirectResponse:
+        try:
+            client_id, _ = auth.require_oauth_configuration()
+        except GitHubConfigurationError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        state = auth.new_oauth_state()
+        response = RedirectResponse(
+            runtime.github.authorization_url(client_id, auth.callback_url, state),
+            status_code=status.HTTP_302_FOUND,
+        )
+        response.set_cookie(
+            "pipelens_oauth_state",
+            state,
+            max_age=600,
+            httponly=True,
+            secure=settings.session_cookie_secure,
+            samesite="lax",
+        )
+        return response
+
+    @app.get("/auth/github/callback", tags=["auth"])
+    async def github_callback(
+        request: Request,
+        code: str,
+        state: str | None = None,
+    ) -> RedirectResponse:
+        try:
+            auth.verify_oauth_state(state, request.cookies.get("pipelens_oauth_state"))
+            session_token, _ = await auth.complete_login(code)
+        except AuthenticationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except (GitHubConfigurationError, KeyError) as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+        response = RedirectResponse(settings.public_url, status_code=status.HTTP_303_SEE_OTHER)
+        response.delete_cookie("pipelens_oauth_state")
+        response.set_cookie(
+            "pipelens_session",
+            session_token,
+            max_age=settings.session_ttl_days * 86_400,
+            httponly=True,
+            secure=settings.session_cookie_secure,
+            samesite="lax",
+        )
+        return response
+
+    @app.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT, tags=["auth"])
+    async def logout(
+        request: Request,
+        session: Annotated[AuthenticatedSession, Depends(require_session)],
+    ) -> Response:
+        auth.store.delete_auth_session(session.session_hash)
+        response = Response(status_code=status.HTTP_204_NO_CONTENT)
+        response.delete_cookie("pipelens_session")
+        return response
+
+    @app.get("/api/me", response_model=CurrentUser, tags=["auth"])
+    async def current_user(
+        session: Annotated[AuthenticatedSession, Depends(require_session)],
+    ) -> CurrentUser:
+        return auth.current_user(session)
+
+    @app.get("/github/install", tags=["github"])
+    async def install_github_app(
+        _: Annotated[AuthenticatedSession, Depends(require_session)],
+    ) -> RedirectResponse:
+        if not settings.github_app_slug:
+            raise HTTPException(status_code=503, detail="GitHub App slug is not configured")
+        return RedirectResponse(
+            f"https://github.com/apps/{settings.github_app_slug}/installations/new",
+            status_code=status.HTTP_302_FOUND,
+        )
+
+    @app.get("/github/setup", tags=["github"])
+    async def github_setup(
+        installation_id: int,
+        session: Annotated[AuthenticatedSession, Depends(require_session)],
+    ) -> RedirectResponse:
+        installations = await auth.sync_installations(
+            session.user.github_user_id, session.access_token
+        )
+        if installation_id not in {item.installation_id for item in installations}:
+            raise HTTPException(status_code=403, detail="installation is not accessible to user")
+        return RedirectResponse(settings.public_url, status_code=status.HTTP_303_SEE_OTHER)
 
     @app.post("/webhooks/github", status_code=status.HTTP_202_ACCEPTED, tags=["github"])
     async def github_webhook(

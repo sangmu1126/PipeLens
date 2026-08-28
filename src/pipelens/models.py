@@ -125,3 +125,20 @@ class AnalysisRequest(BaseModel):
     repository: str
     installation_id: int
     head_sha: str
+
+
+class GitHubUser(BaseModel):
+    github_user_id: int
+    login: str
+    avatar_url: str | None = None
+
+
+class GitHubInstallation(BaseModel):
+    installation_id: int
+    account_login: str
+    account_type: str
+    repository_selection: str
+
+
+class CurrentUser(GitHubUser):
+    installations: list[GitHubInstallation] = Field(default_factory=list)
