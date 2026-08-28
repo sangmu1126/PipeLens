@@ -42,7 +42,22 @@ API 문서는 `http://localhost:8000/docs`, 상태 확인은 `/healthz`에서 �
 ```bash
 pytest
 ruff check .
+pipelens-evaluate --minimum-accuracy 0.8
 ```
+
+## MVP 정확도 평가
+
+`evaluation/scenarios.json`에는 테스트·빌드·의존성·Lint·Docker·배포 인증·환경변수·
+Timeout·리소스·Workflow 오류를 재현하는 10개 고정 로그가 있습니다. 평가 러너는 예상
+범주와 최초 원인 근거를 모두 채점하며 기본 통과 기준은 완료 조건과 같은 80%입니다.
+
+```bash
+pipelens-evaluate
+pipelens-evaluate --json
+```
+
+GitHub Actions CI에서도 Ruff, 전체 테스트, 80% 정확도 게이트와 대시보드 빌드를 함께
+실행합니다.
 
 Docker를 사용한다면 `.env`를 만든 뒤 다음 명령으로 실행합니다.
 

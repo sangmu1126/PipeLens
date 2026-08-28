@@ -89,7 +89,21 @@ def main() -> None:
     args = parser.parse_args()
     report = evaluate_manifest(args.manifest)
     if args.as_json:
-        print(report.model_dump_json(indent=2))
+        print(
+            json.dumps(
+                {
+                    "passed": report.passed,
+                    "total": report.total,
+                    "accuracy": report.accuracy,
+                    "results": [
+                        result.model_dump(mode="json") | {"passed": result.passed}
+                        for result in report.results
+                    ],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
     else:
         for result in report.results:
             marker = "PASS" if result.passed else "FAIL"
