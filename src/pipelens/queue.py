@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -27,6 +28,8 @@ class AnalysisQueue(Protocol):
     async def acknowledge(self, job: QueueJob) -> None: ...
 
     async def retry(self, job: QueueJob) -> None: ...
+
+    async def heartbeat(self) -> None: ...
 
     async def recover_orphaned(self) -> int: ...
 
@@ -58,6 +61,9 @@ class InMemoryAnalysisQueue:
             job.envelope.model_copy(update={"attempts": job.envelope.attempts + 1})
         )
 
+    async def heartbeat(self) -> None:
+        return None
+
     async def recover_orphaned(self) -> int:
         return 0
 
@@ -69,19 +75,60 @@ class InMemoryAnalysisQueue:
 
 
 class RedisAnalysisQueue:
-    def __init__(self, redis: Redis, queue_name: str) -> None:
+    _RECOVER_SCRIPT = """
+        if redis.call('EXISTS', KEYS[1]) == 1 then
+            return 0
+        end
+        local recovered = 0
+        while true do
+            local item = redis.call('RPOP', KEYS[2])
+            if not item then
+                break
+            end
+            redis.call('LPUSH', KEYS[3], item)
+            recovered = recovered + 1
+        end
+        redis.call('SREM', KEYS[4], KEYS[2])
+        return recovered
+    """
+
+    def __init__(
+        self,
+        redis: Redis,
+        queue_name: str,
+        worker_id: str | None = None,
+        lease_seconds: int = 60,
+    ) -> None:
+        if lease_seconds < 1:
+            raise ValueError("lease_seconds must be at least 1")
         self.redis = redis
         self.pending_key = queue_name
-        self.processing_key = f"{queue_name}:processing"
+        self.worker_id = worker_id or uuid.uuid4().hex
+        self.lease_seconds = lease_seconds
+        self.workers_key = f"{queue_name}:workers"
+        self.processing_key = f"{queue_name}:processing:{self.worker_id}"
+        self.lease_key = f"{self.processing_key}:lease"
 
     @classmethod
-    def from_url(cls, redis_url: str, queue_name: str) -> "RedisAnalysisQueue":
-        return cls(Redis.from_url(redis_url, decode_responses=True), queue_name)
+    def from_url(
+        cls,
+        redis_url: str,
+        queue_name: str,
+        worker_id: str | None = None,
+        lease_seconds: int = 60,
+    ) -> "RedisAnalysisQueue":
+        return cls(
+            Redis.from_url(redis_url, decode_responses=True),
+            queue_name,
+            worker_id,
+            lease_seconds,
+        )
 
     async def enqueue(self, request: AnalysisRequest) -> None:
         await self.redis.lpush(self.pending_key, QueueEnvelope(request=request).model_dump_json())
 
     async def dequeue(self, timeout: int = 1) -> QueueJob | None:
+        await self.heartbeat()
         raw = await self.redis.brpoplpush(self.pending_key, self.processing_key, timeout=timeout)
         if raw is None:
             return None
@@ -97,10 +144,26 @@ class RedisAnalysisQueue:
         retried = job.envelope.model_copy(update={"attempts": job.envelope.attempts + 1})
         await self.redis.lpush(self.pending_key, retried.model_dump_json())
 
+    async def heartbeat(self) -> None:
+        pipeline = self.redis.pipeline(transaction=True)
+        pipeline.sadd(self.workers_key, self.processing_key)
+        pipeline.set(self.lease_key, self.worker_id, ex=self.lease_seconds)
+        await pipeline.execute()
+
     async def recover_orphaned(self) -> int:
         recovered = 0
-        while await self.redis.rpoplpush(self.processing_key, self.pending_key) is not None:
-            recovered += 1
+        processing_keys = await self.redis.smembers(self.workers_key)
+        for processing_key in processing_keys:
+            if processing_key == self.processing_key:
+                continue
+            recovered += await self.redis.eval(
+                self._RECOVER_SCRIPT,
+                4,
+                f"{processing_key}:lease",
+                processing_key,
+                self.pending_key,
+                self.workers_key,
+            )
         return recovered
 
     async def size(self) -> int:
@@ -110,9 +173,16 @@ class RedisAnalysisQueue:
         await self.redis.aclose()
 
 
-def create_queue(backend: str, redis_url: str, queue_name: str) -> AnalysisQueue:
+def create_queue(
+    backend: str,
+    redis_url: str,
+    queue_name: str,
+    *,
+    worker_id: str | None = None,
+    lease_seconds: int = 60,
+) -> AnalysisQueue:
     if backend == "memory":
         return InMemoryAnalysisQueue()
     if backend == "redis":
-        return RedisAnalysisQueue.from_url(redis_url, queue_name)
+        return RedisAnalysisQueue.from_url(redis_url, queue_name, worker_id, lease_seconds)
     raise ValueError(f"unsupported queue backend: {backend}")

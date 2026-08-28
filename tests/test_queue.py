@@ -33,16 +33,25 @@ async def test_memory_queue_retries_with_incremented_attempt() -> None:
 @pytest.mark.asyncio
 async def test_redis_queue_acknowledges_processing_receipt() -> None:
     redis = MagicMock()
+    pipeline = MagicMock()
+    pipeline.execute = AsyncMock()
+    redis.pipeline.return_value = pipeline
     envelope = QueueEnvelope(request=_request())
     redis.brpoplpush = AsyncMock(return_value=envelope.model_dump_json())
     redis.lrem = AsyncMock()
-    queue = RedisAnalysisQueue(redis, "analyses")
+    queue = RedisAnalysisQueue(redis, "analyses", worker_id="worker-a")
 
     job = await queue.dequeue(timeout=2)
     await queue.acknowledge(job)
 
-    redis.brpoplpush.assert_awaited_once_with("analyses", "analyses:processing", timeout=2)
-    redis.lrem.assert_awaited_once_with("analyses:processing", 1, job.receipt)
+    redis.brpoplpush.assert_awaited_once_with(
+        "analyses", "analyses:processing:worker-a", timeout=2
+    )
+    redis.lrem.assert_awaited_once_with("analyses:processing:worker-a", 1, job.receipt)
+    pipeline.sadd.assert_called_once_with("analyses:workers", "analyses:processing:worker-a")
+    pipeline.set.assert_called_once_with(
+        "analyses:processing:worker-a:lease", "worker-a", ex=60
+    )
 
 
 @pytest.mark.asyncio
@@ -62,10 +71,30 @@ async def test_redis_queue_retry_requeues_incremented_envelope() -> None:
 @pytest.mark.asyncio
 async def test_redis_queue_recovers_processing_jobs() -> None:
     redis = MagicMock()
-    redis.rpoplpush = AsyncMock(side_effect=["job-1", "job-2", None])
-    queue = RedisAnalysisQueue(redis, "analyses")
+    redis.smembers = AsyncMock(
+        return_value={"analyses:processing:worker-a", "analyses:processing:worker-b"}
+    )
+    redis.eval = AsyncMock(return_value=2)
+    queue = RedisAnalysisQueue(redis, "analyses", worker_id="worker-a")
 
     recovered = await queue.recover_orphaned()
 
     assert recovered == 2
-    assert redis.rpoplpush.await_count == 3
+    redis.eval.assert_awaited_once()
+    assert redis.eval.await_args.args[2:] == (
+        "analyses:processing:worker-b:lease",
+        "analyses:processing:worker-b",
+        "analyses",
+        "analyses:workers",
+    )
+
+
+@pytest.mark.asyncio
+async def test_redis_queue_does_not_recover_its_own_processing_list() -> None:
+    redis = MagicMock()
+    redis.smembers = AsyncMock(return_value={"analyses:processing:worker-a"})
+    redis.eval = AsyncMock()
+    queue = RedisAnalysisQueue(redis, "analyses", worker_id="worker-a")
+
+    assert await queue.recover_orphaned() == 0
+    redis.eval.assert_not_awaited()
