@@ -18,9 +18,9 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - Webhook·분석·오류 범주·마스킹·LLM 사용량과 비용의 Prometheus 지표
 - 메모리 또는 Redis queue와 ack·재시도를 지원하는 독립 분석 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
-- 분석 이력·근거·관련 diff·피드백을 제공하는 React 대시보드
+- 분석 이력·근거·관련 diff·피드백과 run 딥링크를 제공하는 React 대시보드
 - GitHub OAuth 로그인, 암호화된 사용자 토큰, installation 단위 분석 접근 제어
-- SQLite 분석 이력 API와 선택적인 GitHub Check 게시
+- PR에는 멱등 코멘트, PR이 없는 실행에는 Commit Check로 진단 결과 게시
 
 ## 로컬 실행
 
@@ -90,8 +90,10 @@ PIPELENS_LLM_OUTPUT_COST_PER_MILLION=0
 ```
 
 GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
-requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 검증하지 않을 때는
-`PIPELENS_PUBLISH_CHECKS=false`로 두어도 분석 결과가 API에 저장됩니다.
+requests(read/write), Metadata(read)를 사용합니다. `PIPELENS_PUBLISH_CHECKS=true`이면 PR이
+연결된 실행은 PR 코멘트로, PR이 없는 실행은 Commit Check로 게시합니다. 재시도 시 workflow
+run ID로 기존 게시물을 찾아 갱신하므로 같은 분석이 중복 게시되지 않습니다. 게시를 먼저
+검증하지 않을 때는 `PIPELENS_PUBLISH_CHECKS=false`로 두어도 분석 결과가 API에 저장됩니다.
 
 ## API
 

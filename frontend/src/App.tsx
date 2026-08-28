@@ -24,7 +24,10 @@ const statusLabels = {
 
 function App() {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
-  const [selectedRun, setSelectedRun] = useState<number | null>(null);
+  const [selectedRun, setSelectedRun] = useState<number | null>(() => {
+    const value = Number(new URLSearchParams(window.location.search).get("run_id"));
+    return Number.isSafeInteger(value) && value > 0 ? value : null;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<CurrentUser | null | undefined>(undefined);
@@ -39,7 +42,11 @@ function App() {
       if (!response.ok) throw new Error(`분석 목록 요청 실패 (${response.status})`);
       const data = (await response.json()) as Analysis[];
       setAnalyses(data);
-      setSelectedRun((current) => current ?? data[0]?.run_id ?? null);
+      setSelectedRun((current) =>
+        current && data.some((item) => item.run_id === current)
+          ? current
+          : data[0]?.run_id ?? null,
+      );
       setError(null);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "목록을 불러오지 못했습니다.");
@@ -97,6 +104,13 @@ function App() {
     await fetch("/auth/logout", { method: "POST" });
     setUser(null);
     setAnalyses([]);
+  };
+
+  const selectRun = (runId: number) => {
+    setSelectedRun(runId);
+    const url = new URL(window.location.href);
+    url.searchParams.set("run_id", runId.toString());
+    window.history.replaceState({}, "", url);
   };
 
   if (user === undefined) {
@@ -161,7 +175,7 @@ function App() {
                   {analyses.map((analysis) => (
                     <tr key={analysis.run_id} className={analysis.run_id === selectedRun ? "selected" : ""}>
                       <td>
-                        <button className="run-select" onClick={() => setSelectedRun(analysis.run_id)}>
+                        <button className="run-select" onClick={() => selectRun(analysis.run_id)}>
                           <strong>{analysis.repository}</strong>
                           <span>{analysis.workflow_name} · {analysis.head_sha.slice(0, 7)}</span>
                         </button>
