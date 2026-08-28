@@ -72,6 +72,7 @@ class RepositoryContext(BaseModel):
     changed_files: list[ChangedFile] = Field(default_factory=list)
     workflow_path: str | None = None
     workflow_content: str | None = None
+    pull_request_number: int | None = None
 
 
 class RelatedFile(BaseModel):

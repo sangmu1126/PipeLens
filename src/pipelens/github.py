@@ -166,6 +166,9 @@ class GitHubClient:
             changed_files=changed_files,
             workflow_path=workflow_path,
             workflow_content=workflow_content,
+            pull_request_number=(
+                run["pull_requests"][0]["number"] if run.get("pull_requests") else None
+            ),
         )
 
     async def _changed_files(
@@ -228,23 +231,103 @@ class GitHubClient:
         content_response.raise_for_status()
         return workflow_path, content_response.text
 
-    async def create_check(
-        self, repository: str, head_sha: str, token: str, title: str, summary: str
+    async def upsert_check(
+        self,
+        repository: str,
+        head_sha: str,
+        run_id: int,
+        token: str,
+        title: str,
+        summary: str,
+        details_url: str,
     ) -> None:
         body = {
             "name": "PipeLens diagnosis",
             "head_sha": head_sha,
+            "external_id": str(run_id),
+            "details_url": details_url,
             "status": "completed",
             "conclusion": "neutral",
             "output": {"title": title[:255], "summary": summary[:65535]},
         }
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            response = await client.post(
-                f"{self.api_url}/repos/{repository}/check-runs",
+            existing = await client.get(
+                f"{self.api_url}/repos/{repository}/commits/{head_sha}/check-runs",
                 headers=self._headers(token),
-                json=body,
+                params={"check_name": body["name"], "filter": "latest", "per_page": 100},
             )
+            existing.raise_for_status()
+            check = next(
+                (
+                    item
+                    for item in existing.json().get("check_runs", [])
+                    if item.get("external_id") == str(run_id)
+                ),
+                None,
+            )
+            if check:
+                response = await client.patch(
+                    f"{self.api_url}/repos/{repository}/check-runs/{check['id']}",
+                    headers=self._headers(token),
+                    json={key: value for key, value in body.items() if key != "head_sha"},
+                )
+            else:
+                response = await client.post(
+                    f"{self.api_url}/repos/{repository}/check-runs",
+                    headers=self._headers(token),
+                    json=body,
+                )
             response.raise_for_status()
+
+    async def upsert_pull_request_comment(
+        self,
+        repository: str,
+        pull_request_number: int,
+        run_id: int,
+        token: str,
+        body: str,
+    ) -> None:
+        marker = f"<!-- pipelens:run:{run_id} -->"
+        comment_body = f"{marker}\n{body}"
+        existing_comment: dict | None = None
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
+            page = 1
+            while existing_comment is None:
+                response = await client.get(
+                    f"{self.api_url}/repos/{repository}/issues/{pull_request_number}/comments",
+                    headers=self._headers(token),
+                    params={"per_page": 100, "page": page},
+                )
+                response.raise_for_status()
+                comments = response.json()
+                existing_comment = next(
+                    (
+                        item
+                        for item in comments
+                        if marker in (item.get("body") or "") and self._is_own_comment(item)
+                    ),
+                    None,
+                )
+                if len(comments) < 100:
+                    break
+                page += 1
+            if existing_comment:
+                response = await client.patch(
+                    f"{self.api_url}/repos/{repository}/issues/comments/{existing_comment['id']}",
+                    headers=self._headers(token),
+                    json={"body": comment_body},
+                )
+            else:
+                response = await client.post(
+                    f"{self.api_url}/repos/{repository}/issues/{pull_request_number}/comments",
+                    headers=self._headers(token),
+                    json={"body": comment_body},
+                )
+            response.raise_for_status()
+
+    def _is_own_comment(self, comment: dict) -> bool:
+        app = comment.get("performed_via_github_app") or {}
+        return bool(self.app_id and str(app.get("id")) == str(self.app_id))
 
     @staticmethod
     def _headers(token: str) -> dict[str, str]:
