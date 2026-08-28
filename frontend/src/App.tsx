@@ -270,6 +270,13 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
         </DetailSection>
 
         <DetailSection number="03" title="관련 변경 파일">
+          {analysis.baseline_sha && (
+            <p className="comparison-range">
+              직전 성공 <code>{analysis.baseline_sha.slice(0, 7)}</code>
+              <span>→</span>
+              실패 <code>{analysis.head_sha.slice(0, 7)}</code>
+            </p>
+          )}
           {analysis.related_files.length ? analysis.related_files.map((file) => <article className="file-card" key={file.filename}>
             <div><code>{file.filename}</code><strong>{Math.round(file.score * 100)}%</strong></div>
             <p>{file.reasons.join(" · ")}</p>

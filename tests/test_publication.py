@@ -28,6 +28,8 @@ def test_github_diagnosis_contains_required_sections_and_neutralizes_mentions() 
         ),
         [RelatedFile(filename="tests/test_app.py", score=0.9, reasons=["로그 직접 일치"])],
         "https://pipelens.example/?run_id=123",
+        baseline_sha="1234567890abcdef",
+        head_sha="fedcba0987654321",
     )
 
     assert "### 추정 원인" in body
@@ -37,6 +39,7 @@ def test_github_diagnosis_contains_required_sections_and_neutralizes_mentions() 
     assert "@\u200bteam" in body
     assert "&lt;error&gt;" in body
     assert "https://pipelens.example/?run_id=123" in body
+    assert "1234567890ab..fedcba098765" in body
 
 
 def test_github_diagnosis_respects_comment_size_limit() -> None:

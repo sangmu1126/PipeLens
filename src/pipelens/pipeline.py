@@ -163,6 +163,8 @@ class AnalysisPipeline:
                 related_files,
                 details_url,
                 repository_context.trust_level,
+                repository_context.baseline_sha,
+                request.head_sha,
             )
             if repository_context.pull_request_number is not None:
                 await self.github.upsert_pull_request_comment(

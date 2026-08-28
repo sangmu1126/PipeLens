@@ -12,6 +12,8 @@ def render_github_diagnosis(
     related_files: list[RelatedFile],
     details_url: str,
     trust_level: TrustLevel = TrustLevel.TRUSTED,
+    baseline_sha: str | None = None,
+    head_sha: str | None = None,
 ) -> str:
     sections = [
         "## PipeLens 실패 진단",
@@ -30,15 +32,26 @@ def render_github_diagnosis(
         [
             _safe(diagnosis.summary),
             "",
-        f"**오류 유형:** `{classification.category.value}`  ",
-        f"**신뢰도:** {diagnosis.confidence:.0%}  ",
-        f"**관련 Step:** {_safe(classification.related_step or '확인 불가')}",
-        "",
-        "### 추정 원인",
-        "",
-        _safe(diagnosis.root_cause),
-        "",
-        "### 검증된 근거",
+            f"**오류 유형:** `{classification.category.value}`  ",
+            f"**신뢰도:** {diagnosis.confidence:.0%}  ",
+            f"**관련 Step:** {_safe(classification.related_step or '확인 불가')}",
+            "",
+        ]
+    )
+    if baseline_sha and head_sha:
+        sections.extend(
+            [
+                f"**변경 비교:** `{_safe(baseline_sha[:12])}..{_safe(head_sha[:12])}`",
+                "",
+            ]
+        )
+    sections.extend(
+        [
+            "### 추정 원인",
+            "",
+            _safe(diagnosis.root_cause),
+            "",
+            "### 검증된 근거",
             "",
         ]
     )

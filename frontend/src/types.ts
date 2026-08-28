@@ -41,6 +41,7 @@ export interface Analysis {
   head_sha: string;
   html_url: string;
   trust_level: "trusted" | "untrusted_fork";
+  baseline_sha: string | null;
   status: AnalysisStatus;
   classification: {
     category: string;
