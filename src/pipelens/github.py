@@ -6,6 +6,8 @@ from dataclasses import dataclass
 import httpx
 import jwt
 
+from pipelens.models import ChangedFile, RepositoryContext
+
 
 class GitHubConfigurationError(RuntimeError):
     pass
@@ -20,10 +22,17 @@ class JobLog:
 class GitHubClient:
     api_url = "https://api.github.com"
 
-    def __init__(self, app_id: str | None, private_key: str | None, max_log_bytes: int) -> None:
+    def __init__(
+        self,
+        app_id: str | None,
+        private_key: str | None,
+        max_log_bytes: int,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
         self.app_id = app_id
         self.private_key = private_key.replace("\\n", "\n") if private_key else None
         self.max_log_bytes = max_log_bytes
+        self.transport = transport
 
     def _app_jwt(self) -> str:
         if not self.app_id or not self.private_key:
@@ -37,7 +46,7 @@ class GitHubClient:
 
     async def installation_token(self, installation_id: int) -> str:
         headers = self._headers(self._app_jwt())
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             response = await client.post(
                 f"{self.api_url}/app/installations/{installation_id}/access_tokens", headers=headers
             )
@@ -45,7 +54,7 @@ class GitHubClient:
             return response.json()["token"]
 
     async def failed_job_names(self, repository: str, run_id: int, token: str) -> list[str]:
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             response = await client.get(
                 f"{self.api_url}/repos/{repository}/actions/runs/{run_id}/jobs",
                 headers=self._headers(token),
@@ -59,7 +68,9 @@ class GitHubClient:
         ]
 
     async def download_logs(self, repository: str, run_id: int, token: str) -> list[JobLog]:
-        async with httpx.AsyncClient(timeout=60, follow_redirects=True) as client:
+        async with httpx.AsyncClient(
+            timeout=60, follow_redirects=True, transport=self.transport
+        ) as client:
             response = await client.get(
                 f"{self.api_url}/repos/{repository}/actions/runs/{run_id}/logs",
                 headers=self._headers(token),
@@ -77,6 +88,89 @@ class GitHubClient:
                 logs.append(JobLog(job_name=member.filename.removesuffix(".txt"), text=text))
         return logs
 
+    async def repository_context(
+        self, repository: str, run_id: int, head_sha: str, token: str
+    ) -> RepositoryContext:
+        headers = self._headers(token)
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
+            run_response = await client.get(
+                f"{self.api_url}/repos/{repository}/actions/runs/{run_id}", headers=headers
+            )
+            run_response.raise_for_status()
+            run = run_response.json()
+
+            changed_files = await self._changed_files(
+                client, repository, head_sha, headers, run.get("pull_requests", [])
+            )
+            workflow_path, workflow_content = await self._workflow_context(
+                client, repository, run.get("workflow_id"), head_sha, headers
+            )
+        return RepositoryContext(
+            changed_files=changed_files,
+            workflow_path=workflow_path,
+            workflow_content=workflow_content,
+        )
+
+    async def _changed_files(
+        self,
+        client: httpx.AsyncClient,
+        repository: str,
+        head_sha: str,
+        headers: dict[str, str],
+        pull_requests: list[dict],
+    ) -> list[ChangedFile]:
+        if pull_requests:
+            number = pull_requests[0]["number"]
+            response = await client.get(
+                f"{self.api_url}/repos/{repository}/pulls/{number}/files",
+                headers=headers,
+                params={"per_page": 100},
+            )
+            response.raise_for_status()
+            files = response.json()
+        else:
+            response = await client.get(
+                f"{self.api_url}/repos/{repository}/commits/{head_sha}", headers=headers
+            )
+            response.raise_for_status()
+            files = response.json().get("files", [])
+        return [
+            ChangedFile(
+                filename=item["filename"],
+                status=item.get("status", "modified"),
+                patch=item.get("patch"),
+                previous_filename=item.get("previous_filename"),
+            )
+            for item in files
+        ]
+
+    async def _workflow_context(
+        self,
+        client: httpx.AsyncClient,
+        repository: str,
+        workflow_id: int | None,
+        head_sha: str,
+        headers: dict[str, str],
+    ) -> tuple[str | None, str | None]:
+        if workflow_id is None:
+            return None, None
+        response = await client.get(
+            f"{self.api_url}/repos/{repository}/actions/workflows/{workflow_id}", headers=headers
+        )
+        response.raise_for_status()
+        workflow_path = response.json().get("path")
+        if not workflow_path:
+            return None, None
+        content_response = await client.get(
+            f"{self.api_url}/repos/{repository}/contents/{workflow_path}",
+            headers={**headers, "Accept": "application/vnd.github.raw+json"},
+            params={"ref": head_sha},
+        )
+        if content_response.status_code == 404:
+            return workflow_path, None
+        content_response.raise_for_status()
+        return workflow_path, content_response.text
+
     async def create_check(
         self, repository: str, head_sha: str, token: str, title: str, summary: str
     ) -> None:
@@ -87,7 +181,7 @@ class GitHubClient:
             "conclusion": "neutral",
             "output": {"title": title[:255], "summary": summary[:65535]},
         }
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             response = await client.post(
                 f"{self.api_url}/repos/{repository}/check-runs",
                 headers=self._headers(token),

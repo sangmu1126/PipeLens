@@ -8,8 +8,10 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - `workflow_run.completed` webhook 수신 및 HMAC-SHA256 서명 검증
 - 실패한 workflow만 수집하고 workflow run ID로 중복 분석 방지
 - GitHub App installation token으로 실패 job과 로그 수집
+- PR 변경 파일 또는 실패 commit의 diff와 실행 시점 workflow 수집
 - ANSI/타임스탬프 제거 및 주요 secret/개인정보 마스킹
 - 요구사항의 10개 실패 범주 규칙 기반 분류
+- 로그 경로·파일명·오류 범주·변경 코드 식별자를 이용한 관련 파일 점수화
 - 입력 로그에 실제로 존재하는 근거만 허용하는 결과 검증
 - SQLite 분석 이력 API와 선택적인 GitHub Check 게시
 
@@ -64,6 +66,6 @@ requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 
 ## 다음 구현 경계
 
 현재 queue와 DB는 단일 프로세스 개발 환경용입니다. 다음 단계에서는 Redis 기반 worker와
-PostgreSQL로 분리하고, diff/workflow 관련도 분석, 교체 가능한 LLM adapter, Prometheus
-지표, React 대시보드 및 사용자 피드백을 추가합니다. 규칙 기반 진단은 LLM 장애 시에도
-항상 fallback 결과로 유지합니다.
+PostgreSQL로 분리하고, 교체 가능한 LLM adapter, Prometheus 지표, React 대시보드 및
+사용자 피드백을 추가합니다. 규칙 기반 진단은 LLM 장애 시에도 항상 fallback 결과로
+유지합니다.

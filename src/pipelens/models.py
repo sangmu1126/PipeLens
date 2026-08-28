@@ -52,6 +52,27 @@ class Diagnosis(BaseModel):
     evidence: list[Evidence]
     suggestions: list[Suggestion] = Field(default_factory=list)
     conflicts: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
+class ChangedFile(BaseModel):
+    filename: str
+    status: str
+    patch: str | None = None
+    previous_filename: str | None = None
+
+
+class RepositoryContext(BaseModel):
+    changed_files: list[ChangedFile] = Field(default_factory=list)
+    workflow_path: str | None = None
+    workflow_content: str | None = None
+
+
+class RelatedFile(BaseModel):
+    filename: str
+    score: float = Field(ge=0, le=1)
+    reasons: list[str]
+    patch_excerpt: str | None = None
 
 
 class AnalysisRecord(BaseModel):
@@ -65,6 +86,8 @@ class AnalysisRecord(BaseModel):
     status: AnalysisStatus = AnalysisStatus.QUEUED
     classification: Classification | None = None
     diagnosis: Diagnosis | None = None
+    related_files: list[RelatedFile] = Field(default_factory=list)
+    workflow_path: str | None = None
     error: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

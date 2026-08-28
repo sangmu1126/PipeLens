@@ -4,7 +4,7 @@ from contextlib import closing
 from datetime import UTC, datetime
 from pathlib import Path
 
-from pipelens.models import AnalysisRecord, AnalysisStatus, Classification, Diagnosis
+from pipelens.models import AnalysisRecord, AnalysisStatus, Classification, Diagnosis, RelatedFile
 
 
 class AnalysisStore:
@@ -34,12 +34,23 @@ class AnalysisStore:
                     status TEXT NOT NULL,
                     classification TEXT,
                     diagnosis TEXT,
+                    related_files TEXT NOT NULL DEFAULT '[]',
+                    workflow_path TEXT,
                     error TEXT,
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
                 """
             )
+            columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(analyses)").fetchall()
+            }
+            if "related_files" not in columns:
+                connection.execute(
+                    "ALTER TABLE analyses ADD COLUMN related_files TEXT NOT NULL DEFAULT '[]'"
+                )
+            if "workflow_path" not in columns:
+                connection.execute("ALTER TABLE analyses ADD COLUMN workflow_path TEXT")
             connection.commit()
 
     def create_if_absent(self, record: AnalysisRecord) -> bool:
@@ -73,6 +84,8 @@ class AnalysisStore:
         status: AnalysisStatus,
         classification: Classification | None = None,
         diagnosis: Diagnosis | None = None,
+        related_files: list[RelatedFile] | None = None,
+        workflow_path: str | None = None,
         error: str | None = None,
     ) -> None:
         with closing(self._connect()) as connection:
@@ -80,13 +93,20 @@ class AnalysisStore:
                 """
                 UPDATE analyses
                 SET status = ?, classification = COALESCE(?, classification),
-                    diagnosis = COALESCE(?, diagnosis), error = ?, updated_at = ?
+                    diagnosis = COALESCE(?, diagnosis),
+                    related_files = COALESCE(?, related_files),
+                    workflow_path = COALESCE(?, workflow_path),
+                    error = ?, updated_at = ?
                 WHERE run_id = ?
                 """,
                 (
                     status.value,
                     classification.model_dump_json() if classification else None,
                     diagnosis.model_dump_json() if diagnosis else None,
+                    json.dumps([item.model_dump() for item in related_files])
+                    if related_files is not None
+                    else None,
+                    workflow_path,
                     error,
                     datetime.now(UTC).isoformat(),
                     run_id,
@@ -121,4 +141,8 @@ class AnalysisStore:
             if values["diagnosis"]
             else None
         )
+        values["related_files"] = [
+            RelatedFile.model_validate(item)
+            for item in json.loads(values.get("related_files") or "[]")
+        ]
         return AnalysisRecord.model_validate(values)
