@@ -79,6 +79,7 @@ class RepositoryContext(BaseModel):
     workflow_content: str | None = None
     pull_request_number: int | None = None
     trust_level: TrustLevel = TrustLevel.TRUSTED
+    baseline_sha: str | None = None
 
 
 class RelatedFile(BaseModel):
@@ -115,6 +116,7 @@ class AnalysisRecord(BaseModel):
     html_url: str
     installation_id: int | None = None
     trust_level: TrustLevel = TrustLevel.TRUSTED
+    baseline_sha: str | None = None
     status: AnalysisStatus = AnalysisStatus.QUEUED
     classification: Classification | None = None
     diagnosis: Diagnosis | None = None

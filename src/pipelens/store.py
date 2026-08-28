@@ -47,6 +47,7 @@ analyses = Table(
     Column("html_url", Text, nullable=False),
     Column("installation_id", BigInteger),
     Column("trust_level", String(32), nullable=False, default=TrustLevel.TRUSTED.value),
+    Column("baseline_sha", String(64)),
     Column("status", String(32), nullable=False, index=True),
     Column("classification", JSON),
     Column("diagnosis", JSON),
@@ -144,6 +145,7 @@ class AnalysisStore:
             "html_url": record.html_url,
             "installation_id": record.installation_id,
             "trust_level": record.trust_level.value,
+            "baseline_sha": record.baseline_sha,
             "status": record.status.value,
             "classification": _dump_model(record.classification),
             "diagnosis": _dump_model(record.diagnosis),
@@ -173,6 +175,7 @@ class AnalysisStore:
         model_name: str | None = None,
         prompt_version: str | None = None,
         trust_level: TrustLevel | None = None,
+        baseline_sha: str | None = None,
         error: str | None = None,
     ) -> None:
         values: dict = {
@@ -194,6 +197,8 @@ class AnalysisStore:
             values["prompt_version"] = prompt_version
         if trust_level is not None:
             values["trust_level"] = trust_level.value
+        if baseline_sha is not None:
+            values["baseline_sha"] = baseline_sha
         with self.engine.begin() as connection:
             connection.execute(update(analyses).where(analyses.c.run_id == run_id).values(**values))
 

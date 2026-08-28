@@ -179,8 +179,8 @@ class GitHubClient:
             run_response.raise_for_status()
             run = run_response.json()
 
-            changed_files = await self._changed_files(
-                client, repository, head_sha, headers, run.get("pull_requests", [])
+            changed_files, baseline_sha = await self._changed_files(
+                client, repository, head_sha, headers, run
             )
             workflow_path, workflow_content = await self._workflow_context(
                 client, repository, run.get("workflow_id"), head_sha, headers
@@ -193,6 +193,7 @@ class GitHubClient:
                 run["pull_requests"][0]["number"] if run.get("pull_requests") else None
             ),
             trust_level=self._trust_level(repository, run),
+            baseline_sha=baseline_sha,
         )
 
     @staticmethod
@@ -220,8 +221,9 @@ class GitHubClient:
         repository: str,
         head_sha: str,
         headers: dict[str, str],
-        pull_requests: list[dict],
-    ) -> list[ChangedFile]:
+        run: dict,
+    ) -> tuple[list[ChangedFile], str | None]:
+        pull_requests = run.get("pull_requests", [])
         if pull_requests:
             number = pull_requests[0]["number"]
             response = await client.get(
@@ -231,21 +233,69 @@ class GitHubClient:
             )
             response.raise_for_status()
             files = response.json()
+            baseline_sha = pull_requests[0].get("base", {}).get("sha")
         else:
+            baseline_sha = await self._previous_successful_sha(
+                client, repository, run, headers
+            )
+            if baseline_sha:
+                response = await client.get(
+                    f"{self.api_url}/repos/{repository}/compare/{baseline_sha}...{head_sha}",
+                    headers=headers,
+                    params={"per_page": 100},
+                )
+                response.raise_for_status()
+                files = response.json().get("files", [])
+            else:
+                response = await client.get(
+                    f"{self.api_url}/repos/{repository}/commits/{head_sha}", headers=headers
+                )
+                response.raise_for_status()
+                files = response.json().get("files", [])
+        return (
+            [
+                ChangedFile(
+                    filename=item["filename"],
+                    status=item.get("status", "modified"),
+                    patch=item.get("patch"),
+                    previous_filename=item.get("previous_filename"),
+                )
+                for item in files
+            ],
+            baseline_sha,
+        )
+
+    async def _previous_successful_sha(
+        self,
+        client: httpx.AsyncClient,
+        repository: str,
+        run: dict,
+        headers: dict[str, str],
+    ) -> str | None:
+        workflow_id = run.get("workflow_id")
+        branch = run.get("head_branch")
+        created_at = run.get("created_at")
+        if workflow_id is None or not branch:
+            return None
+        for page in range(1, 11):
             response = await client.get(
-                f"{self.api_url}/repos/{repository}/commits/{head_sha}", headers=headers
+                f"{self.api_url}/repos/{repository}/actions/workflows/{workflow_id}/runs",
+                headers=headers,
+                params={
+                    "branch": branch,
+                    "status": "success",
+                    "per_page": 100,
+                    "page": page,
+                },
             )
             response.raise_for_status()
-            files = response.json().get("files", [])
-        return [
-            ChangedFile(
-                filename=item["filename"],
-                status=item.get("status", "modified"),
-                patch=item.get("patch"),
-                previous_filename=item.get("previous_filename"),
-            )
-            for item in files
-        ]
+            candidates = response.json().get("workflow_runs", [])
+            for candidate in candidates:
+                if not created_at or candidate.get("created_at", "") < created_at:
+                    return candidate.get("head_sha")
+            if len(candidates) < 100:
+                break
+        return None
 
     async def _workflow_context(
         self,

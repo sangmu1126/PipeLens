@@ -150,6 +150,7 @@ class AnalysisPipeline:
             model_name=model_name,
             prompt_version=prompt_version,
             trust_level=repository_context.trust_level,
+            baseline_sha=repository_context.baseline_sha,
         )
         if self.settings.publish_checks:
             details_url = (

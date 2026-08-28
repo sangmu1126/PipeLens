@@ -123,6 +123,64 @@ async def test_failed_jobs_include_failed_step_names() -> None:
 
 
 @pytest.mark.asyncio
+async def test_repository_context_compares_from_previous_successful_run() -> None:
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(str(request.url))
+        path = request.url.path
+        if path.endswith("/actions/runs/200"):
+            return httpx.Response(
+                200,
+                json={
+                    "workflow_id": 7,
+                    "head_branch": "main",
+                    "created_at": "2026-08-29T10:00:00Z",
+                    "pull_requests": [],
+                },
+            )
+        if path.endswith("/actions/workflows/7/runs"):
+            return httpx.Response(
+                200,
+                json={
+                    "workflow_runs": [
+                        {
+                            "head_sha": "lastgood",
+                            "created_at": "2026-08-29T09:00:00Z",
+                        }
+                    ]
+                },
+            )
+        if "/compare/lastgood...failedsha" in path:
+            return httpx.Response(
+                200,
+                json={
+                    "files": [
+                        {
+                            "filename": "src/regression.py",
+                            "status": "modified",
+                            "patch": "+broken = True",
+                        }
+                    ]
+                },
+            )
+        if path.endswith("/actions/workflows/7"):
+            return httpx.Response(200, json={"path": ".github/workflows/ci.yml"})
+        if path.endswith("/contents/.github/workflows/ci.yml"):
+            return httpx.Response(200, text="name: CI")
+        return httpx.Response(404)
+
+    github = GitHubClient(None, None, 1024, transport=httpx.MockTransport(handler))
+
+    context = await github.repository_context("acme/widgets", 200, "failedsha", "token")
+
+    assert context.baseline_sha == "lastgood"
+    assert context.changed_files[0].filename == "src/regression.py"
+    assert any("branch=main" in url and "status=success" in url for url in requested)
+    assert any("/compare/lastgood...failedsha" in url for url in requested)
+
+
+@pytest.mark.asyncio
 async def test_check_publication_creates_then_updates_by_run_id() -> None:
     requests: list[tuple[str, str, dict | None]] = []
     list_calls = 0

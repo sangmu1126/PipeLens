@@ -143,6 +143,12 @@ def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:
         )
     )
 
-    store.update(47, AnalysisStatus.RUNNING, trust_level=TrustLevel.UNTRUSTED_FORK)
+    store.update(
+        47,
+        AnalysisStatus.RUNNING,
+        trust_level=TrustLevel.UNTRUSTED_FORK,
+        baseline_sha="last-success-sha",
+    )
 
     assert store.get(47).trust_level is TrustLevel.UNTRUSTED_FORK
+    assert store.get(47).baseline_sha == "last-success-sha"
