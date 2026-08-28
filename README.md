@@ -16,6 +16,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - LLM 근거·파일 경로·규칙 분류 충돌 검증 및 규칙 기반 fallback
 - 입력 로그에 실제로 존재하는 근거만 허용하는 결과 검증
 - Webhook·분석·오류 범주·마스킹·LLM 사용량과 비용의 Prometheus 지표
+- 수집·정제·분류·연관·진단·게시 단계 이력과 전체 분석 소요 시간 기록
 - 메모리 또는 Redis queue와 ack·재시도를 지원하는 독립 분석 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
 - 분석 이력·근거·관련 diff·피드백과 run 딥링크를 제공하는 React 대시보드

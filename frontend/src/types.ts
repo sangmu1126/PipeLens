@@ -70,6 +70,15 @@ export interface Analysis {
   prompt_version: string | null;
   feedback: Feedback | null;
   error: string | null;
+  analysis_started_at: string | null;
+  analysis_completed_at: string | null;
+  duration_seconds: number | null;
+  stage_history: {
+    stage: "collecting" | "sanitizing" | "classifying" | "correlating" | "diagnosing" | "publishing";
+    status: "started" | "completed" | "failed";
+    error: string | null;
+    occurred_at: string;
+  }[];
   created_at: string;
   updated_at: string;
 }

@@ -22,6 +22,15 @@ const statusLabels = {
   failed: "실패",
 };
 
+const stageLabels = {
+  collecting: "수집",
+  sanitizing: "민감정보 제거",
+  classifying: "오류 분류",
+  correlating: "변경 연관",
+  diagnosing: "원인 진단",
+  publishing: "GitHub 게시",
+};
+
 function App() {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [selectedRun, setSelectedRun] = useState<number | null>(() => {
@@ -237,11 +246,29 @@ function Confidence({ value }: { value: number | undefined }) {
 
 function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedback: (runId: number, feedback: Analysis["feedback"]) => void }) {
   const diagnosis = analysis.diagnosis;
+  const latestStages = Object.values(
+    analysis.stage_history.reduce<Record<string, Analysis["stage_history"][number]>>(
+      (result, event) => ({ ...result, [event.stage]: event }),
+      {},
+    ),
+  );
   return (
     <div className="detail-content">
       <div className="detail-topline"><StatusBadge status={analysis.status} /><a href={analysis.html_url} target="_blank" rel="noreferrer">GitHub에서 보기 ↗</a></div>
       <h2>{diagnosis?.summary ?? "분석 결과를 기다리는 중입니다."}</h2>
       <p className="run-id">RUN #{analysis.run_id} · {analysis.workflow_name}</p>
+      {latestStages.length > 0 && (
+        <div className="stage-summary">
+          <div><span>분석 과정</span><strong>{formatDuration(analysis.duration_seconds)}</strong></div>
+          <ol>
+            {latestStages.map((event) => (
+              <li className={`stage-${event.status}`} key={event.stage} title={event.error ?? undefined}>
+                <i />{stageLabels[event.stage]}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
       {analysis.trust_level === "untrusted_fork" && (
         <div className="trust-warning">
           <strong>외부 Fork의 비신뢰 실행</strong>
@@ -347,6 +374,13 @@ function FeedbackForm({ analysis, onSaved }: { analysis: Analysis; onSaved: (fee
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+}
+
+function formatDuration(value: number | null) {
+  if (value === null) return "진행 중";
+  if (value < 1) return `${value.toFixed(1)}초`;
+  if (value < 60) return `${Math.round(value)}초`;
+  return `${Math.floor(value / 60)}분 ${Math.round(value % 60)}초`;
 }
 
 export default App;
