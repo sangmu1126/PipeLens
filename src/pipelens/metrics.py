@@ -27,6 +27,12 @@ class Metrics:
             ("category",),
             registry=self.registry,
         )
+        self.analysis_trust = Counter(
+            "pipelens_analysis_trust_total",
+            "Analyzed workflow runs by trust level.",
+            ("level",),
+            registry=self.registry,
+        )
         self.redactions = Counter(
             "pipelens_redactions_total",
             "Sensitive values removed before analysis.",

@@ -8,7 +8,7 @@ from pipelens.diagnosis import build_rule_based_diagnosis, validate_diagnosis
 from pipelens.github import GitHubClient
 from pipelens.llm import PROMPT_VERSION, LLMContext, LLMProvider, validate_llm_analysis
 from pipelens.metrics import Metrics
-from pipelens.models import AnalysisRequest, AnalysisStatus, RepositoryContext
+from pipelens.models import AnalysisRequest, AnalysisStatus, RepositoryContext, TrustLevel
 from pipelens.publication import render_github_diagnosis
 from pipelens.relevance import correlate_changed_files
 from pipelens.sanitizer import sanitize_log
@@ -51,6 +51,12 @@ class AnalysisPipeline:
             self.github.download_logs(request.repository, request.run_id, token),
             self._repository_context(request.repository, request.run_id, request.head_sha, token),
         )
+        self.store.update(
+            request.run_id,
+            AnalysisStatus.RUNNING,
+            trust_level=repository_context.trust_level,
+        )
+        self.metrics.analysis_trust.labels(level=repository_context.trust_level.value).inc()
         matching_logs = [log for log in logs if any(name in log.job_name for name in failed_jobs)]
         selected = matching_logs or logs
         combined = "\n".join(log.text for log in selected)
@@ -76,7 +82,13 @@ class AnalysisPipeline:
         diagnosis = fallback_diagnosis
         model_name: str | None = None
         prompt_version: str | None = None
-        if self.llm_provider:
+        is_untrusted_fork = repository_context.trust_level is TrustLevel.UNTRUSTED_FORK
+        if is_untrusted_fork:
+            diagnosis.notes.append(
+                "외부 Fork 실행이므로 신뢰할 수 없는 로그·코드·Workflow를 LLM에 전송하지 "
+                "않고 규칙 기반 진단만 수행했습니다."
+            )
+        if self.llm_provider and not is_untrusted_fork:
             model_name = self.llm_provider.model_name
             prompt_version = PROMPT_VERSION
             workflow_content, workflow_redactions = sanitize_log(
@@ -127,13 +139,19 @@ class AnalysisPipeline:
             workflow_path=repository_context.workflow_path,
             model_name=model_name,
             prompt_version=prompt_version,
+            trust_level=repository_context.trust_level,
         )
         if self.settings.publish_checks:
             details_url = (
                 f"{self.settings.public_url.rstrip('/')}/?run_id={request.run_id}"
             )
             body = render_github_diagnosis(
-                request.run_id, classification, diagnosis, related_files, details_url
+                request.run_id,
+                classification,
+                diagnosis,
+                related_files,
+                details_url,
+                repository_context.trust_level,
             )
             if repository_context.pull_request_number is not None:
                 await self.github.upsert_pull_request_comment(
@@ -143,7 +161,7 @@ class AnalysisPipeline:
                     token,
                     body,
                 )
-            else:
+            elif not is_untrusted_fork:
                 await self.github.upsert_check(
                     request.repository,
                     request.head_sha,

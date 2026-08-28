@@ -6,7 +6,13 @@ from prometheus_client import generate_latest
 
 from pipelens.config import Settings
 from pipelens.github import JobLog
-from pipelens.models import AnalysisRecord, AnalysisRequest, AnalysisStatus, RepositoryContext
+from pipelens.models import (
+    AnalysisRecord,
+    AnalysisRequest,
+    AnalysisStatus,
+    RepositoryContext,
+    TrustLevel,
+)
 from pipelens.pipeline import AnalysisPipeline
 from pipelens.store import AnalysisStore
 
@@ -159,3 +165,57 @@ async def test_publishes_pr_comment_or_commit_check(
         assert github.upsert_check.await_args.args[-1] == (
             f"https://pipelens.example/?run_id={run_id}"
         )
+
+
+@pytest.mark.asyncio
+async def test_untrusted_fork_uses_rules_without_llm_and_skips_commit_check(
+    tmp_path: Path,
+) -> None:
+    store = AnalysisStore(str(tmp_path / "fork.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=52,
+            delivery_id="delivery-52",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/52",
+            installation_id=7,
+        )
+    )
+    github = MagicMock()
+    github.installation_token = AsyncMock(return_value="token")
+    github.failed_job_names = AsyncMock(return_value=["tests"])
+    github.download_logs = AsyncMock(
+        return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
+    )
+    github.repository_context = AsyncMock(
+        return_value=RepositoryContext(trust_level=TrustLevel.UNTRUSTED_FORK)
+    )
+    github.upsert_pull_request_comment = AsyncMock()
+    github.upsert_check = AsyncMock()
+    provider = MagicMock(model_name="test-model")
+    provider.analyze = AsyncMock()
+    pipeline = AnalysisPipeline(
+        Settings(database_path=store.database_path, publish_checks=True),
+        store,
+        github,
+        provider,
+    )
+
+    await pipeline.analyze(
+        AnalysisRequest(
+            run_id=52,
+            repository="acme/example",
+            installation_id=7,
+            head_sha="abc123",
+        )
+    )
+
+    result = store.get(52)
+    assert result.trust_level is TrustLevel.UNTRUSTED_FORK
+    assert "규칙 기반 진단만" in result.diagnosis.notes[0]
+    provider.analyze.assert_not_awaited()
+    github.upsert_pull_request_comment.assert_not_awaited()
+    github.upsert_check.assert_not_awaited()

@@ -1,6 +1,6 @@
 import html
 
-from pipelens.models import Classification, Diagnosis, RelatedFile
+from pipelens.models import Classification, Diagnosis, RelatedFile, TrustLevel
 
 MAX_GITHUB_BODY_CHARS = 60_000
 
@@ -11,12 +11,25 @@ def render_github_diagnosis(
     diagnosis: Diagnosis,
     related_files: list[RelatedFile],
     details_url: str,
+    trust_level: TrustLevel = TrustLevel.TRUSTED,
 ) -> str:
     sections = [
         "## PipeLens 실패 진단",
         "",
-        _safe(diagnosis.summary),
-        "",
+    ]
+    if trust_level is TrustLevel.UNTRUSTED_FORK:
+        sections.extend(
+            [
+                "> [!WARNING]",
+                "> 외부 Fork에서 시작된 실행입니다. 규칙 기반 진단만 수행했으며,",
+                "> Fork의 로그·코드·Workflow 내용은 LLM에 전송하지 않았습니다.",
+                "",
+            ]
+        )
+    sections.extend(
+        [
+            _safe(diagnosis.summary),
+            "",
         f"**오류 유형:** `{classification.category.value}`  ",
         f"**신뢰도:** {diagnosis.confidence:.0%}  ",
         f"**관련 Step:** {_safe(classification.related_step or '확인 불가')}",
@@ -26,8 +39,9 @@ def render_github_diagnosis(
         _safe(diagnosis.root_cause),
         "",
         "### 검증된 근거",
-        "",
-    ]
+            "",
+        ]
+    )
     for evidence in diagnosis.evidence:
         location = f" · {_safe(evidence.location)}" if evidence.location else ""
         sections.extend(

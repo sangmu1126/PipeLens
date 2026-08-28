@@ -5,6 +5,7 @@ from pipelens.models import (
     Evidence,
     RelatedFile,
     Suggestion,
+    TrustLevel,
 )
 from pipelens.publication import MAX_GITHUB_BODY_CHARS, render_github_diagnosis
 
@@ -56,3 +57,24 @@ def test_github_diagnosis_respects_comment_size_limit() -> None:
 
     assert len(body) <= MAX_GITHUB_BODY_CHARS
     assert "내용이 길어 일부를 생략했습니다" in body
+
+
+def test_github_diagnosis_warns_for_untrusted_fork() -> None:
+    body = render_github_diagnosis(
+        123,
+        Classification(
+            category=ErrorCategory.TEST, confidence=0.9, first_error="test failed"
+        ),
+        Diagnosis(
+            summary="테스트 실패",
+            root_cause="assertion failed",
+            confidence=0.9,
+            evidence=[Evidence(source="log", content="test failed")],
+        ),
+        [],
+        "https://pipelens.example/?run_id=123",
+        TrustLevel.UNTRUSTED_FORK,
+    )
+
+    assert "외부 Fork" in body
+    assert "LLM에 전송하지 않았습니다" in body
