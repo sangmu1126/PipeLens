@@ -1,88 +1,91 @@
-import json
-import sqlite3
-from contextlib import closing
 from datetime import UTC, datetime
-from pathlib import Path
+
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Column,
+    DateTime,
+    MetaData,
+    String,
+    Table,
+    Text,
+    create_engine,
+    delete,
+    insert,
+    select,
+    update,
+)
+from sqlalchemy.engine import Engine, RowMapping
+from sqlalchemy.exc import IntegrityError
 
 from pipelens.models import AnalysisRecord, AnalysisStatus, Classification, Diagnosis, RelatedFile
 
+metadata = MetaData()
+
+analyses = Table(
+    "analyses",
+    metadata,
+    Column("run_id", BigInteger, primary_key=True),
+    Column("delivery_id", String(255), nullable=False, unique=True),
+    Column("repository", String(255), nullable=False, index=True),
+    Column("workflow_name", String(255), nullable=False),
+    Column("head_sha", String(64), nullable=False),
+    Column("html_url", Text, nullable=False),
+    Column("installation_id", BigInteger),
+    Column("status", String(32), nullable=False, index=True),
+    Column("classification", JSON),
+    Column("diagnosis", JSON),
+    Column("related_files", JSON, nullable=False, default=list),
+    Column("workflow_path", Text),
+    Column("model_name", String(255)),
+    Column("prompt_version", String(255)),
+    Column("error", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, index=True),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
 
 class AnalysisStore:
-    def __init__(self, database_path: str) -> None:
-        self.database_path = database_path
+    def __init__(self, database_url: str, engine: Engine | None = None) -> None:
+        self.database_url = _normalize_database_url(database_url)
+        self.engine = engine or create_engine(self.database_url, pool_pre_ping=True)
 
-    def _connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self.database_path)
-        connection.row_factory = sqlite3.Row
-        return connection
+    @property
+    def database_path(self) -> str:
+        """Compatibility helper for local SQLite callers."""
+        if self.engine.url.get_backend_name() != "sqlite":
+            return self.database_url
+        return self.engine.url.database or ":memory:"
 
     def initialize(self) -> None:
-        path = Path(self.database_path)
-        if path.parent != Path("."):
-            path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect()) as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS analyses (
-                    run_id INTEGER PRIMARY KEY,
-                    delivery_id TEXT NOT NULL UNIQUE,
-                    repository TEXT NOT NULL,
-                    workflow_name TEXT NOT NULL,
-                    head_sha TEXT NOT NULL,
-                    html_url TEXT NOT NULL,
-                    installation_id INTEGER,
-                    status TEXT NOT NULL,
-                    classification TEXT,
-                    diagnosis TEXT,
-                    related_files TEXT NOT NULL DEFAULT '[]',
-                    workflow_path TEXT,
-                    model_name TEXT,
-                    prompt_version TEXT,
-                    error TEXT,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                )
-                """
-            )
-            columns = {
-                row["name"] for row in connection.execute("PRAGMA table_info(analyses)").fetchall()
-            }
-            if "related_files" not in columns:
-                connection.execute(
-                    "ALTER TABLE analyses ADD COLUMN related_files TEXT NOT NULL DEFAULT '[]'"
-                )
-            if "workflow_path" not in columns:
-                connection.execute("ALTER TABLE analyses ADD COLUMN workflow_path TEXT")
-            if "model_name" not in columns:
-                connection.execute("ALTER TABLE analyses ADD COLUMN model_name TEXT")
-            if "prompt_version" not in columns:
-                connection.execute("ALTER TABLE analyses ADD COLUMN prompt_version TEXT")
-            connection.commit()
+        metadata.create_all(self.engine)
 
     def create_if_absent(self, record: AnalysisRecord) -> bool:
-        with closing(self._connect()) as connection:
-            cursor = connection.execute(
-                """
-                INSERT OR IGNORE INTO analyses
-                (run_id, delivery_id, repository, workflow_name, head_sha, html_url,
-                 installation_id, status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    record.run_id,
-                    record.delivery_id,
-                    record.repository,
-                    record.workflow_name,
-                    record.head_sha,
-                    record.html_url,
-                    record.installation_id,
-                    record.status.value,
-                    record.created_at.isoformat(),
-                    record.updated_at.isoformat(),
-                ),
-            )
-            connection.commit()
-            return cursor.rowcount == 1
+        values = {
+            "run_id": record.run_id,
+            "delivery_id": record.delivery_id,
+            "repository": record.repository,
+            "workflow_name": record.workflow_name,
+            "head_sha": record.head_sha,
+            "html_url": record.html_url,
+            "installation_id": record.installation_id,
+            "status": record.status.value,
+            "classification": _dump_model(record.classification),
+            "diagnosis": _dump_model(record.diagnosis),
+            "related_files": [item.model_dump(mode="json") for item in record.related_files],
+            "workflow_path": record.workflow_path,
+            "model_name": record.model_name,
+            "prompt_version": record.prompt_version,
+            "error": record.error,
+            "created_at": record.created_at,
+            "updated_at": record.updated_at,
+        }
+        try:
+            with self.engine.begin() as connection:
+                connection.execute(insert(analyses).values(**values))
+        except IntegrityError:
+            return False
+        return True
 
     def update(
         self,
@@ -96,65 +99,56 @@ class AnalysisStore:
         prompt_version: str | None = None,
         error: str | None = None,
     ) -> None:
-        with closing(self._connect()) as connection:
-            connection.execute(
-                """
-                UPDATE analyses
-                SET status = ?, classification = COALESCE(?, classification),
-                    diagnosis = COALESCE(?, diagnosis),
-                    related_files = COALESCE(?, related_files),
-                    workflow_path = COALESCE(?, workflow_path),
-                    model_name = COALESCE(?, model_name),
-                    prompt_version = COALESCE(?, prompt_version),
-                    error = ?, updated_at = ?
-                WHERE run_id = ?
-                """,
-                (
-                    status.value,
-                    classification.model_dump_json() if classification else None,
-                    diagnosis.model_dump_json() if diagnosis else None,
-                    json.dumps([item.model_dump() for item in related_files])
-                    if related_files is not None
-                    else None,
-                    workflow_path,
-                    model_name,
-                    prompt_version,
-                    error,
-                    datetime.now(UTC).isoformat(),
-                    run_id,
-                ),
-            )
-            connection.commit()
+        values: dict = {
+            "status": status.value,
+            "error": error,
+            "updated_at": datetime.now(UTC),
+        }
+        if classification is not None:
+            values["classification"] = classification.model_dump(mode="json")
+        if diagnosis is not None:
+            values["diagnosis"] = diagnosis.model_dump(mode="json")
+        if related_files is not None:
+            values["related_files"] = [item.model_dump(mode="json") for item in related_files]
+        if workflow_path is not None:
+            values["workflow_path"] = workflow_path
+        if model_name is not None:
+            values["model_name"] = model_name
+        if prompt_version is not None:
+            values["prompt_version"] = prompt_version
+        with self.engine.begin() as connection:
+            connection.execute(update(analyses).where(analyses.c.run_id == run_id).values(**values))
 
     def get(self, run_id: int) -> AnalysisRecord | None:
-        with closing(self._connect()) as connection:
-            row = connection.execute(
-                "SELECT * FROM analyses WHERE run_id = ?", (run_id,)
-            ).fetchone()
+        with self.engine.connect() as connection:
+            row = (
+                connection.execute(select(analyses).where(analyses.c.run_id == run_id))
+                .mappings()
+                .first()
+            )
         return self._to_record(row) if row else None
 
     def list(self, limit: int = 50) -> list[AnalysisRecord]:
-        with closing(self._connect()) as connection:
-            rows = connection.execute(
-                "SELECT * FROM analyses ORDER BY created_at DESC LIMIT ?", (limit,)
-            ).fetchall()
+        statement = select(analyses).order_by(analyses.c.created_at.desc()).limit(limit)
+        with self.engine.connect() as connection:
+            rows = connection.execute(statement).mappings().all()
         return [self._to_record(row) for row in rows]
 
+    def delete(self, run_id: int) -> None:
+        with self.engine.begin() as connection:
+            connection.execute(delete(analyses).where(analyses.c.run_id == run_id))
+
+    def close(self) -> None:
+        self.engine.dispose()
+
     @staticmethod
-    def _to_record(row: sqlite3.Row) -> AnalysisRecord:
-        values = dict(row)
-        values["classification"] = (
-            Classification.model_validate(json.loads(values["classification"]))
-            if values["classification"]
-            else None
-        )
-        values["diagnosis"] = (
-            Diagnosis.model_validate(json.loads(values["diagnosis"]))
-            if values["diagnosis"]
-            else None
-        )
-        values["related_files"] = [
-            RelatedFile.model_validate(item)
-            for item in json.loads(values.get("related_files") or "[]")
-        ]
-        return AnalysisRecord.model_validate(values)
+    def _to_record(row: RowMapping) -> AnalysisRecord:
+        return AnalysisRecord.model_validate(dict(row))
+
+
+def _dump_model(value: Classification | Diagnosis | None) -> dict | None:
+    return value.model_dump(mode="json") if value is not None else None
+
+
+def _normalize_database_url(value: str) -> str:
+    return value if "://" in value else f"sqlite:///{value}"

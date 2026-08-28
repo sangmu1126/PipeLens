@@ -97,6 +97,7 @@ async def run_worker(settings: Settings | None = None) -> None:
         await worker.run()
     finally:
         await runtime.queue.close()
+        runtime.store.close()
 
 
 if __name__ == "__main__":

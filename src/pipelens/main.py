@@ -38,6 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if local_worker:
             await local_worker.stop()
         await runtime.queue.close()
+        store.close()
 
     app = FastAPI(title="PipeLens API", version="0.1.0", lifespan=lifespan)
     app.state.store = store

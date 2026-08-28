@@ -20,7 +20,7 @@ class Runtime:
 
 
 def create_runtime(settings: Settings) -> Runtime:
-    store = AnalysisStore(settings.database_path)
+    store = AnalysisStore(settings.resolved_database_url)
     github = GitHubClient(
         settings.github_app_id, settings.github_private_key, settings.max_log_bytes
     )

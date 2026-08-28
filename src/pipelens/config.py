@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     github_app_id: str | None = None
     github_private_key: str | None = None
     database_path: str = "./pipelens.db"
+    database_url: str | None = None
     publish_checks: bool = False
     max_log_bytes: int = 10 * 1024 * 1024
     error_context_lines: int = 8
@@ -24,6 +25,10 @@ class Settings(BaseSettings):
     queue_name: str = "pipelens:analyses"
     worker_max_attempts: int = 3
     worker_metrics_port: int = 8001
+
+    @property
+    def resolved_database_url(self) -> str:
+        return self.database_url or f"sqlite:///{self.database_path}"
 
 
 @lru_cache
