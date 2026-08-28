@@ -155,6 +155,9 @@ worker replica를 실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS
 큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과 pending 적재가
 원자적으로 수행됩니다. DB 기록 후 큐 장애가 발생하면 webhook 재전달이 해당 `queued`
 분석을 다시 적재하고, API 시작 시에도 DB의 미처리 분석을 큐와 재조정합니다.
+복구된 작업이 시작되면 새 attempt fencing token이 발급됩니다. lease가 만료됐던 이전
+worker가 뒤늦게 재개되더라도 현재 token과 일치하지 않는 상태·단계 기록은 거부하며 GitHub
+게시 단계에 도달하기 전에 중단합니다.
 분석 API는 기본적으로 인증이 필요하며 사용자가 접근할 수 있는 GitHub App installation의
 결과만 반환합니다. 로컬 API 테스트처럼 인증을 의도적으로 끄려면
 `PIPELENS_AUTH_REQUIRED=false`를 명시합니다. 규칙 기반 진단은 LLM 장애 시에도 항상

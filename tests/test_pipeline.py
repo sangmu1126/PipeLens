@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
@@ -282,3 +283,74 @@ async def test_pipeline_records_failed_stage_and_attempt_duration(tmp_path: Path
     assert result.stage_history[-1].stage is AnalysisStage.COLLECTING
     assert result.stage_history[-1].status is StageStatus.FAILED
     assert result.stage_history[-1].error == "GitHub unavailable"
+
+
+@pytest.mark.asyncio
+async def test_new_attempt_fences_resumed_stale_pipeline(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "fencing.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=54,
+            delivery_id="delivery-54",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/54",
+            installation_id=7,
+        )
+    )
+    first_started = asyncio.Event()
+    release_first = asyncio.Event()
+    token_calls = 0
+
+    async def installation_token(_: int) -> str:
+        nonlocal token_calls
+        token_calls += 1
+        if token_calls == 1:
+            first_started.set()
+            await release_first.wait()
+        return "token"
+
+    github = MagicMock()
+    github.installation_token = AsyncMock(side_effect=installation_token)
+    github.failed_jobs = AsyncMock(
+        return_value=[FailedJob(job_id=1, name="tests", failed_steps=("Run pytest",))]
+    )
+    github.download_logs = AsyncMock(
+        return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
+    )
+    github.repository_context = AsyncMock(return_value=RepositoryContext())
+    github.upsert_check = AsyncMock()
+    pipeline = AnalysisPipeline(
+        Settings(
+            database_path=store.database_path,
+            publish_checks=True,
+            public_url="https://pipelens.example",
+        ),
+        store,
+        github,
+    )
+    request = AnalysisRequest(
+        run_id=54,
+        repository="acme/example",
+        installation_id=7,
+        head_sha="abc123",
+    )
+
+    stale_task = asyncio.create_task(pipeline.analyze(request))
+    await first_started.wait()
+    await pipeline.analyze(request)
+    release_first.set()
+    await stale_task
+
+    result = store.get(54)
+    assert result.status is AnalysisStatus.COMPLETED
+    assert any(
+        event.status is StageStatus.FAILED and "Superseded" in (event.error or "")
+        for event in result.stage_history
+    )
+    github.upsert_check.assert_awaited_once()
+    metrics = generate_latest(pipeline.metrics.registry).decode()
+    assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
+    assert 'pipelens_analyses_total{status="superseded"} 1.0' in metrics

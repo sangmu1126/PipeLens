@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import uuid
 from contextlib import contextmanager
 from time import perf_counter
 
@@ -21,7 +22,7 @@ from pipelens.preprocessing import preprocess_logs
 from pipelens.publication import render_github_diagnosis
 from pipelens.relevance import correlate_changed_files
 from pipelens.sanitizer import sanitize_log
-from pipelens.store import AnalysisStore
+from pipelens.store import AnalysisAttemptSuperseded, AnalysisStore
 
 logger = logging.getLogger(__name__)
 
@@ -43,36 +44,57 @@ class AnalysisPipeline:
 
     async def analyze(self, request: AnalysisRequest) -> None:
         started = perf_counter()
-        started_at = self.store.begin_analysis(request.run_id)
+        attempt_token = uuid.uuid4().hex
         try:
-            await self._analyze(request)
+            started_at = self.store.begin_analysis(request.run_id, attempt_token)
+            await self._analyze(request, attempt_token)
+        except AnalysisAttemptSuperseded:
+            self.metrics.analyses.labels(status="superseded").inc()
+            self.metrics.analysis_duration.observe(perf_counter() - started)
+            return
         except Exception:
-            self.store.finish_analysis(request.run_id, started_at, AnalysisStatus.FAILED)
+            try:
+                self.store.finish_analysis(
+                    request.run_id,
+                    started_at,
+                    AnalysisStatus.FAILED,
+                    attempt_token,
+                )
+            except AnalysisAttemptSuperseded:
+                self.metrics.analyses.labels(status="superseded").inc()
+                self.metrics.analysis_duration.observe(perf_counter() - started)
+                return
             self.metrics.analyses.labels(status="failed_attempt").inc()
             self.metrics.analysis_duration.observe(perf_counter() - started)
             raise
-        self.store.finish_analysis(request.run_id, started_at)
+        try:
+            self.store.finish_analysis(request.run_id, started_at, attempt_token=attempt_token)
+        except AnalysisAttemptSuperseded:
+            self.metrics.analyses.labels(status="superseded").inc()
+            self.metrics.analysis_duration.observe(perf_counter() - started)
+            return
         self.metrics.analyses.labels(status="completed").inc()
         self.metrics.analysis_duration.observe(perf_counter() - started)
 
-    async def _analyze(self, request: AnalysisRequest) -> None:
-        with self._stage(request.run_id, AnalysisStage.COLLECTING):
-            token = await self.github.installation_token(request.installation_id)
+    async def _analyze(self, request: AnalysisRequest, attempt_token: str) -> None:
+        with self._stage(request.run_id, AnalysisStage.COLLECTING, attempt_token):
+            access_token = await self.github.installation_token(request.installation_id)
             failed_jobs, logs, repository_context = await asyncio.gather(
-                self.github.failed_jobs(request.repository, request.run_id, token),
-                self.github.download_logs(request.repository, request.run_id, token),
+                self.github.failed_jobs(request.repository, request.run_id, access_token),
+                self.github.download_logs(request.repository, request.run_id, access_token),
                 self._repository_context(
-                    request.repository, request.run_id, request.head_sha, token
+                    request.repository, request.run_id, request.head_sha, access_token
                 ),
             )
             self.store.update(
                 request.run_id,
                 AnalysisStatus.RUNNING,
                 trust_level=repository_context.trust_level,
+                attempt_token=attempt_token,
             )
             self.metrics.analysis_trust.labels(level=repository_context.trust_level.value).inc()
 
-        with self._stage(request.run_id, AnalysisStage.SANITIZING):
+        with self._stage(request.run_id, AnalysisStage.SANITIZING, attempt_token):
             failed_job_names = [job.name for job in failed_jobs]
             matching_logs = [
                 log for log in logs if any(name in log.job_name for name in failed_job_names)
@@ -100,7 +122,7 @@ class AnalysisPipeline:
             )
             self.metrics.record_redactions(workflow_redactions)
 
-        with self._stage(request.run_id, AnalysisStage.CLASSIFYING):
+        with self._stage(request.run_id, AnalysisStage.CLASSIFYING, attempt_token):
             failed_locations = [
                 f"{job.name} / {step}"
                 for job in failed_jobs
@@ -111,7 +133,7 @@ class AnalysisPipeline:
             )
             self.metrics.error_categories.labels(category=classification.category.value).inc()
 
-        with self._stage(request.run_id, AnalysisStage.CORRELATING):
+        with self._stage(request.run_id, AnalysisStage.CORRELATING, attempt_token):
             related_files = correlate_changed_files(
                 context, sanitized_changed_files, classification.category
             )
@@ -119,7 +141,7 @@ class AnalysisPipeline:
             if repository_context.workflow_path:
                 repository_files.add(repository_context.workflow_path)
 
-        with self._stage(request.run_id, AnalysisStage.DIAGNOSING):
+        with self._stage(request.run_id, AnalysisStage.DIAGNOSING, attempt_token):
             fallback_diagnosis = validate_diagnosis(
                 build_rule_based_diagnosis(classification), context, repository_files
             )
@@ -182,8 +204,9 @@ class AnalysisPipeline:
             prompt_version=prompt_version,
             trust_level=repository_context.trust_level,
             baseline_sha=repository_context.baseline_sha,
+            attempt_token=attempt_token,
         )
-        with self._stage(request.run_id, AnalysisStage.PUBLISHING):
+        with self._stage(request.run_id, AnalysisStage.PUBLISHING, attempt_token):
             if self.settings.publish_checks:
                 details_url = (
                     f"{self.settings.public_url.rstrip('/')}/?run_id={request.run_id}"
@@ -203,7 +226,7 @@ class AnalysisPipeline:
                         request.repository,
                         repository_context.pull_request_number,
                         request.run_id,
-                        token,
+                        access_token,
                         body,
                     )
                 elif not is_untrusted_fork:
@@ -211,22 +234,32 @@ class AnalysisPipeline:
                         request.repository,
                         request.head_sha,
                         request.run_id,
-                        token,
+                        access_token,
                         diagnosis.summary,
                         body,
                         details_url,
                     )
 
     @contextmanager
-    def _stage(self, run_id: int, stage: AnalysisStage):
-        self.store.record_stage(run_id, stage, StageStatus.STARTED)
+    def _stage(self, run_id: int, stage: AnalysisStage, attempt_token: str):
+        self.store.record_stage(
+            run_id, stage, StageStatus.STARTED, attempt_token=attempt_token
+        )
         try:
             yield
         except Exception as exc:
-            self.store.record_stage(run_id, stage, StageStatus.FAILED, str(exc)[:2_000])
+            self.store.record_stage(
+                run_id,
+                stage,
+                StageStatus.FAILED,
+                str(exc)[:2_000],
+                attempt_token,
+            )
             raise
         else:
-            self.store.record_stage(run_id, stage, StageStatus.COMPLETED)
+            self.store.record_stage(
+                run_id, stage, StageStatus.COMPLETED, attempt_token=attempt_token
+            )
 
     async def _repository_context(
         self, repository: str, run_id: int, head_sha: str, token: str
