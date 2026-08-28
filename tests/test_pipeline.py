@@ -9,8 +9,10 @@ from pipelens.github import FailedJob, JobLog
 from pipelens.models import (
     AnalysisRecord,
     AnalysisRequest,
+    AnalysisStage,
     AnalysisStatus,
     RepositoryContext,
+    StageStatus,
     TrustLevel,
 )
 from pipelens.pipeline import AnalysisPipeline
@@ -57,6 +59,20 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     assert result.classification.category == "test_failure"
     assert result.classification.related_step == "tests / Run pytest"
     assert result.diagnosis.notes == ["로그와 직접 연결되는 변경 파일을 찾지 못했습니다."]
+    assert result.duration_seconds is not None
+    completed_stages = [
+        event.stage
+        for event in result.stage_history
+        if event.status is StageStatus.COMPLETED
+    ]
+    assert completed_stages == [
+        AnalysisStage.COLLECTING,
+        AnalysisStage.SANITIZING,
+        AnalysisStage.CLASSIFYING,
+        AnalysisStage.CORRELATING,
+        AnalysisStage.DIAGNOSING,
+        AnalysisStage.PUBLISHING,
+    ]
     metrics = generate_latest(pipeline.metrics.registry).decode()
     assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
     assert 'pipelens_error_categories_total{category="test_failure"} 1.0' in metrics
@@ -228,3 +244,40 @@ async def test_untrusted_fork_uses_rules_without_llm_and_skips_commit_check(
     provider.analyze.assert_not_awaited()
     github.upsert_pull_request_comment.assert_not_awaited()
     github.upsert_check.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_pipeline_records_failed_stage_and_attempt_duration(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "failed-stage.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=53,
+            delivery_id="delivery-53",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/53",
+            installation_id=7,
+        )
+    )
+    github = MagicMock()
+    github.installation_token = AsyncMock(side_effect=RuntimeError("GitHub unavailable"))
+    pipeline = AnalysisPipeline(Settings(database_path=store.database_path), store, github)
+
+    with pytest.raises(RuntimeError, match="GitHub unavailable"):
+        await pipeline.analyze(
+            AnalysisRequest(
+                run_id=53,
+                repository="acme/example",
+                installation_id=7,
+                head_sha="abc123",
+            )
+        )
+
+    result = store.get(53)
+    assert result.status is AnalysisStatus.FAILED
+    assert result.duration_seconds is not None
+    assert result.stage_history[-1].stage is AnalysisStage.COLLECTING
+    assert result.stage_history[-1].status is StageStatus.FAILED
+    assert result.stage_history[-1].error == "GitHub unavailable"

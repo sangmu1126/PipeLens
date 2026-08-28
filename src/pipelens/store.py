@@ -273,14 +273,19 @@ class AnalysisStore:
             )
         return started_at
 
-    def finish_analysis(self, run_id: int, started_at: datetime) -> None:
+    def finish_analysis(
+        self,
+        run_id: int,
+        started_at: datetime,
+        status: AnalysisStatus = AnalysisStatus.COMPLETED,
+    ) -> None:
         completed_at = datetime.now(UTC)
         with self.engine.begin() as connection:
             connection.execute(
                 update(analyses)
                 .where(analyses.c.run_id == run_id)
                 .values(
-                    status=AnalysisStatus.COMPLETED.value,
+                    status=status.value,
                     analysis_completed_at=completed_at,
                     duration_seconds=(completed_at - started_at).total_seconds(),
                     updated_at=completed_at,
