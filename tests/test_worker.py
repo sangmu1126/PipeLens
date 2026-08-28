@@ -54,3 +54,21 @@ async def test_worker_marks_job_failed_after_max_attempts() -> None:
     assert await queue.size() == 0
     output = generate_latest(metrics.registry).decode()
     assert 'pipelens_analyses_total{status="failed"} 1.0' in output
+
+
+@pytest.mark.asyncio
+async def test_worker_renews_lease_and_records_orphan_recovery() -> None:
+    queue = MagicMock()
+    queue.heartbeat = AsyncMock()
+    queue.recover_orphaned = AsyncMock(return_value=2)
+    metrics = Metrics()
+    worker = AnalysisWorker(
+        MagicMock(), queue, MagicMock(), metrics, max_attempts=3, heartbeat_seconds=5
+    )
+
+    await worker._maintain_queue_once()
+
+    queue.heartbeat.assert_awaited_once()
+    queue.recover_orphaned.assert_awaited_once()
+    output = generate_latest(metrics.registry).decode()
+    assert "pipelens_queue_recovered_total 2.0" in output

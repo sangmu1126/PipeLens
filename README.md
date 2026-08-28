@@ -108,6 +108,8 @@ PIPELENS_LLM_OUTPUT_COST_PER_MILLION=0
 PIPELENS_HTTP_RETRY_MAX_ATTEMPTS=3
 PIPELENS_HTTP_RETRY_BASE_SECONDS=1
 PIPELENS_HTTP_RETRY_MAX_SECONDS=60
+PIPELENS_WORKER_LEASE_SECONDS=60
+PIPELENS_WORKER_HEARTBEAT_SECONDS=15
 ```
 
 GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
@@ -146,8 +148,10 @@ GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하
 
 기본 `memory` queue는 API 프로세스 안에서 worker를 함께 실행합니다. Docker Compose는
 Redis queue와 별도 worker를 사용하며 worker 지표를 `:8001/metrics`에서 제공합니다.
-현재 processing 목록 복구는 단일 worker 배포를 기준으로 하며, 수평 확장 시에는 lease와
-worker별 processing queue를 추가해야 합니다.
+Redis worker는 인스턴스별 processing 목록과 TTL lease를 사용합니다. heartbeat가 끊겨
+lease가 만료된 worker의 작업만 다른 worker가 원자적으로 pending queue에 복구하므로 여러
+worker replica를 실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS`는
+`PIPELENS_WORKER_LEASE_SECONDS`보다 충분히 작게 유지해야 합니다.
 분석 API는 기본적으로 인증이 필요하며 사용자가 접근할 수 있는 GitHub App installation의
 결과만 반환합니다. 로컬 API 테스트처럼 인증을 의도적으로 끄려면
 `PIPELENS_AUTH_REQUIRED=false`를 명시합니다. 규칙 기반 진단은 LLM 장애 시에도 항상

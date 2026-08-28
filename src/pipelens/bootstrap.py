@@ -53,5 +53,10 @@ def create_runtime(settings: Settings) -> Runtime:
     elif settings.llm_provider != "none":
         raise ValueError(f"unsupported LLM provider: {settings.llm_provider}")
     pipeline = AnalysisPipeline(settings, store, github, llm_provider, metrics)
-    queue = create_queue(settings.queue_backend, settings.redis_url, settings.queue_name)
+    queue = create_queue(
+        settings.queue_backend,
+        settings.redis_url,
+        settings.queue_name,
+        lease_seconds=settings.worker_lease_seconds,
+    )
     return Runtime(store, github, llm_provider, metrics, pipeline, queue)

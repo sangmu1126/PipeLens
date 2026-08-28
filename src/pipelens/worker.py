@@ -23,12 +23,16 @@ class AnalysisWorker:
         store: AnalysisStore,
         metrics: Metrics,
         max_attempts: int,
+        heartbeat_seconds: float = 15,
     ) -> None:
+        if heartbeat_seconds <= 0:
+            raise ValueError("heartbeat_seconds must be positive")
         self.pipeline = pipeline
         self.queue = queue
         self.store = store
         self.metrics = metrics
         self.max_attempts = max_attempts
+        self.heartbeat_seconds = heartbeat_seconds
         self._task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
@@ -41,12 +45,32 @@ class AnalysisWorker:
                 await self._task
 
     async def run(self) -> None:
+        await self._maintain_queue_once()
+        maintenance_task = asyncio.create_task(
+            self._maintain_queue(), name="pipelens-queue-maintenance"
+        )
+        try:
+            while True:
+                await self.process_next()
+        finally:
+            maintenance_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await maintenance_task
+
+    async def _maintain_queue(self) -> None:
+        while True:
+            await asyncio.sleep(self.heartbeat_seconds)
+            try:
+                await self._maintain_queue_once()
+            except Exception:
+                logger.exception("queue lease maintenance failed")
+
+    async def _maintain_queue_once(self) -> None:
+        await self.queue.heartbeat()
         recovered = await self.queue.recover_orphaned()
         if recovered:
             logger.warning("recovered %s orphaned analysis jobs", recovered)
             self.metrics.queue_recovered.inc(recovered)
-        while True:
-            await self.process_next()
 
     async def process_next(self, timeout: int = 1) -> bool:
         job = await self.queue.dequeue(timeout=timeout)
@@ -92,6 +116,7 @@ async def run_worker(settings: Settings | None = None) -> None:
         runtime.store,
         runtime.metrics,
         settings.worker_max_attempts,
+        settings.worker_heartbeat_seconds,
     )
     try:
         await worker.run()

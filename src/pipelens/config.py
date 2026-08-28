@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,6 +37,8 @@ class Settings(BaseSettings):
     queue_name: str = "pipelens:analyses"
     worker_max_attempts: int = 3
     worker_metrics_port: int = 8001
+    worker_lease_seconds: int = 60
+    worker_heartbeat_seconds: float = 15
     http_retry_max_attempts: int = 3
     http_retry_base_seconds: float = 1.0
     http_retry_max_seconds: float = 60.0
@@ -43,6 +46,14 @@ class Settings(BaseSettings):
     @property
     def resolved_database_url(self) -> str:
         return self.database_url or f"sqlite:///{self.database_path}"
+
+    @model_validator(mode="after")
+    def validate_worker_lease(self) -> "Settings":
+        if self.worker_lease_seconds < 1:
+            raise ValueError("worker lease must be at least one second")
+        if not 0 < self.worker_heartbeat_seconds < self.worker_lease_seconds:
+            raise ValueError("worker heartbeat must be positive and shorter than the lease")
+        return self
 
 
 @lru_cache

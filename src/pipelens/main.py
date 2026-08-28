@@ -34,6 +34,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             runtime.store,
             runtime.metrics,
             settings.worker_max_attempts,
+            settings.worker_heartbeat_seconds,
         )
         if settings.queue_backend == "memory"
         else None
