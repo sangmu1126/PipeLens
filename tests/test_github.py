@@ -91,6 +91,38 @@ async def test_github_user_oauth_and_installation_pagination() -> None:
 
 
 @pytest.mark.asyncio
+async def test_failed_jobs_include_failed_step_names() -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "jobs": [
+                    {
+                        "id": 10,
+                        "name": "tests (3.12)",
+                        "conclusion": "failure",
+                        "steps": [
+                            {"name": "Checkout", "conclusion": "success"},
+                            {"name": "Run pytest", "conclusion": "failure"},
+                            {"name": "Cleanup", "conclusion": "skipped"},
+                        ],
+                    },
+                    {"id": 11, "name": "lint", "conclusion": "success", "steps": []},
+                ]
+            },
+        )
+
+    github = GitHubClient(None, None, 1024, transport=httpx.MockTransport(handler))
+
+    jobs = await github.failed_jobs("acme/widgets", 123, "token")
+
+    assert len(jobs) == 1
+    assert jobs[0].job_id == 10
+    assert jobs[0].name == "tests (3.12)"
+    assert jobs[0].failed_steps == ("Run pytest",)
+
+
+@pytest.mark.asyncio
 async def test_check_publication_creates_then_updates_by_run_id() -> None:
     requests: list[tuple[str, str, dict | None]] = []
     list_calls = 0

@@ -5,7 +5,7 @@ import pytest
 from prometheus_client import generate_latest
 
 from pipelens.config import Settings
-from pipelens.github import JobLog
+from pipelens.github import FailedJob, JobLog
 from pipelens.models import (
     AnalysisRecord,
     AnalysisRequest,
@@ -34,7 +34,9 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     )
     github = MagicMock()
     github.installation_token = AsyncMock(return_value="token")
-    github.failed_job_names = AsyncMock(return_value=["tests"])
+    github.failed_jobs = AsyncMock(
+        return_value=[FailedJob(job_id=1, name="tests", failed_steps=("Run pytest",))]
+    )
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
@@ -53,6 +55,7 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     result = store.get(44)
     assert result.status is AnalysisStatus.COMPLETED
     assert result.classification.category == "test_failure"
+    assert result.classification.related_step == "tests / Run pytest"
     assert result.diagnosis.notes == ["로그와 직접 연결되는 변경 파일을 찾지 못했습니다."]
     metrics = generate_latest(pipeline.metrics.registry).decode()
     assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
@@ -76,7 +79,9 @@ async def test_llm_failure_records_attempt_and_uses_rule_fallback(tmp_path: Path
     )
     github = MagicMock()
     github.installation_token = AsyncMock(return_value="token")
-    github.failed_job_names = AsyncMock(return_value=["tests"])
+    github.failed_jobs = AsyncMock(
+        return_value=[FailedJob(job_id=1, name="tests", failed_steps=("Run pytest",))]
+    )
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
@@ -127,7 +132,9 @@ async def test_publishes_pr_comment_or_commit_check(
     )
     github = MagicMock()
     github.installation_token = AsyncMock(return_value="token")
-    github.failed_job_names = AsyncMock(return_value=["tests"])
+    github.failed_jobs = AsyncMock(
+        return_value=[FailedJob(job_id=1, name="tests", failed_steps=("Run pytest",))]
+    )
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
@@ -186,7 +193,9 @@ async def test_untrusted_fork_uses_rules_without_llm_and_skips_commit_check(
     )
     github = MagicMock()
     github.installation_token = AsyncMock(return_value="token")
-    github.failed_job_names = AsyncMock(return_value=["tests"])
+    github.failed_jobs = AsyncMock(
+        return_value=[FailedJob(job_id=1, name="tests", failed_steps=("Run pytest",))]
+    )
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )

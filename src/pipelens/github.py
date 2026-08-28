@@ -20,6 +20,13 @@ class JobLog:
     text: str
 
 
+@dataclass(frozen=True)
+class FailedJob:
+    job_id: int
+    name: str
+    failed_steps: tuple[str, ...]
+
+
 class GitHubClient:
     api_url = "https://api.github.com"
     web_url = "https://github.com"
@@ -110,17 +117,33 @@ class GitHubClient:
             response.raise_for_status()
             return response.json()["token"]
 
-    async def failed_job_names(self, repository: str, run_id: int, token: str) -> list[str]:
+    async def failed_jobs(self, repository: str, run_id: int, token: str) -> list[FailedJob]:
+        jobs: list[dict] = []
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
-            response = await client.get(
-                f"{self.api_url}/repos/{repository}/actions/runs/{run_id}/jobs",
-                headers=self._headers(token),
-                params={"filter": "latest", "per_page": 100},
-            )
-            response.raise_for_status()
+            page = 1
+            while True:
+                response = await client.get(
+                    f"{self.api_url}/repos/{repository}/actions/runs/{run_id}/jobs",
+                    headers=self._headers(token),
+                    params={"filter": "latest", "per_page": 100, "page": page},
+                )
+                response.raise_for_status()
+                batch = response.json().get("jobs", [])
+                jobs.extend(batch)
+                if len(batch) < 100:
+                    break
+                page += 1
         return [
-            job["name"]
-            for job in response.json().get("jobs", [])
+            FailedJob(
+                job_id=job["id"],
+                name=job["name"],
+                failed_steps=tuple(
+                    step["name"]
+                    for step in job.get("steps", [])
+                    if step.get("conclusion") == "failure"
+                ),
+            )
+            for job in jobs
             if job.get("conclusion") == "failure"
         ]
 

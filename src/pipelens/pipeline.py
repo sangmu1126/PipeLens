@@ -47,7 +47,7 @@ class AnalysisPipeline:
         self.store.update(request.run_id, AnalysisStatus.RUNNING)
         token = await self.github.installation_token(request.installation_id)
         failed_jobs, logs, repository_context = await asyncio.gather(
-            self.github.failed_job_names(request.repository, request.run_id, token),
+            self.github.failed_jobs(request.repository, request.run_id, token),
             self.github.download_logs(request.repository, request.run_id, token),
             self._repository_context(request.repository, request.run_id, request.head_sha, token),
         )
@@ -57,13 +57,23 @@ class AnalysisPipeline:
             trust_level=repository_context.trust_level,
         )
         self.metrics.analysis_trust.labels(level=repository_context.trust_level.value).inc()
-        matching_logs = [log for log in logs if any(name in log.job_name for name in failed_jobs)]
+        failed_job_names = [job.name for job in failed_jobs]
+        matching_logs = [
+            log for log in logs if any(name in log.job_name for name in failed_job_names)
+        ]
         selected = matching_logs or logs
         combined = "\n".join(log.text for log in selected)
         sanitized, redactions = sanitize_log(combined)
         self.metrics.record_redactions(redactions)
         context = extract_error_context(sanitized, self.settings.error_context_lines)
-        classification = classify_log(context, related_step=", ".join(failed_jobs) or None)
+        failed_locations = [
+            f"{job.name} / {step}"
+            for job in failed_jobs
+            for step in job.failed_steps
+        ] or failed_job_names
+        classification = classify_log(
+            context, related_step=", ".join(failed_locations) or None
+        )
         self.metrics.error_categories.labels(category=classification.category.value).inc()
         sanitized_changed_files = []
         for changed in repository_context.changed_files:
