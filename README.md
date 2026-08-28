@@ -18,6 +18,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - Webhook·분석·오류 범주·마스킹·LLM 사용량과 비용의 Prometheus 지표
 - 메모리 또는 Redis queue와 ack·재시도를 지원하는 독립 분석 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
+- 분석 이력·근거·관련 diff·피드백을 제공하는 React 대시보드
 - SQLite 분석 이력 API와 선택적인 GitHub Check 게시
 
 ## 로컬 실행
@@ -44,6 +45,9 @@ Docker를 사용한다면 `.env`를 만든 뒤 다음 명령으로 실행합니�
 ```bash
 docker compose up --build
 ```
+
+대시보드는 `http://localhost:3000`, API 문서는 `http://localhost:8000/docs`에서
+확인할 수 있습니다.
 
 Compose는 PostgreSQL health check 이후 `alembic upgrade head`를 실행하고 API와 worker를
 시작합니다. 로컬 SQLite schema를 명시적으로 갱신하려면 다음 명령을 사용합니다.
@@ -78,6 +82,7 @@ requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 
 - `POST /webhooks/github`: GitHub webhook endpoint
 - `GET /api/analyses`: 최근 분석 목록
 - `GET /api/analyses/{run_id}`: 분석 상세
+- `PUT /api/analyses/{run_id}/feedback`: 정확도·해결 여부 피드백 저장
 - `GET /healthz`: 프로세스 상태
 - `GET /metrics`: Prometheus exposition endpoint
 
@@ -87,5 +92,5 @@ requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 
 Redis queue와 별도 worker를 사용하며 worker 지표를 `:8001/metrics`에서 제공합니다.
 현재 processing 목록 복구는 단일 worker 배포를 기준으로 하며, 수평 확장 시에는 lease와
 worker별 processing queue를 추가해야 합니다.
-다음 단계에서는 React 대시보드와 사용자 피드백을 추가합니다. 규칙 기반 진단은 LLM
-장애 시에도 항상 fallback 결과로 유지합니다.
+다음 단계에서는 GitHub App 설치 흐름과 저장소별 접근 제어를 강화합니다. 규칙 기반 진단은
+LLM 장애 시에도 항상 fallback 결과로 유지합니다.
