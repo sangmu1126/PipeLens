@@ -38,7 +38,16 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     github = MagicMock()
     github.installation_token = AsyncMock(return_value="token")
     github.failed_jobs = AsyncMock(
-        return_value=[FailedJob(job_id=1, name="tests", failed_steps=("Run pytest",))]
+        return_value=[
+            FailedJob(
+                job_id=1,
+                name="tests user@example.com",
+                failed_steps=("Run pytest",),
+                runner_labels=("ubuntu-latest", "API_KEY=super-secret"),
+                workflow_name="CI",
+                head_branch="feature/fix",
+            )
+        ]
     )
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
@@ -58,7 +67,12 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     result = store.get(44)
     assert result.status is AnalysisStatus.COMPLETED
     assert result.classification.category == "test_failure"
-    assert result.classification.related_step == "tests / Run pytest"
+    assert result.classification.related_step == "tests [REDACTED:EMAIL] / Run pytest"
+    assert result.execution_context.head_branch == "feature/fix"
+    assert result.execution_context.failed_jobs[0].runner_labels == [
+        "ubuntu-latest",
+        "API_KEY=[REDACTED]",
+    ]
     assert result.diagnosis.notes == ["로그와 직접 연결되는 변경 파일을 찾지 못했습니다."]
     assert result.duration_seconds is not None
     completed_stages = [

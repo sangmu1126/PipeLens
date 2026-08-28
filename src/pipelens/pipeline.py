@@ -14,6 +14,8 @@ from pipelens.models import (
     AnalysisRequest,
     AnalysisStage,
     AnalysisStatus,
+    ExecutionContext,
+    FailedJobContext,
     RepositoryContext,
     StageStatus,
     TrustLevel,
@@ -100,6 +102,7 @@ class AnalysisPipeline:
                 log for log in logs if any(name in log.job_name for name in failed_job_names)
             ]
             selected = matching_logs or logs
+            execution_context = self._sanitize_execution_context(failed_jobs)
             processed = preprocess_logs(
                 (log.text for log in selected),
                 chunk_chars=self.settings.log_chunk_chars,
@@ -125,9 +128,9 @@ class AnalysisPipeline:
         with self._stage(request.run_id, AnalysisStage.CLASSIFYING, attempt_token):
             failed_locations = [
                 f"{job.name} / {step}"
-                for job in failed_jobs
+                for job in execution_context.failed_jobs
                 for step in job.failed_steps
-            ] or failed_job_names
+            ] or [job.name for job in execution_context.failed_jobs]
             classification = classify_log(
                 context, related_step=", ".join(failed_locations) or None
             )
@@ -161,6 +164,7 @@ class AnalysisPipeline:
                     classification=classification,
                     log=context,
                     related_files=related_files,
+                    execution_context=execution_context,
                     workflow_path=repository_context.workflow_path,
                     workflow_content=workflow_content or None,
                 )
@@ -204,6 +208,7 @@ class AnalysisPipeline:
             prompt_version=prompt_version,
             trust_level=repository_context.trust_level,
             baseline_sha=repository_context.baseline_sha,
+            execution_context=execution_context,
             attempt_token=attempt_token,
         )
         with self._stage(request.run_id, AnalysisStage.PUBLISHING, attempt_token):
@@ -273,3 +278,30 @@ class AnalysisPipeline:
                 exc_info=True,
             )
             return RepositoryContext()
+
+    def _sanitize_execution_context(self, failed_jobs) -> ExecutionContext:
+        def clean(value: str | None) -> str | None:
+            if value is None:
+                return None
+            sanitized, redactions = sanitize_log(value)
+            self.metrics.record_redactions(redactions)
+            return sanitized
+
+        return ExecutionContext(
+            workflow_name=next(
+                (clean(job.workflow_name) for job in failed_jobs if job.workflow_name), None
+            ),
+            head_branch=next(
+                (clean(job.head_branch) for job in failed_jobs if job.head_branch), None
+            ),
+            failed_jobs=[
+                FailedJobContext(
+                    name=clean(job.name) or "unknown job",
+                    failed_steps=[clean(step) or "unknown step" for step in job.failed_steps],
+                    runner_labels=[
+                        clean(label) or "unknown" for label in job.runner_labels
+                    ],
+                )
+                for job in failed_jobs
+            ],
+        )

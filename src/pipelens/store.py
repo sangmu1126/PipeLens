@@ -31,6 +31,7 @@ from pipelens.models import (
     AnalysisStatus,
     Classification,
     Diagnosis,
+    ExecutionContext,
     FeedbackRecord,
     FeedbackRequest,
     GitHubInstallation,
@@ -63,6 +64,7 @@ analyses = Table(
     Column("diagnosis", JSON),
     Column("related_files", JSON, nullable=False, default=list),
     Column("workflow_path", Text),
+    Column("execution_context", JSON),
     Column("model_name", String(255)),
     Column("prompt_version", String(255)),
     Column("error", Text),
@@ -182,6 +184,7 @@ class AnalysisStore:
             "diagnosis": _dump_model(record.diagnosis),
             "related_files": [item.model_dump(mode="json") for item in record.related_files],
             "workflow_path": record.workflow_path,
+            "execution_context": _dump_model(record.execution_context),
             "model_name": record.model_name,
             "prompt_version": record.prompt_version,
             "error": record.error,
@@ -206,6 +209,7 @@ class AnalysisStore:
         diagnosis: Diagnosis | None = None,
         related_files: list[RelatedFile] | None = None,
         workflow_path: str | None = None,
+        execution_context: ExecutionContext | None = None,
         model_name: str | None = None,
         prompt_version: str | None = None,
         trust_level: TrustLevel | None = None,
@@ -226,6 +230,8 @@ class AnalysisStore:
             values["related_files"] = [item.model_dump(mode="json") for item in related_files]
         if workflow_path is not None:
             values["workflow_path"] = workflow_path
+        if execution_context is not None:
+            values["execution_context"] = execution_context.model_dump(mode="json")
         if model_name is not None:
             values["model_name"] = model_name
         if prompt_version is not None:
@@ -579,7 +585,9 @@ class AnalysisStore:
         return AnalysisRecord.model_validate(values)
 
 
-def _dump_model(value: Classification | Diagnosis | None) -> dict | None:
+def _dump_model(
+    value: Classification | Diagnosis | ExecutionContext | None,
+) -> dict | None:
     return value.model_dump(mode="json") if value is not None else None
 
 

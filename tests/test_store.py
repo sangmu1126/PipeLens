@@ -6,6 +6,8 @@ from pipelens.models import (
     AnalysisRecord,
     AnalysisStage,
     AnalysisStatus,
+    ExecutionContext,
+    FailedJobContext,
     FeedbackAccuracy,
     FeedbackRequest,
     RelatedFile,
@@ -77,6 +79,15 @@ def test_store_persists_repository_correlation(tmp_path: Path) -> None:
         workflow_path=".github/workflows/ci.yml",
         model_name="test-model",
         prompt_version="diagnosis-v1",
+        execution_context=ExecutionContext(
+            workflow_name="CI",
+            head_branch="main",
+            failed_jobs=[
+                FailedJobContext(
+                    name="tests", failed_steps=["Run pytest"], runner_labels=["ubuntu-latest"]
+                )
+            ],
+        ),
     )
 
     saved = store.get(43)
@@ -84,6 +95,7 @@ def test_store_persists_repository_correlation(tmp_path: Path) -> None:
     assert saved.workflow_path == ".github/workflows/ci.yml"
     assert saved.model_name == "test-model"
     assert saved.prompt_version == "diagnosis-v1"
+    assert saved.execution_context.failed_jobs[0].runner_labels == ["ubuntu-latest"]
 
 
 def test_store_creates_and_updates_feedback(tmp_path: Path) -> None:

@@ -10,7 +10,13 @@ from pipelens.llm import (
     OpenAIResponsesProvider,
     validate_llm_analysis,
 )
-from pipelens.models import Classification, ErrorCategory, RelatedFile
+from pipelens.models import (
+    Classification,
+    ErrorCategory,
+    ExecutionContext,
+    FailedJobContext,
+    RelatedFile,
+)
 
 
 def _context() -> LLMContext:
@@ -32,6 +38,15 @@ def _context() -> LLMContext:
                 patch_excerpt="+database_url = os.environ['DATABASE_URL']",
             )
         ],
+        execution_context=ExecutionContext(
+            workflow_name="CI",
+            head_branch="main",
+            failed_jobs=[
+                FailedJobContext(
+                    name="tests", failed_steps=["Run pytest"], runner_labels=["ubuntu-latest"]
+                )
+            ],
+        ),
     )
 
 
@@ -128,6 +143,10 @@ async def test_openai_provider_requests_strict_structured_output() -> None:
     assert captured["text"]["format"]["strict"] is True
     assert captured["store"] is False
     assert captured_headers["x-client-request-id"]
+    supplied_context = json.loads(captured["input"][1]["content"])
+    assert supplied_context["execution_context"]["failed_jobs"][0]["runner_labels"] == [
+        "ubuntu-latest"
+    ]
 
 
 @pytest.mark.asyncio

@@ -12,6 +12,7 @@ from pipelens.models import (
     Diagnosis,
     ErrorCategory,
     Evidence,
+    ExecutionContext,
     RelatedFile,
     Suggestion,
 )
@@ -60,6 +61,7 @@ class LLMContext(BaseModel):
     classification: Classification
     log: str
     related_files: list[RelatedFile]
+    execution_context: ExecutionContext | None = None
     workflow_path: str | None = None
     workflow_content: str | None = None
 
