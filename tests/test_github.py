@@ -101,6 +101,9 @@ async def test_failed_jobs_include_failed_step_names() -> None:
                         "id": 10,
                         "name": "tests (3.12)",
                         "conclusion": "failure",
+                        "labels": ["ubuntu-latest", "x64"],
+                        "workflow_name": "CI",
+                        "head_branch": "feature/fix",
                         "steps": [
                             {"name": "Checkout", "conclusion": "success"},
                             {"name": "Run pytest", "conclusion": "failure"},
@@ -120,6 +123,9 @@ async def test_failed_jobs_include_failed_step_names() -> None:
     assert jobs[0].job_id == 10
     assert jobs[0].name == "tests (3.12)"
     assert jobs[0].failed_steps == ("Run pytest",)
+    assert jobs[0].runner_labels == ("ubuntu-latest", "x64")
+    assert jobs[0].workflow_name == "CI"
+    assert jobs[0].head_branch == "feature/fix"
 
 
 @pytest.mark.asyncio

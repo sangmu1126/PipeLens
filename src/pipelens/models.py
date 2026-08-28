@@ -104,6 +104,18 @@ class RelatedFile(BaseModel):
     patch_excerpt: str | None = None
 
 
+class FailedJobContext(BaseModel):
+    name: str
+    failed_steps: list[str] = Field(default_factory=list)
+    runner_labels: list[str] = Field(default_factory=list)
+
+
+class ExecutionContext(BaseModel):
+    workflow_name: str | None = None
+    head_branch: str | None = None
+    failed_jobs: list[FailedJobContext] = Field(default_factory=list)
+
+
 class FeedbackRequest(BaseModel):
     accuracy: FeedbackAccuracy | None = None
     suggestion_resolved: bool | None = None
@@ -144,6 +156,7 @@ class AnalysisRecord(BaseModel):
     diagnosis: Diagnosis | None = None
     related_files: list[RelatedFile] = Field(default_factory=list)
     workflow_path: str | None = None
+    execution_context: ExecutionContext | None = None
     model_name: str | None = None
     prompt_version: str | None = None
     feedback: FeedbackRecord | None = None

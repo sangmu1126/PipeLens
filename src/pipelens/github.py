@@ -26,6 +26,9 @@ class FailedJob:
     job_id: int
     name: str
     failed_steps: tuple[str, ...]
+    runner_labels: tuple[str, ...] = ()
+    workflow_name: str | None = None
+    head_branch: str | None = None
 
 
 class GitHubClient:
@@ -157,6 +160,9 @@ class GitHubClient:
                     for step in job.get("steps", [])
                     if step.get("conclusion") == "failure"
                 ),
+                runner_labels=tuple(str(label) for label in job.get("labels", [])),
+                workflow_name=job.get("workflow_name"),
+                head_branch=job.get("head_branch"),
             )
             for job in jobs
             if job.get("conclusion") == "failure"
