@@ -21,7 +21,7 @@ class QueueJob:
 
 
 class AnalysisQueue(Protocol):
-    async def enqueue(self, request: AnalysisRequest) -> None: ...
+    async def enqueue(self, request: AnalysisRequest) -> bool: ...
 
     async def dequeue(self, timeout: int = 1) -> QueueJob | None: ...
 
@@ -41,9 +41,14 @@ class AnalysisQueue(Protocol):
 class InMemoryAnalysisQueue:
     def __init__(self) -> None:
         self._queue: asyncio.Queue[QueueEnvelope] = asyncio.Queue()
+        self._run_ids: set[int] = set()
 
-    async def enqueue(self, request: AnalysisRequest) -> None:
-        await self._queue.put(QueueEnvelope(request=request))
+    async def enqueue(self, request: AnalysisRequest) -> bool:
+        if request.run_id in self._run_ids:
+            return False
+        self._run_ids.add(request.run_id)
+        self._queue.put_nowait(QueueEnvelope(request=request))
+        return True
 
     async def dequeue(self, timeout: int = 1) -> QueueJob | None:
         try:
@@ -54,10 +59,11 @@ class InMemoryAnalysisQueue:
 
     async def acknowledge(self, job: QueueJob) -> None:
         self._queue.task_done()
+        self._run_ids.discard(job.envelope.request.run_id)
 
     async def retry(self, job: QueueJob) -> None:
         self._queue.task_done()
-        await self._queue.put(
+        self._queue.put_nowait(
             job.envelope.model_copy(update={"attempts": job.envelope.attempts + 1})
         )
 
@@ -75,6 +81,27 @@ class InMemoryAnalysisQueue:
 
 
 class RedisAnalysisQueue:
+    _ENQUEUE_SCRIPT = """
+        if redis.call('SADD', KEYS[1], ARGV[1]) == 0 then
+            return 0
+        end
+        redis.call('LPUSH', KEYS[2], ARGV[2])
+        return 1
+    """
+    _ACKNOWLEDGE_SCRIPT = """
+        local removed = redis.call('LREM', KEYS[1], 1, ARGV[1])
+        if removed > 0 then
+            redis.call('SREM', KEYS[2], ARGV[2])
+        end
+        return removed
+    """
+    _RETRY_SCRIPT = """
+        local removed = redis.call('LREM', KEYS[1], 1, ARGV[1])
+        if removed > 0 then
+            redis.call('LPUSH', KEYS[2], ARGV[2])
+        end
+        return removed
+    """
     _RECOVER_SCRIPT = """
         if redis.call('EXISTS', KEYS[1]) == 1 then
             return 0
@@ -106,6 +133,7 @@ class RedisAnalysisQueue:
         self.worker_id = worker_id or uuid.uuid4().hex
         self.lease_seconds = lease_seconds
         self.workers_key = f"{queue_name}:workers"
+        self.dedupe_key = f"{queue_name}:run_ids"
         self.processing_key = f"{queue_name}:processing:{self.worker_id}"
         self.lease_key = f"{self.processing_key}:lease"
 
@@ -124,8 +152,17 @@ class RedisAnalysisQueue:
             lease_seconds,
         )
 
-    async def enqueue(self, request: AnalysisRequest) -> None:
-        await self.redis.lpush(self.pending_key, QueueEnvelope(request=request).model_dump_json())
+    async def enqueue(self, request: AnalysisRequest) -> bool:
+        envelope = QueueEnvelope(request=request).model_dump_json()
+        created = await self.redis.eval(
+            self._ENQUEUE_SCRIPT,
+            2,
+            self.dedupe_key,
+            self.pending_key,
+            str(request.run_id),
+            envelope,
+        )
+        return bool(created)
 
     async def dequeue(self, timeout: int = 1) -> QueueJob | None:
         await self.heartbeat()
@@ -136,13 +173,26 @@ class RedisAnalysisQueue:
 
     async def acknowledge(self, job: QueueJob) -> None:
         if job.receipt is not None:
-            await self.redis.lrem(self.processing_key, 1, job.receipt)
+            await self.redis.eval(
+                self._ACKNOWLEDGE_SCRIPT,
+                2,
+                self.processing_key,
+                self.dedupe_key,
+                job.receipt,
+                str(job.envelope.request.run_id),
+            )
 
     async def retry(self, job: QueueJob) -> None:
-        if job.receipt is not None:
-            await self.redis.lrem(self.processing_key, 1, job.receipt)
         retried = job.envelope.model_copy(update={"attempts": job.envelope.attempts + 1})
-        await self.redis.lpush(self.pending_key, retried.model_dump_json())
+        if job.receipt is not None:
+            await self.redis.eval(
+                self._RETRY_SCRIPT,
+                2,
+                self.processing_key,
+                self.pending_key,
+                job.receipt,
+                retried.model_dump_json(),
+            )
 
     async def heartbeat(self) -> None:
         pipeline = self.redis.pipeline(transaction=True)

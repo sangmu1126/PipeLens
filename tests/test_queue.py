@@ -18,7 +18,8 @@ def _request() -> AnalysisRequest:
 @pytest.mark.asyncio
 async def test_memory_queue_retries_with_incremented_attempt() -> None:
     queue = InMemoryAnalysisQueue()
-    await queue.enqueue(_request())
+    assert await queue.enqueue(_request()) is True
+    assert await queue.enqueue(_request()) is False
 
     first = await queue.dequeue()
     await queue.retry(first)
@@ -38,7 +39,7 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
     redis.pipeline.return_value = pipeline
     envelope = QueueEnvelope(request=_request())
     redis.brpoplpush = AsyncMock(return_value=envelope.model_dump_json())
-    redis.lrem = AsyncMock()
+    redis.eval = AsyncMock(return_value=1)
     queue = RedisAnalysisQueue(redis, "analyses", worker_id="worker-a")
 
     job = await queue.dequeue(timeout=2)
@@ -47,7 +48,13 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
     redis.brpoplpush.assert_awaited_once_with(
         "analyses", "analyses:processing:worker-a", timeout=2
     )
-    redis.lrem.assert_awaited_once_with("analyses:processing:worker-a", 1, job.receipt)
+    acknowledge_call = redis.eval.await_args
+    assert acknowledge_call.args[2:] == (
+        "analyses:processing:worker-a",
+        "analyses:run_ids",
+        job.receipt,
+        "77",
+    )
     pipeline.sadd.assert_called_once_with("analyses:workers", "analyses:processing:worker-a")
     pipeline.set.assert_called_once_with(
         "analyses:processing:worker-a:lease", "worker-a", ex=60
@@ -57,15 +64,33 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
 @pytest.mark.asyncio
 async def test_redis_queue_retry_requeues_incremented_envelope() -> None:
     redis = MagicMock()
-    redis.lrem = AsyncMock()
-    redis.lpush = AsyncMock()
+    redis.eval = AsyncMock(return_value=1)
     queue = RedisAnalysisQueue(redis, "analyses")
     raw = QueueEnvelope(request=_request()).model_dump_json()
     job = QueueJob(envelope=QueueEnvelope.model_validate_json(raw), receipt=raw)
     await queue.retry(job)
 
-    pushed = redis.lpush.await_args.args[1]
+    pushed = redis.eval.await_args.args[-1]
     assert QueueEnvelope.model_validate_json(pushed).attempts == 1
+    assert redis.eval.await_args.args[2:6] == (
+        queue.processing_key,
+        "analyses",
+        raw,
+        pushed,
+    )
+
+
+@pytest.mark.asyncio
+async def test_redis_queue_enqueues_run_once_atomically() -> None:
+    redis = MagicMock()
+    redis.eval = AsyncMock(side_effect=[1, 0])
+    queue = RedisAnalysisQueue(redis, "analyses")
+
+    assert await queue.enqueue(_request()) is True
+    assert await queue.enqueue(_request()) is False
+
+    first_call = redis.eval.await_args_list[0]
+    assert first_call.args[2:5] == ("analyses:run_ids", "analyses", "77")
 
 
 @pytest.mark.asyncio
