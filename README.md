@@ -10,6 +10,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - GitHub App installation token으로 실패 job·step과 로그 수집
 - PR 변경 파일 또는 직전 성공 실행 이후 diff와 실행 시점 workflow 수집
 - ANSI/타임스탬프 제거 및 주요 secret/개인정보 마스킹
+- 대용량 로그의 청크별 마스킹·오류 구간 추출과 최초 규칙 오류 우선 판정
 - 요구사항의 10개 실패 범주 규칙 기반 분류
 - 로그 경로·파일명·오류 범주·변경 코드 식별자를 이용한 관련 파일 점수화
 - 교체 가능한 LLM provider와 OpenAI Responses API Structured Outputs 지원

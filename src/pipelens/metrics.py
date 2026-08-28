@@ -39,6 +39,12 @@ class Metrics:
             ("kind",),
             registry=self.registry,
         )
+        self.log_chunks = Counter(
+            "pipelens_log_chunks_total",
+            "Log chunks by preprocessing outcome.",
+            ("kind",),
+            registry=self.registry,
+        )
         self.llm_requests = Counter(
             "pipelens_llm_requests_total",
             "LLM requests by model and outcome.",

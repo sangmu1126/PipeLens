@@ -1,4 +1,4 @@
-from pipelens.preprocessing import iter_text_chunks, preprocess_log
+from pipelens.preprocessing import iter_text_chunks, preprocess_log, preprocess_logs
 
 
 def test_text_chunking_preserves_content_and_bounds_chunks() -> None:
@@ -25,3 +25,17 @@ def test_preprocessing_redacts_each_chunk_and_keeps_early_errors() -> None:
     assert "no space left on device" in result.context
     assert "secret-token" not in result.context
     assert result.redactions["authorization"] == 1
+
+
+def test_multiple_job_logs_share_global_error_chunk_limit() -> None:
+    result = preprocess_logs(
+        ["error: compilation failed", "fatal: no space left on device"],
+        chunk_chars=1_000,
+        context_lines=2,
+        max_error_chunks=1,
+    )
+
+    assert result.chunks_processed == 2
+    assert result.error_chunks == 1
+    assert "compilation failed" in result.context
+    assert "no space left" not in result.context

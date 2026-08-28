@@ -76,6 +76,7 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     metrics = generate_latest(pipeline.metrics.registry).decode()
     assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
     assert 'pipelens_error_categories_total{category="test_failure"} 1.0' in metrics
+    assert 'pipelens_log_chunks_total{kind="processed"} 1.0' in metrics
 
 
 @pytest.mark.asyncio

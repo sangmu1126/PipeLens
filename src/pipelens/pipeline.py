@@ -3,7 +3,7 @@ import logging
 from contextlib import contextmanager
 from time import perf_counter
 
-from pipelens.classifier import classify_log, extract_error_context
+from pipelens.classifier import classify_log
 from pipelens.config import Settings
 from pipelens.diagnosis import build_rule_based_diagnosis, validate_diagnosis
 from pipelens.github import GitHubClient
@@ -17,6 +17,7 @@ from pipelens.models import (
     StageStatus,
     TrustLevel,
 )
+from pipelens.preprocessing import preprocess_logs
 from pipelens.publication import render_github_diagnosis
 from pipelens.relevance import correlate_changed_files
 from pipelens.sanitizer import sanitize_log
@@ -77,10 +78,16 @@ class AnalysisPipeline:
                 log for log in logs if any(name in log.job_name for name in failed_job_names)
             ]
             selected = matching_logs or logs
-            combined = "\n".join(log.text for log in selected)
-            sanitized, redactions = sanitize_log(combined)
-            self.metrics.record_redactions(redactions)
-            context = extract_error_context(sanitized, self.settings.error_context_lines)
+            processed = preprocess_logs(
+                (log.text for log in selected),
+                chunk_chars=self.settings.log_chunk_chars,
+                context_lines=self.settings.error_context_lines,
+                max_error_chunks=self.settings.max_error_chunks,
+            )
+            self.metrics.record_redactions(processed.redactions)
+            self.metrics.log_chunks.labels(kind="processed").inc(processed.chunks_processed)
+            self.metrics.log_chunks.labels(kind="error").inc(processed.error_chunks)
+            context = processed.context
             sanitized_changed_files = []
             for changed in repository_context.changed_files:
                 patch, patch_redactions = sanitize_log(changed.patch or "")
