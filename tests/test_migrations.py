@@ -34,12 +34,17 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
         "prompt_version",
         "trust_level",
         "baseline_sha",
+        "analysis_started_at",
+        "analysis_completed_at",
+        "duration_seconds",
     }
+    assert "analysis_stage_events" in inspector.get_table_names()
     command.check(config)
 
     command.downgrade(config, "base")
     assert "analyses" not in inspect(engine).get_table_names()
     assert "analysis_feedback" not in inspect(engine).get_table_names()
+    assert "analysis_stage_events" not in inspect(engine).get_table_names()
     engine.dispose()
 
 

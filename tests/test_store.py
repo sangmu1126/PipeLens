@@ -2,10 +2,12 @@ from pathlib import Path
 
 from pipelens.models import (
     AnalysisRecord,
+    AnalysisStage,
     AnalysisStatus,
     FeedbackAccuracy,
     FeedbackRequest,
     RelatedFile,
+    StageStatus,
     TrustLevel,
 )
 from pipelens.store import AnalysisStore
@@ -152,3 +154,32 @@ def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:
 
     assert store.get(47).trust_level is TrustLevel.UNTRUSTED_FORK
     assert store.get(47).baseline_sha == "last-success-sha"
+
+
+def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=48,
+            delivery_id="delivery-48",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="abc123",
+            html_url="https://github.com/acme/example/actions/runs/48",
+        )
+    )
+
+    started_at = store.begin_analysis(48)
+    store.record_stage(48, AnalysisStage.COLLECTING, StageStatus.STARTED)
+    store.record_stage(48, AnalysisStage.COLLECTING, StageStatus.COMPLETED)
+    store.finish_analysis(48, started_at)
+
+    saved = store.get(48)
+    assert saved.analysis_started_at is not None
+    assert saved.analysis_completed_at is not None
+    assert saved.duration_seconds is not None and saved.duration_seconds >= 0
+    assert [event.status for event in saved.stage_history] == [
+        StageStatus.STARTED,
+        StageStatus.COMPLETED,
+    ]

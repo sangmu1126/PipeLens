@@ -6,7 +6,9 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
+    Integer,
     MetaData,
     String,
     Table,
@@ -23,6 +25,8 @@ from sqlalchemy.exc import IntegrityError
 
 from pipelens.models import (
     AnalysisRecord,
+    AnalysisStage,
+    AnalysisStageEvent,
     AnalysisStatus,
     Classification,
     Diagnosis,
@@ -31,6 +35,7 @@ from pipelens.models import (
     GitHubInstallation,
     GitHubUser,
     RelatedFile,
+    StageStatus,
     TrustLevel,
 )
 
@@ -56,8 +61,28 @@ analyses = Table(
     Column("model_name", String(255)),
     Column("prompt_version", String(255)),
     Column("error", Text),
+    Column("analysis_started_at", DateTime(timezone=True)),
+    Column("analysis_completed_at", DateTime(timezone=True)),
+    Column("duration_seconds", Float),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
     Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+analysis_stage_events = Table(
+    "analysis_stage_events",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column(
+        "run_id",
+        BigInteger,
+        ForeignKey("analyses.run_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    Column("stage", String(32), nullable=False),
+    Column("status", String(32), nullable=False),
+    Column("error", Text),
+    Column("occurred_at", DateTime(timezone=True), nullable=False, index=True),
 )
 
 feedback = Table(
@@ -154,6 +179,9 @@ class AnalysisStore:
             "model_name": record.model_name,
             "prompt_version": record.prompt_version,
             "error": record.error,
+            "analysis_started_at": record.analysis_started_at,
+            "analysis_completed_at": record.analysis_completed_at,
+            "duration_seconds": record.duration_seconds,
             "created_at": record.created_at,
             "updated_at": record.updated_at,
         }
@@ -212,7 +240,8 @@ class AnalysisStore:
             statement = statement.where(analyses.c.installation_id.in_(installation_ids))
         with self.engine.connect() as connection:
             row = connection.execute(statement).mappings().first()
-        return self._to_record(row) if row else None
+            stages = self._stage_history(connection, [run_id]).get(run_id, []) if row else []
+        return self._to_record(row, stages) if row else None
 
     def list(
         self, limit: int = 50, installation_ids: set[int] | None = None
@@ -224,7 +253,57 @@ class AnalysisStore:
             statement = statement.where(analyses.c.installation_id.in_(installation_ids))
         with self.engine.connect() as connection:
             rows = connection.execute(statement).mappings().all()
-        return [self._to_record(row) for row in rows]
+            stages = self._stage_history(connection, [row["run_id"] for row in rows])
+        return [self._to_record(row, stages.get(row["run_id"], [])) for row in rows]
+
+    def begin_analysis(self, run_id: int) -> datetime:
+        started_at = datetime.now(UTC)
+        with self.engine.begin() as connection:
+            connection.execute(
+                update(analyses)
+                .where(analyses.c.run_id == run_id)
+                .values(
+                    status=AnalysisStatus.RUNNING.value,
+                    error=None,
+                    analysis_started_at=started_at,
+                    analysis_completed_at=None,
+                    duration_seconds=None,
+                    updated_at=started_at,
+                )
+            )
+        return started_at
+
+    def finish_analysis(self, run_id: int, started_at: datetime) -> None:
+        completed_at = datetime.now(UTC)
+        with self.engine.begin() as connection:
+            connection.execute(
+                update(analyses)
+                .where(analyses.c.run_id == run_id)
+                .values(
+                    status=AnalysisStatus.COMPLETED.value,
+                    analysis_completed_at=completed_at,
+                    duration_seconds=(completed_at - started_at).total_seconds(),
+                    updated_at=completed_at,
+                )
+            )
+
+    def record_stage(
+        self,
+        run_id: int,
+        stage: AnalysisStage,
+        status: StageStatus,
+        error: str | None = None,
+    ) -> None:
+        with self.engine.begin() as connection:
+            connection.execute(
+                insert(analysis_stage_events).values(
+                    run_id=run_id,
+                    stage=stage.value,
+                    status=status.value,
+                    error=error,
+                    occurred_at=datetime.now(UTC),
+                )
+            )
 
     def save_feedback(
         self,
@@ -381,7 +460,30 @@ class AnalysisStore:
         self.engine.dispose()
 
     @staticmethod
-    def _to_record(row: RowMapping) -> AnalysisRecord:
+    def _stage_history(connection, run_ids: list[int]) -> dict[int, list[AnalysisStageEvent]]:
+        if not run_ids:
+            return {}
+        rows = (
+            connection.execute(
+                select(analysis_stage_events)
+                .where(analysis_stage_events.c.run_id.in_(run_ids))
+                .order_by(analysis_stage_events.c.id)
+            )
+            .mappings()
+            .all()
+        )
+        result: dict[int, list[AnalysisStageEvent]] = {run_id: [] for run_id in run_ids}
+        for row in rows:
+            values = dict(row)
+            run_id = values.pop("run_id")
+            values.pop("id")
+            result[run_id].append(AnalysisStageEvent.model_validate(values))
+        return result
+
+    @staticmethod
+    def _to_record(
+        row: RowMapping, stage_history: list[AnalysisStageEvent]
+    ) -> AnalysisRecord:
         values = dict(row)
         feedback_run_id = values.pop("feedback_run_id")
         feedback_values = {
@@ -395,6 +497,7 @@ class AnalysisStore:
         values["feedback"] = (
             FeedbackRecord.model_validate(feedback_values) if feedback_run_id else None
         )
+        values["stage_history"] = stage_history
         return AnalysisRecord.model_validate(values)
 
 

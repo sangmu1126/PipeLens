@@ -11,6 +11,21 @@ class AnalysisStatus(StrEnum):
     FAILED = "failed"
 
 
+class AnalysisStage(StrEnum):
+    COLLECTING = "collecting"
+    SANITIZING = "sanitizing"
+    CLASSIFYING = "classifying"
+    CORRELATING = "correlating"
+    DIAGNOSING = "diagnosing"
+    PUBLISHING = "publishing"
+
+
+class StageStatus(StrEnum):
+    STARTED = "started"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class ErrorCategory(StrEnum):
     TEST = "test_failure"
     BUILD = "build_failure"
@@ -107,6 +122,13 @@ class FeedbackRecord(FeedbackRequest):
     updated_at: datetime
 
 
+class AnalysisStageEvent(BaseModel):
+    stage: AnalysisStage
+    status: StageStatus
+    error: str | None = None
+    occurred_at: datetime
+
+
 class AnalysisRecord(BaseModel):
     run_id: int
     delivery_id: str
@@ -126,6 +148,10 @@ class AnalysisRecord(BaseModel):
     prompt_version: str | None = None
     feedback: FeedbackRecord | None = None
     error: str | None = None
+    analysis_started_at: datetime | None = None
+    analysis_completed_at: datetime | None = None
+    duration_seconds: float | None = None
+    stage_history: list[AnalysisStageEvent] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
