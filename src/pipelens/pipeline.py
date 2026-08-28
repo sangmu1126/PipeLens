@@ -6,6 +6,7 @@ from pipelens.classifier import classify_log, extract_error_context
 from pipelens.config import Settings
 from pipelens.diagnosis import build_rule_based_diagnosis, validate_diagnosis
 from pipelens.github import GitHubClient
+from pipelens.llm import PROMPT_VERSION, LLMContext, LLMProvider, validate_llm_analysis
 from pipelens.models import AnalysisRequest, AnalysisStatus, RepositoryContext
 from pipelens.relevance import correlate_changed_files
 from pipelens.sanitizer import sanitize_log
@@ -15,10 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class AnalysisPipeline:
-    def __init__(self, settings: Settings, store: AnalysisStore, github: GitHubClient) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        store: AnalysisStore,
+        github: GitHubClient,
+        llm_provider: LLMProvider | None = None,
+    ) -> None:
         self.settings = settings
         self.store = store
         self.github = github
+        self.llm_provider = llm_provider
         self.queue: asyncio.Queue[AnalysisRequest] = asyncio.Queue()
         self._worker: asyncio.Task[None] | None = None
 
@@ -65,9 +73,35 @@ class AnalysisPipeline:
         repository_files = {item.filename for item in repository_context.changed_files}
         if repository_context.workflow_path:
             repository_files.add(repository_context.workflow_path)
-        diagnosis = validate_diagnosis(
+        fallback_diagnosis = validate_diagnosis(
             build_rule_based_diagnosis(classification), context, repository_files
         )
+        diagnosis = fallback_diagnosis
+        model_name: str | None = None
+        prompt_version: str | None = None
+        if self.llm_provider:
+            model_name = self.llm_provider.model_name
+            prompt_version = PROMPT_VERSION
+            workflow_content, _ = sanitize_log(repository_context.workflow_content or "")
+            llm_context = LLMContext(
+                classification=classification,
+                log=context,
+                related_files=related_files,
+                workflow_path=repository_context.workflow_path,
+                workflow_content=workflow_content or None,
+            )
+            try:
+                llm_result = await self.llm_provider.analyze(llm_context)
+                diagnosis = validate_llm_analysis(llm_result, llm_context)
+            except Exception:
+                logger.warning(
+                    "LLM diagnosis failed for run %s; using rule-based result",
+                    request.run_id,
+                    exc_info=True,
+                )
+                fallback_diagnosis.notes.append(
+                    "LLM 분석에 실패하여 규칙 기반 진단 결과를 제공했습니다."
+                )
         if not related_files:
             diagnosis.notes.append("로그와 직접 연결되는 변경 파일을 찾지 못했습니다.")
         self.store.update(
@@ -77,6 +111,8 @@ class AnalysisPipeline:
             diagnosis=diagnosis,
             related_files=related_files,
             workflow_path=repository_context.workflow_path,
+            model_name=model_name,
+            prompt_version=prompt_version,
         )
         if self.settings.publish_checks:
             evidence = "\n\n".join(f"> {item.content}" for item in diagnosis.evidence)

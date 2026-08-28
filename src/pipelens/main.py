@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Res
 
 from pipelens.config import Settings, get_settings
 from pipelens.github import GitHubClient
+from pipelens.llm import OpenAIResponsesProvider
 from pipelens.models import AnalysisRecord, AnalysisRequest
 from pipelens.pipeline import AnalysisPipeline
 from pipelens.security import InvalidSignatureError, verify_github_signature
@@ -18,7 +19,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     github = GitHubClient(
         settings.github_app_id, settings.github_private_key, settings.max_log_bytes
     )
-    pipeline = AnalysisPipeline(settings, store, github)
+    llm_provider = None
+    if settings.llm_provider == "openai":
+        if not settings.openai_api_key:
+            raise ValueError("PIPELENS_OPENAI_API_KEY is required for the OpenAI provider")
+        llm_provider = OpenAIResponsesProvider(
+            settings.openai_api_key, settings.openai_model, settings.max_llm_input_chars
+        )
+    elif settings.llm_provider != "none":
+        raise ValueError(f"unsupported LLM provider: {settings.llm_provider}")
+    pipeline = AnalysisPipeline(settings, store, github, llm_provider)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):

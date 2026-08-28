@@ -41,8 +41,12 @@ def test_store_persists_repository_correlation(tmp_path: Path) -> None:
         AnalysisStatus.COMPLETED,
         related_files=[RelatedFile(filename="src/app.py", score=0.75, reasons=["로그 직접 일치"])],
         workflow_path=".github/workflows/ci.yml",
+        model_name="test-model",
+        prompt_version="diagnosis-v1",
     )
 
     saved = store.get(43)
     assert saved.related_files[0].filename == "src/app.py"
     assert saved.workflow_path == ".github/workflows/ci.yml"
+    assert saved.model_name == "test-model"
+    assert saved.prompt_version == "diagnosis-v1"

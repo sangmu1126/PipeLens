@@ -12,6 +12,8 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - ANSI/타임스탬프 제거 및 주요 secret/개인정보 마스킹
 - 요구사항의 10개 실패 범주 규칙 기반 분류
 - 로그 경로·파일명·오류 범주·변경 코드 식별자를 이용한 관련 파일 점수화
+- 교체 가능한 LLM provider와 OpenAI Responses API Structured Outputs 지원
+- LLM 근거·파일 경로·규칙 분류 충돌 검증 및 규칙 기반 fallback
 - 입력 로그에 실제로 존재하는 근거만 허용하는 결과 검증
 - SQLite 분석 이력 API와 선택적인 GitHub Check 게시
 
@@ -50,6 +52,9 @@ PIPELENS_WEBHOOK_SECRET=...
 PIPELENS_GITHUB_APP_ID=123456
 PIPELENS_GITHUB_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
 PIPELENS_PUBLISH_CHECKS=true
+PIPELENS_LLM_PROVIDER=openai
+PIPELENS_OPENAI_API_KEY=...
+PIPELENS_OPENAI_MODEL=gpt-5.6
 ```
 
 GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
@@ -66,6 +71,5 @@ requests(read/write), Metadata(read)를 사용합니다. Check 게시를 먼저 
 ## 다음 구현 경계
 
 현재 queue와 DB는 단일 프로세스 개발 환경용입니다. 다음 단계에서는 Redis 기반 worker와
-PostgreSQL로 분리하고, 교체 가능한 LLM adapter, Prometheus 지표, React 대시보드 및
-사용자 피드백을 추가합니다. 규칙 기반 진단은 LLM 장애 시에도 항상 fallback 결과로
-유지합니다.
+PostgreSQL로 분리하고, Prometheus 지표, React 대시보드 및 사용자 피드백을 추가합니다.
+규칙 기반 진단은 LLM 장애 시에도 항상 fallback 결과로 유지합니다.

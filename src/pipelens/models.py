@@ -88,6 +88,8 @@ class AnalysisRecord(BaseModel):
     diagnosis: Diagnosis | None = None
     related_files: list[RelatedFile] = Field(default_factory=list)
     workflow_path: str | None = None
+    model_name: str | None = None
+    prompt_version: str | None = None
     error: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

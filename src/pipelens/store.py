@@ -36,6 +36,8 @@ class AnalysisStore:
                     diagnosis TEXT,
                     related_files TEXT NOT NULL DEFAULT '[]',
                     workflow_path TEXT,
+                    model_name TEXT,
+                    prompt_version TEXT,
                     error TEXT,
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
@@ -51,6 +53,10 @@ class AnalysisStore:
                 )
             if "workflow_path" not in columns:
                 connection.execute("ALTER TABLE analyses ADD COLUMN workflow_path TEXT")
+            if "model_name" not in columns:
+                connection.execute("ALTER TABLE analyses ADD COLUMN model_name TEXT")
+            if "prompt_version" not in columns:
+                connection.execute("ALTER TABLE analyses ADD COLUMN prompt_version TEXT")
             connection.commit()
 
     def create_if_absent(self, record: AnalysisRecord) -> bool:
@@ -86,6 +92,8 @@ class AnalysisStore:
         diagnosis: Diagnosis | None = None,
         related_files: list[RelatedFile] | None = None,
         workflow_path: str | None = None,
+        model_name: str | None = None,
+        prompt_version: str | None = None,
         error: str | None = None,
     ) -> None:
         with closing(self._connect()) as connection:
@@ -96,6 +104,8 @@ class AnalysisStore:
                     diagnosis = COALESCE(?, diagnosis),
                     related_files = COALESCE(?, related_files),
                     workflow_path = COALESCE(?, workflow_path),
+                    model_name = COALESCE(?, model_name),
+                    prompt_version = COALESCE(?, prompt_version),
                     error = ?, updated_at = ?
                 WHERE run_id = ?
                 """,
@@ -107,6 +117,8 @@ class AnalysisStore:
                     if related_files is not None
                     else None,
                     workflow_path,
+                    model_name,
+                    prompt_version,
                     error,
                     datetime.now(UTC).isoformat(),
                     run_id,

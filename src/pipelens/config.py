@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     publish_checks: bool = False
     max_log_bytes: int = 10 * 1024 * 1024
     error_context_lines: int = 8
+    llm_provider: str = "none"
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-5.6"
+    max_llm_input_chars: int = 30_000
 
 
 @lru_cache
