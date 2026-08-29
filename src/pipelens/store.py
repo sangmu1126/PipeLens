@@ -15,9 +15,11 @@ from sqlalchemy import (
     Table,
     Text,
     UniqueConstraint,
+    and_,
     create_engine,
     delete,
     insert,
+    or_,
     select,
     text,
     update,
@@ -56,6 +58,19 @@ class AnalysisStart:
     attempt_started_at: datetime
     queue_wait_seconds: float
     first_start: bool
+
+
+@dataclass(frozen=True)
+class AnalysisCursor:
+    created_at: datetime
+    run_id: int
+
+
+@dataclass(frozen=True)
+class AnalysisPage:
+    records: list[AnalysisRecord]
+    next_cursor: AnalysisCursor | None
+
 
 analyses = Table(
     "analyses",
@@ -287,8 +302,26 @@ class AnalysisStore:
         status: AnalysisStatus | None = None,
         category: ErrorCategory | None = None,
     ) -> list[AnalysisRecord]:
+        return self.list_page(
+            limit,
+            installation_ids,
+            repository=repository,
+            status=status,
+            category=category,
+        ).records
+
+    def list_page(
+        self,
+        limit: int = 50,
+        installation_ids: set[int] | None = None,
+        *,
+        repository: str | None = None,
+        status: AnalysisStatus | None = None,
+        category: ErrorCategory | None = None,
+        cursor: AnalysisCursor | None = None,
+    ) -> AnalysisPage:
         if installation_ids is not None and not installation_ids:
-            return []
+            return AnalysisPage([], None)
         statement = _analysis_select()
         if installation_ids is not None:
             statement = statement.where(analyses.c.installation_id.in_(installation_ids))
@@ -300,11 +333,31 @@ class AnalysisStore:
             statement = statement.where(
                 analyses.c.classification["category"].as_string() == category.value
             )
-        statement = statement.order_by(analyses.c.created_at.desc()).limit(limit)
+        if cursor is not None:
+            statement = statement.where(
+                or_(
+                    analyses.c.created_at < cursor.created_at,
+                    and_(
+                        analyses.c.created_at == cursor.created_at,
+                        analyses.c.run_id < cursor.run_id,
+                    ),
+                )
+            )
+        statement = statement.order_by(
+            analyses.c.created_at.desc(), analyses.c.run_id.desc()
+        ).limit(limit + 1)
         with self.engine.connect() as connection:
             rows = connection.execute(statement).mappings().all()
-            stages = self._stage_history(connection, [row["run_id"] for row in rows])
-        return [self._to_record(row, stages.get(row["run_id"], [])) for row in rows]
+            page_rows = rows[:limit]
+            stages = self._stage_history(connection, [row["run_id"] for row in page_rows])
+        records = [
+            self._to_record(row, stages.get(row["run_id"], [])) for row in page_rows
+        ]
+        next_cursor = None
+        if len(rows) > limit and page_rows:
+            last = page_rows[-1]
+            next_cursor = AnalysisCursor(_as_utc(last["created_at"]), last["run_id"])
+        return AnalysisPage(records, next_cursor)
 
     def queued_requests(self) -> list[AnalysisRequest]:
         statement = (

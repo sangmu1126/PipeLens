@@ -1,5 +1,8 @@
+import base64
+import binascii
 import json
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
@@ -21,7 +24,7 @@ from pipelens.models import (
 )
 from pipelens.queue import AnalysisQueue
 from pipelens.security import InvalidSignatureError, verify_github_signature
-from pipelens.store import AnalysisStore
+from pipelens.store import AnalysisCursor, AnalysisStore
 from pipelens.worker import AnalysisWorker
 
 
@@ -31,6 +34,24 @@ async def reconcile_queued_analyses(store: AnalysisStore, queue: AnalysisQueue) 
         if await queue.enqueue(analysis_request):
             reconciled += 1
     return reconciled
+
+
+def _encode_analysis_cursor(cursor: AnalysisCursor) -> str:
+    payload = json.dumps([cursor.created_at.isoformat(), cursor.run_id], separators=(",", ":"))
+    return base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=")
+
+
+def _decode_analysis_cursor(value: str) -> AnalysisCursor:
+    try:
+        padding = "=" * (-len(value) % 4)
+        decoded = base64.b64decode(value + padding, altchars=b"-_", validate=True)
+        created_at_value, run_id = json.loads(decoded)
+        created_at = datetime.fromisoformat(created_at_value)
+        if created_at.tzinfo is None or not isinstance(run_id, int) or run_id < 1:
+            raise ValueError
+    except (binascii.Error, json.JSONDecodeError, TypeError, UnicodeDecodeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail="invalid analysis cursor") from exc
+    return AnalysisCursor(created_at, run_id)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -293,6 +314,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/analyses", response_model=list[AnalysisRecord], tags=["analyses"])
     async def list_analyses(
+        response: Response,
         analysis_store: Annotated[AnalysisStore, Depends(get_store)],
         installation_ids: Annotated[set[int] | None, Depends(analysis_access)],
         limit: Annotated[int, Query(ge=1, le=100)] = 50,
@@ -301,14 +323,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             AnalysisStatus | None, Query(alias="status")
         ] = None,
         category: ErrorCategory | None = None,
+        cursor: str | None = None,
     ) -> list[AnalysisRecord]:
-        return analysis_store.list(
+        page = analysis_store.list_page(
             limit,
             installation_ids,
             repository=repository,
             status=analysis_status,
             category=category,
+            cursor=_decode_analysis_cursor(cursor) if cursor else None,
         )
+        if page.next_cursor is not None:
+            response.headers["X-PipeLens-Next-Cursor"] = _encode_analysis_cursor(
+                page.next_cursor
+            )
+        return page.records
 
     @app.get("/api/analyses/{run_id}", response_model=AnalysisRecord, tags=["analyses"])
     async def get_analysis(
