@@ -38,7 +38,8 @@ cp .env.example .env
 uvicorn pipelens.main:app --reload
 ```
 
-API 문서는 `http://localhost:8000/docs`, 상태 확인은 `/healthz`에서 볼 수 있습니다.
+API 문서는 `http://localhost:8000/docs`에서 볼 수 있습니다. `/healthz`는 프로세스 생존
+여부를, `/readyz`는 데이터베이스와 분석 큐를 포함한 요청 처리 가능 여부를 확인합니다.
 
 ```bash
 pytest
@@ -150,6 +151,7 @@ GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하
 - `GET /api/analyses/{run_id}`: 분석 상세
 - `PUT /api/analyses/{run_id}/feedback`: 정확도·해결 여부 피드백 저장
 - `GET /healthz`: 프로세스 상태
+- `GET /readyz`: 데이터베이스·분석 큐 readiness 상태
 - `GET /metrics`: Prometheus exposition endpoint
 
 ## 다음 구현 경계
@@ -160,6 +162,8 @@ Redis worker는 인스턴스별 processing 목록과 TTL lease를 사용합니�
 lease가 만료된 worker의 작업만 다른 worker가 원자적으로 pending queue에 복구하므로 여러
 worker replica를 실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS`는
 `PIPELENS_WORKER_LEASE_SECONDS`보다 충분히 작게 유지해야 합니다.
+Docker Compose에서 API healthcheck는 `/readyz`를 사용하며 대시보드는 API가 준비된
+후에 시작합니다.
 큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과 pending 적재가
 원자적으로 수행됩니다. DB 기록 후 큐 장애가 발생하면 webhook 재전달이 해당 `queued`
 분석을 다시 적재하고, API 시작 시에도 DB의 미처리 분석을 큐와 재조정합니다.
