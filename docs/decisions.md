@@ -230,3 +230,18 @@
   수 있다.
 - 근거: [Node.js release schedule](https://github.com/nodejs/Release/blob/main/schedule.json).
 - 관련: `1f90715`.
+
+## D-025. 배포할 이미지 자체를 fixable HIGH/CRITICAL gate로 검사
+
+- 결정: CI에서 API·대시보드 이미지를 빌드한 직후 Trivy로 OS와 language package 취약점을
+  검사하고, 수정 버전이 존재하는 HIGH 또는 CRITICAL 항목이 하나라도 있으면 실패시킨다.
+  Action은 검증된 release commit SHA로 고정하고 실제 기동 검사는 scan 통과 뒤 수행한다.
+- 이유: Dockerfile과 dependency source만 검사하면 base image layer와 build toolchain이
+  runtime에 남긴 패키지를 놓칠 수 있다. 실제 배포 단위에서 차단해야 같은 artifact의 non-root
+  설정, 취약점과 기동 가능성을 한 흐름으로 검증할 수 있다.
+- 대안: 모든 severity를 차단, 수정 여부와 관계없이 차단, 정기 scan만 실행, 결과만 업로드하고
+  CI를 통과시킴.
+- 결과: 현재 수정할 수 있는 고위험 항목은 즉시 차단한다. 아직 수정 버전이 없는 항목은 빌드를
+  영구 정지시키지 않도록 gate에서 제외하므로 별도 관찰·대응 절차가 필요하다. mutable base
+  tag의 최신 보안 패치를 반영하기 위해 Debian/Alpine package upgrade를 image build에 포함한다.
+- 관련: `ec7105c`, `89ffa86`.

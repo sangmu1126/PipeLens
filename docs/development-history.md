@@ -182,6 +182,14 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   2.0에서 2.0.52로 올렸다. 로컬 SQLite 포함 106개 테스트와 GitHub Actions의 실제
   PostgreSQL 17 migration·analysis lifecycle integration, 전체 CI·CodeQL 통과 뒤 squash
   merge했다.
+- `ec7105c`: API·대시보드 이미지를 빌드한 직후 fixable HIGH/CRITICAL OS·language package
+  취약점을 차단하는 Trivy gate를 추가했다. Action은 v0.36.0의 검증된 commit SHA로 고정했다.
+  첫 실행은 대시보드 Alpine과 API Debian의 OpenSSL `CVE-2026-14456`, API image에 남은
+  msgpack `GHSA-6v7p-g79w-8964`와 setuptools `CVE-2025-47273`을 검출해 의도대로 실패했다.
+- `89ffa86`: API image build에서 Debian 보안 업데이트를 적용하고 설치가 끝난 뒤 runtime에
+  불필요한 pip·setuptools를 제거했다. 대시보드 runtime에는 Alpine 보안 업데이트를 적용했다.
+  같은 gate 재실행에서 두 이미지가 취약점 scan, non-root USER 검사와 HTTP readiness/smoke
+  test를 모두 통과했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
@@ -203,6 +211,7 @@ Nginx는 별도 PR로 분리했다.
 - TypeScript와 Vite production build
 - Prometheus config와 Compose config 검증
 - API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
+- 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·language package 취약점 gate
 - Python·JavaScript/TypeScript CodeQL
 
 ## 아직 기록할 수 없는 것
