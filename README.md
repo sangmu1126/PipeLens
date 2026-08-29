@@ -45,6 +45,8 @@ API 문서는 `http://localhost:8000/docs`에서 볼 수 있습니다. `/healthz
 pytest
 ruff check .
 pipelens-evaluate --minimum-accuracy 0.8
+npm --prefix frontend test
+npm --prefix frontend run build
 ```
 
 ## MVP 정확도 평가
@@ -58,8 +60,8 @@ pipelens-evaluate
 pipelens-evaluate --json
 ```
 
-GitHub Actions CI에서도 Ruff, 전체 테스트, 80% 정확도 게이트와 대시보드 빌드를 함께
-실행합니다.
+GitHub Actions CI에서도 Ruff, 전체 백엔드·대시보드 테스트, 80% 정확도 게이트와
+대시보드 빌드를 함께 실행합니다.
 
 Docker를 사용한다면 `.env`를 만든 뒤 다음 명령으로 실행합니다.
 
