@@ -2,14 +2,14 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `448565c`.
+기준 시점: **2026-08-30**, 기능 기준 commit `b8c5cf2`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | 고정 진단 평가 | 통과 | 10/10, 100%; CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 105 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 105개와 진단 평가 10/10 |
+| 백엔드 테스트 | 통과 | 로컬 106 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 106개와 진단 평가 10/10 |
 | 대시보드 테스트 | 통과 | Node 22 CI, Node 24 로컬 검증, Vitest 4/4와 Vite production build |
 | API·대시보드 이미지 | 통과 | 실제 Docker build, 최종 non-root USER 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI에서 Nginx 기동 후 내부 8080 HTTP smoke test |
@@ -32,6 +32,8 @@
 - [Prometheus client 0.26 PR CodeQL run 33265608942](https://github.com/sangmu1126/PipeLens/actions/runs/33265608942)
 - [cryptography 50 PR CI run 33267108019](https://github.com/sangmu1126/PipeLens/actions/runs/33267108019)
 - [cryptography 50 PR CodeQL run 33267108013](https://github.com/sangmu1126/PipeLens/actions/runs/33267108013)
+- [SQLAlchemy 2.0.52 PR CI run 33267721665](https://github.com/sangmu1126/PipeLens/actions/runs/33267721665)
+- [SQLAlchemy 2.0.52 PR CodeQL run 33267721517](https://github.com/sangmu1126/PipeLens/actions/runs/33267721517)
 
 ## 2. 자동 검증 상세
 
@@ -46,7 +48,7 @@
 7. 실제 PostgreSQL 17·Redis 7 service에 대한 integration test
 8. `pipelens-evaluate --minimum-accuracy 0.8`
 
-별도 compatibility job은 Python 3.14에서 integration directory를 제외한 105개 테스트와
+별도 compatibility job은 Python 3.14에서 integration directory를 제외한 106개 테스트와
 10개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
 3.14는 상한 직전 호환성 검증을 담당한다. 로컬 3.14에서는 일부 dependency가 Python 3.16을
 앞두고 제거될 asyncio API에 대한 deprecation warning을 출력하지만 테스트 결과에는 영향을
@@ -124,9 +126,13 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
   44–46에서 50.0.1–50로 갱신했다. 50.0.0의 PKCS#7 oracle 보안 수정도 포함하지만 PipeLens는
   해당 API를 사용하지 않는다. Fernet OAuth token round-trip과 새 RS256 JWT 서명 테스트,
   최신 `main` 전체 CI·CodeQL을 통과해 `448565c`으로 squash merge했다.
-- [#16](https://github.com/sangmu1126/PipeLens/pull/16)은 SQLAlchemy 최소 버전을 갱신한다.
-  마지막 미병합 dependency PR이며 SQLite·PostgreSQL migration과 transaction 동작을 실제
-  integration으로 검토한다.
+- [#16](https://github.com/sangmu1126/PipeLens/pull/16)은 SQLAlchemy 최소 버전을 2.0에서
+  2.0.52로 갱신했다. 로컬 SQLite 포함 전체 106개 테스트와 실제 PostgreSQL 17에서 Alembic
+  `upgrade/check`, analysis lifecycle 및 Redis integration을 통과하고 `b8c5cf2`로 squash
+  merge했다.
+
+초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
+제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
 digest 고정은 아직 남은 공급망 작업이다.
@@ -220,7 +226,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 1 (`#16`, SQLAlchemy 검토 대기)
+- open pull requests: 0
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0

@@ -178,10 +178,18 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `448565c`: Fernet token 암호화와 GitHub App JWT 서명에 사용하는 cryptography의 지원
   범위를 44–46에서 50.0.1–50로 갱신했다. OAuth/Fernet·GitHub client·production 설정 테스트
   27개와 진단 fixture 10/10, 최신 `main` 전체 CI·CodeQL 통과 뒤 squash merge했다.
+- `b8c5cf2`: SQLite·PostgreSQL 저장 계층과 Alembic이 사용하는 SQLAlchemy 최소 버전을
+  2.0에서 2.0.52로 올렸다. 로컬 SQLite 포함 106개 테스트와 GitHub Actions의 실제
+  PostgreSQL 17 migration·analysis lifecycle integration, 전체 CI·CodeQL 통과 뒤 squash
+  merge했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
 위해 내려졌다.
+
+이 시점에 Docker 2개와 Python dependency 5개로 시작한 첫 Dependabot 검토 사이클은 모두
+처리됐다. Node 26은 LTS 정책에 따라 제외했고 나머지는 검증 뒤 merge했으며, 함께 제안됐던
+Nginx는 별도 PR로 분리했다.
 
 ## 현재까지의 검증 방식
 
