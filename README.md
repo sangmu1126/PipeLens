@@ -10,6 +10,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [현재 아키텍처](docs/architecture.md)
 - [주요 의사결정 기록](docs/decisions.md)
 - [검증 및 운영 준비 현황](docs/readiness.md)
+- [컨테이너 릴리스 정책과 절차](docs/release.md)
 
 현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.
 

@@ -194,6 +194,13 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   검증한 뒤 image별 CI artifact로 14일간 보관하도록 했다. 첫 성공 실행에서 내려받은 CycloneDX
   1.6 문서는 API 125개, 대시보드 71개 component를 포함했다. Trivy v0.36.0과
   `upload-artifact` v7.0.1은 검증한 commit SHA로 고정했다.
+- `d7e600c`: `main`의 semantic version tag에서 API·대시보드 image를 검증한 뒤 GHCR에
+  게시하고, 확정 digest에 SLSA provenance와 CycloneDX SBOM attestation을 서명하는 release
+  workflow를 추가했다. mutable `latest`는 만들지 않고 version tag와 digest만 게시한다.
+- `ed83890`: Python과 대시보드 manifest뿐 아니라 npm lockfile의 root·workspace version도
+  release tag와 일치해야 게시하도록 검증 범위를 보강했다.
+- `f5e059d`: 공식 attestation parser가 요구하는 CycloneDX serial number를 일반 CI와 release
+  양쪽에서 사전 검증하도록 보강했다. 기존 CI artifact에도 실제 UUID가 있음을 확인했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기

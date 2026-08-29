@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `c4d362e`.
+기준 시점: **2026-08-30**, 기능 기준 commit `f5e059d`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -15,6 +15,7 @@
 | 대시보드 컨테이너 기동 | 통과 | CI에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
+| GHCR release 자동화 | 구현·미실행 | tag/version 검증, 사전 scan·smoke, digest provenance·SBOM attestation |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | Compose는 있으나 release·registry·TLS·backup 절차 없음 |
@@ -41,6 +42,8 @@
 - [컨테이너 보안 수정 CodeQL run 33268380597](https://github.com/sangmu1126/PipeLens/actions/runs/33268380597)
 - [컨테이너 SBOM CI run 33270531568](https://github.com/sangmu1126/PipeLens/actions/runs/33270531568)
 - [컨테이너 SBOM CodeQL run 33270531626](https://github.com/sangmu1126/PipeLens/actions/runs/33270531626)
+- [릴리스 자동화 기준 CI run 33272932733](https://github.com/sangmu1126/PipeLens/actions/runs/33272932733)
+- [릴리스 자동화 기준 CodeQL run 33272932727](https://github.com/sangmu1126/PipeLens/actions/runs/33272932727)
 
 ## 2. 자동 검증 상세
 
@@ -145,8 +148,9 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
 
-Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
-digest 고정, release image에 연결된 장기 SBOM과 provenance는 아직 남은 공급망 작업이다.
+Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update와 immutable
+digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장기 SBOM과 provenance
+자동화는 구현됐지만 첫 tag 실행으로 검증되지 않았다.
 
 ## 3. 보안 통제 현황
 
@@ -172,7 +176,7 @@ digest 고정, release image에 연결된 장기 SBOM과 provenance는 아직 �
 ### 미구현 또는 외부 설정 필요
 
 - `main` branch protection/ruleset과 필수 status check
-- provenance/attestation, 장기 SBOM과 서명된 release image
+- 첫 tag의 GHCR image, provenance/attestation과 장기 SBOM 외부 검증
 - immutable base image digest 정책
 - production secret manager와 key rotation 절차
 - TLS reverse proxy의 HSTS
@@ -211,9 +215,9 @@ digest 고정, release image에 연결된 장기 SBOM과 provenance는 아직 �
 
 ### P1 — 릴리스와 공급망
 
-1. version tag와 GitHub Release 정책 정의
-2. GHCR에 API·dashboard image를 build/push하는 release workflow 추가
-3. release image digest에 연결된 SBOM과 provenance/attestation 추가
+1. 첫 `v0.1.0` tag와 GitHub Release를 만들고 실제 workflow 증적 기록
+2. 두 GHCR digest의 provenance·CycloneDX attestation을 소비자 명령으로 검증
+3. GitHub immutable release와 GHCR package visibility·retention 정책 확정
 4. Compose 전용 image 업데이트 자동화와 immutable digest 정책 결정
 
 ### P1 — 운영 신뢰성

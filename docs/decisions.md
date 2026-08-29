@@ -259,3 +259,19 @@
   영구 배포물이나 서명된 attestation이 아니므로, GHCR release workflow에서 digest에 결합한
   provenance와 장기 SBOM 게시가 별도로 필요하다.
 - 관련: `c4d362e`.
+
+## D-027. 검증 후 push하고 release digest에 두 attestation을 결합
+
+- 결정: `main` 이력의 `vMAJOR.MINOR.PATCH` tag만 release 입력으로 허용하고 backend,
+  dashboard와 npm lockfile version 일치를 강제한다. image는 취약점, SBOM, non-root와 기동
+  검증을 모두 통과한 뒤 version tag 하나로 GHCR에 push한다. 확정 digest에는 SLSA provenance와
+  CycloneDX SBOM attestation을 각각 GitHub OIDC/Sigstore로 서명한다.
+- 이유: registry push 뒤 검사하면 이미 소비 가능한 취약 image가 생긴다. tag가 아니라 digest에
+  source workflow와 inventory를 결합해야 배포 시 실제 검증한 artifact를 식별할 수 있다.
+- 대안: `main` push마다 `latest` 게시, 검사보다 push 우선, 별도 장기 credential로 서명,
+  provenance 또는 SBOM 중 하나만 attestation.
+- 결과: release는 재사용하지 않는 version tag와 immutable digest를 기준으로 소비한다. `latest`는
+  만들지 않으며 Action은 commit SHA로 고정한다. matrix의 부분 게시 가능성은 실패 job 재실행으로
+  복구하고 두 image와 attestation이 모두 확인되기 전에는 GitHub Release를 만들지 않는다. 실제
+  첫 tag 실행과 외부 검증은 아직 남아 있다.
+- 관련: `d7e600c`, `ed83890`, `f5e059d`.
