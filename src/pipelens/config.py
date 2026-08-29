@@ -1,4 +1,6 @@
 from functools import lru_cache
+from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -7,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="PIPELENS_", extra="ignore")
 
+    environment: Literal["development", "production"] = "development"
     webhook_secret: str = "development-secret"
     github_app_id: str | None = None
     github_private_key: str | None = None
@@ -57,6 +60,20 @@ class Settings(BaseSettings):
             raise ValueError("worker heartbeat must be positive and shorter than the lease")
         if self.analysis_start_slo_seconds <= 0 or self.analysis_completion_slo_seconds <= 0:
             raise ValueError("analysis SLO thresholds must be positive")
+        if self.environment == "production":
+            public_url = urlparse(self.public_url)
+            if public_url.scheme != "https" or not public_url.netloc:
+                raise ValueError("production public URL must use HTTPS")
+            if not self.auth_required:
+                raise ValueError("production authentication must be required")
+            if not self.session_cookie_secure:
+                raise ValueError("production session cookies must be secure")
+            if len(self.webhook_secret) < 32:
+                raise ValueError("production webhook secret must be at least 32 characters")
+            if len(self.session_secret) < 32:
+                raise ValueError("production session secret must be at least 32 characters")
+            if not self.token_encryption_key:
+                raise ValueError("production token encryption key must be configured")
         return self
 
 

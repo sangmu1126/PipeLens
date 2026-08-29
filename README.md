@@ -107,6 +107,7 @@ HTTPS를 사용하고 `SESSION_COOKIE_SECURE=true`로 설정해야 합니다. Fe
 생성할 수 있습니다.
 
 ```dotenv
+PIPELENS_ENVIRONMENT=production
 PIPELENS_WEBHOOK_SECRET=...
 PIPELENS_GITHUB_APP_ID=123456
 PIPELENS_GITHUB_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
@@ -131,6 +132,10 @@ PIPELENS_ANALYSIS_COMPLETION_SLO_SECONDS=120
 PIPELENS_WORKER_LEASE_SECONDS=60
 PIPELENS_WORKER_HEARTBEAT_SECONDS=15
 ```
+
+`PIPELENS_ENVIRONMENT=production`에서는 인증 활성화, 외부 URL의 HTTPS 사용, Secure 세션
+쿠키, 32자 이상의 Webhook·세션 secret, 별도 Fernet 토큰 암호화 키를 시작 시 검증합니다.
+안전하지 않은 설정이 남아 있으면 API가 시작되지 않습니다.
 
 GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
 requests(read/write), Metadata(read)를 사용합니다. `PIPELENS_PUBLISH_CHECKS=true`이면 PR이
