@@ -71,8 +71,20 @@ Python과 `javascript-typescript`를 독립 matrix job으로 분석한다. workf
 
 Dependabot이 pip, npm, GitHub Actions와 API·대시보드 Dockerfile의 base image 업데이트를
 매주 월요일 순차 실행한다. 대시보드의 Node·Nginx 변경은 한 PR로 묶어 동일한 image build와
-smoke test를 함께 거치게 한다. 2026-08-29에 생성됐던 dependency PR은 호환성 검증 후 모두
-반영됐고 현재 open PR은 없다.
+smoke test를 함께 거치게 한다. Docker 설정을 처음 반영한 2026-08-29 검사에서 Docker 2개와
+Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
+
+Docker PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바로 merge하지 않았다.
+
+- [#10](https://github.com/sangmu1126/PipeLens/pull/10)은 API runtime을 Python 3.12에서
+  3.14로 변경한다. CI 기준은 아직 3.12이고 API image 기동 smoke test가 없으므로 두 기준을
+  먼저 정렬해야 한다.
+- [#11](https://github.com/sangmu1126/PipeLens/pull/11)은 Node 24→26과 Nginx 1.29→1.31을
+  함께 변경한다. 대시보드 build·기동 검사는 통과했지만 두 runtime 세대 변경을 함께
+  승인할지 검토가 필요하다.
+- [#12–#16](https://github.com/sangmu1126/PipeLens/pulls)은 Ruff, HTTPX, Prometheus client,
+  cryptography와 SQLAlchemy 최소 버전을 각각 갱신한다. 각 PR의 전체 검사가 끝난 뒤 독립
+  호환성 변경으로 처리한다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
 digest 고정은 아직 남은 공급망 작업이다.
@@ -164,7 +176,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 0
+- open pull requests: 7 (`#10`–`#16`, Dependabot 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0
