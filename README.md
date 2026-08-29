@@ -70,6 +70,15 @@ docker compose up --build
 대시보드는 `http://localhost:3000`, API 문서는 `http://localhost:8000/docs`에서
 확인할 수 있습니다.
 
+PostgreSQL·Redis 통합 테스트는 외부 서비스 URL을 명시했을 때만 실행됩니다. 마이그레이션
+실수를 방지하기 위해 데이터베이스 이름은 반드시 `_test`로 끝나야 합니다.
+
+```bash
+PIPELENS_TEST_DATABASE_URL=postgresql+psycopg://pipelens:pipelens@localhost:5432/pipelens_test \
+PIPELENS_TEST_REDIS_URL=redis://localhost:6379/0 \
+pytest -q tests/integration
+```
+
 Compose는 PostgreSQL health check 이후 `alembic upgrade head`를 실행하고 API와 worker를
 시작합니다. 로컬 SQLite schema를 명시적으로 갱신하려면 다음 명령을 사용합니다.
 

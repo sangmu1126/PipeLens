@@ -11,6 +11,29 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: pipelens_test
+          POSTGRES_USER: pipelens
+          POSTGRES_PASSWORD: pipelens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pipelens -d pipelens_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,6 +43,11 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest -q
+      - name: Test PostgreSQL and Redis integration
+        run: pytest -q tests/integration
+        env:
+          PIPELENS_TEST_DATABASE_URL: postgresql+psycopg://pipelens:pipelens@localhost:5432/pipelens_test
+          PIPELENS_TEST_REDIS_URL: redis://localhost:6379/0
       - run: pipelens-evaluate --minimum-accuracy 0.8
 
   dashboard:
