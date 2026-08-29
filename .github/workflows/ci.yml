@@ -150,6 +150,7 @@ jobs:
           sbom = json.loads(Path(os.environ["SBOM_PATH"]).read_text())
           assert sbom["bomFormat"] == "CycloneDX"
           assert sbom["specVersion"]
+          assert sbom["serialNumber"]
           assert sbom.get("components"), "SBOM contains no components"
           PY
       - name: Upload CycloneDX SBOM
