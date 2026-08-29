@@ -9,10 +9,14 @@ COPY pyproject.toml README.md ./
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY src ./src
-RUN groupadd --system pipelens \
+RUN apt-get update \
+    && apt-get upgrade --yes \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system pipelens \
     && useradd --system --gid pipelens --home-dir /app --no-create-home \
         --shell /usr/sbin/nologin pipelens \
     && pip install --no-cache-dir . \
+    && python -m pip uninstall --yes pip setuptools \
     && chown -R pipelens:pipelens /app
 
 USER pipelens
