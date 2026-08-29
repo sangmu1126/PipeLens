@@ -86,9 +86,11 @@ jobs:
           - name: api
             context: .
             dockerfile: Dockerfile
+            expected_user: pipelens
           - name: dashboard
             context: frontend
             dockerfile: frontend/Dockerfile
+            expected_user: ""
     steps:
       - uses: actions/checkout@v7
       - name: Build image
@@ -97,3 +99,9 @@ jobs:
           --file "${{ matrix.dockerfile }}"
           --tag "pipelens-${{ matrix.name }}:ci"
           "${{ matrix.context }}"
+      - name: Verify runtime user
+        if: matrix.expected_user != ''
+        run: >-
+          test
+          "$(docker image inspect "pipelens-${{ matrix.name }}:ci" --format '{{.Config.User}}')"
+          = "${{ matrix.expected_user }}"
