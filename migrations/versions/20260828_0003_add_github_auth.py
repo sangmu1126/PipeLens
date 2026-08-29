@@ -52,7 +52,6 @@ def upgrade() -> None:
             ["github_user_id"], ["github_users.github_user_id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("github_user_id", "installation_id"),
-        sa.UniqueConstraint("github_user_id", "installation_id"),
     )
 
 

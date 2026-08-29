@@ -16,7 +16,6 @@ from sqlalchemy import (
     String,
     Table,
     Text,
-    UniqueConstraint,
     and_,
     create_engine,
     delete,
@@ -178,7 +177,6 @@ user_installations = Table(
     Column("account_type", String(64), nullable=False),
     Column("repository_selection", String(64), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
-    UniqueConstraint("github_user_id", "installation_id"),
 )
 
 
