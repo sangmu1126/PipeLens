@@ -36,7 +36,8 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 
 ## 로컬 실행
 
-Python 3.12 이상이 필요합니다.
+Python 3.12 이상 3.15 미만이 필요합니다. CI는 지원 범위의 하한인 3.12에서 전체 통합
+검사를, 상한 직전인 3.14에서 단위·API 호환성 검사를 실행합니다.
 
 ```bash
 python -m venv .venv
