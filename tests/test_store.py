@@ -6,6 +6,8 @@ from pipelens.models import (
     AnalysisRecord,
     AnalysisStage,
     AnalysisStatus,
+    Classification,
+    ErrorCategory,
     ExecutionContext,
     FailedJobContext,
     FeedbackAccuracy,
@@ -166,6 +168,49 @@ def test_store_scopes_analysis_and_feedback_to_installations(tmp_path: Path) -> 
         )
         is None
     )
+
+
+def test_store_filters_analysis_history(tmp_path: Path) -> None:
+    store = AnalysisStore(str(tmp_path / "test.db"))
+    store.initialize()
+    records = [
+        (61, "acme/api", AnalysisStatus.COMPLETED, ErrorCategory.TEST),
+        (62, "acme/api", AnalysisStatus.FAILED, ErrorCategory.BUILD),
+        (63, "acme/web", AnalysisStatus.COMPLETED, ErrorCategory.BUILD),
+    ]
+    for run_id, repository, status, category in records:
+        store.create_if_absent(
+            AnalysisRecord(
+                run_id=run_id,
+                delivery_id=f"delivery-{run_id}",
+                repository=repository,
+                workflow_name="CI",
+                head_sha=f"sha-{run_id}",
+                html_url=f"https://github.com/{repository}/actions/runs/{run_id}",
+                installation_id=7,
+            )
+        )
+        store.update(
+            run_id,
+            status,
+            classification=Classification(
+                category=category,
+                confidence=0.9,
+                first_error="failed",
+            ),
+        )
+
+    assert [record.run_id for record in store.list(repository="acme/api")] == [62, 61]
+    assert [record.run_id for record in store.list(status=AnalysisStatus.COMPLETED)] == [63, 61]
+    assert [record.run_id for record in store.list(category=ErrorCategory.BUILD)] == [63, 62]
+    assert [
+        record.run_id
+        for record in store.list(
+            repository="acme/api",
+            status=AnalysisStatus.COMPLETED,
+            category=ErrorCategory.TEST,
+        )
+    ] == [61]
 
 
 def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:

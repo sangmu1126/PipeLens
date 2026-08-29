@@ -15,6 +15,7 @@ from pipelens.models import (
     AnalysisRequest,
     AnalysisStatus,
     CurrentUser,
+    ErrorCategory,
     FeedbackRecord,
     FeedbackRequest,
 )
@@ -295,8 +296,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         analysis_store: Annotated[AnalysisStore, Depends(get_store)],
         installation_ids: Annotated[set[int] | None, Depends(analysis_access)],
         limit: Annotated[int, Query(ge=1, le=100)] = 50,
+        repository: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
+        analysis_status: Annotated[
+            AnalysisStatus | None, Query(alias="status")
+        ] = None,
+        category: ErrorCategory | None = None,
     ) -> list[AnalysisRecord]:
-        return analysis_store.list(limit, installation_ids)
+        return analysis_store.list(
+            limit,
+            installation_ids,
+            repository=repository,
+            status=analysis_status,
+            category=category,
+        )
 
     @app.get("/api/analyses/{run_id}", response_model=AnalysisRecord, tags=["analyses"])
     async def get_analysis(

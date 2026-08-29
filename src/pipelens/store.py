@@ -33,6 +33,7 @@ from pipelens.models import (
     AnalysisStatus,
     Classification,
     Diagnosis,
+    ErrorCategory,
     ExecutionContext,
     FeedbackRecord,
     FeedbackRequest,
@@ -278,13 +279,28 @@ class AnalysisStore:
         return self._to_record(row, stages) if row else None
 
     def list(
-        self, limit: int = 50, installation_ids: set[int] | None = None
+        self,
+        limit: int = 50,
+        installation_ids: set[int] | None = None,
+        *,
+        repository: str | None = None,
+        status: AnalysisStatus | None = None,
+        category: ErrorCategory | None = None,
     ) -> list[AnalysisRecord]:
         if installation_ids is not None and not installation_ids:
             return []
-        statement = _analysis_select().order_by(analyses.c.created_at.desc()).limit(limit)
+        statement = _analysis_select()
         if installation_ids is not None:
             statement = statement.where(analyses.c.installation_id.in_(installation_ids))
+        if repository is not None:
+            statement = statement.where(analyses.c.repository == repository)
+        if status is not None:
+            statement = statement.where(analyses.c.status == status.value)
+        if category is not None:
+            statement = statement.where(
+                analyses.c.classification["category"].as_string() == category.value
+            )
+        statement = statement.order_by(analyses.c.created_at.desc()).limit(limit)
         with self.engine.connect() as connection:
             rows = connection.execute(statement).mappings().all()
             stages = self._stage_history(connection, [row["run_id"] for row in rows])
