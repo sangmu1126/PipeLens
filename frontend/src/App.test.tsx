@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import axe from "axe-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import type { Analysis, CurrentUser } from "./types";
@@ -135,5 +136,32 @@ describe("PipeLens dashboard", () => {
       expect(within(screen.getByRole("table")).queryByText("acme/web")).not.toBeInTheDocument();
     });
     expect(within(screen.getByRole("table")).getByText("acme/api")).toBeInTheDocument();
+  });
+
+  it("has no automatically detectable accessibility violations", async () => {
+    const diagnosed = analysis({
+      diagnosis: {
+        summary: "테스트가 실패했습니다.",
+        root_cause: "기대값과 실제 값이 다릅니다.",
+        confidence: 0.9,
+        evidence: [{ source: "log", content: "AssertionError", location: "test_api.py:10" }],
+        suggestions: [{ description: "기대값을 확인하세요.", file: "test_api.py", patch: null }],
+        conflicts: [],
+        notes: [],
+      },
+    });
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async (input: RequestInfo | URL) =>
+      String(input) === "/api/me" ? jsonResponse(currentUser) : jsonResponse([diagnosed]),
+    ));
+
+    const { container } = render(<App />);
+    await waitFor(() => {
+      expect(within(screen.getByRole("table")).getByText("acme/api")).toBeInTheDocument();
+    });
+
+    const results = await axe.run(container, {
+      rules: { "color-contrast": { enabled: false } },
+    });
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
   });
 });
