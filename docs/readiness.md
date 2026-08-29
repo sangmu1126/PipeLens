@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `47d2c60`.
+기준 시점: **2026-08-30**, 기능 기준 commit `a117d2b`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -28,6 +28,8 @@
 - [Ruff 0.16 PR CodeQL run 33264600379](https://github.com/sangmu1126/PipeLens/actions/runs/33264600379)
 - [HTTPX 0.28 PR CI run 33265290645](https://github.com/sangmu1126/PipeLens/actions/runs/33265290645)
 - [HTTPX 0.28 PR CodeQL run 33265290641](https://github.com/sangmu1126/PipeLens/actions/runs/33265290641)
+- [Prometheus client 0.26 PR CI run 33265608928](https://github.com/sangmu1126/PipeLens/actions/runs/33265608928)
+- [Prometheus client 0.26 PR CodeQL run 33265608942](https://github.com/sangmu1126/PipeLens/actions/runs/33265608942)
 
 ## 2. 자동 검증 상세
 
@@ -112,9 +114,13 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 - [#13](https://github.com/sangmu1126/PipeLens/pull/13)은 HTTPX 최소 버전을 0.27에서
   0.28.1로 갱신했다. 제거 API 미사용, 관련 GitHub·OpenAI·retry·API 테스트 38개와 최신
   `main` 전체 CI·CodeQL 통과를 확인해 `47d2c60`으로 squash merge했다.
-- [#14–#16](https://github.com/sangmu1126/PipeLens/pulls)은 Prometheus client,
-  cryptography와 SQLAlchemy 최소 버전을 각각 갱신한다. runtime dependency이므로 각 PR의
-  전체 검사와 API 동작 영향을 독립적으로 검토한다.
+- [#14](https://github.com/sangmu1126/PipeLens/pull/14)는 Prometheus client 최소 버전을
+  0.21에서 0.26.0으로 갱신했다. 독립 registry와 실제 `/metrics` 노출, pipeline·worker
+  metric 기록 테스트 18개 및 최신 `main` 전체 CI·CodeQL을 통과해 `a117d2b`으로 squash
+  merge했다.
+- [#15–#16](https://github.com/sangmu1126/PipeLens/pulls)은 cryptography와 SQLAlchemy 최소
+  버전을 각각 갱신한다. 보안·영속성 runtime dependency이므로 암호화 token 호환성과 실제
+  database integration을 각각 검토한다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
 digest 고정은 아직 남은 공급망 작업이다.
@@ -207,7 +213,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 3 (`#14`–`#16`, Python runtime dependency 검토 대기)
+- open pull requests: 2 (`#15`–`#16`, Python runtime dependency 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0
