@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-29**, 기능 기준 commit `4d371c6`.
+기준 시점: **2026-08-29**, 기능 기준 commit `95b9970`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -82,8 +82,8 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 Docker PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바로 merge하지 않았다.
 
 - [#10](https://github.com/sangmu1126/PipeLens/pull/10)은 API runtime을 Python 3.12에서
-  3.14로 변경한다. Python 3.14 compatibility와 API image 기동 smoke test를 `main`에 먼저
-  추가했으며 PR을 최신 base로 갱신해 새 gate를 통과하는지 확인한 뒤 merge한다.
+  3.14로 변경했다. Python 3.14 compatibility와 API image 기동 smoke test를 `main`에 먼저
+  추가한 뒤 PR을 rebase했고, 모든 gate 통과 후 `95b9970`으로 squash merge했다.
 - [#11](https://github.com/sangmu1126/PipeLens/pull/11)은 Node 24→26과 Nginx 1.29→1.31을
   함께 변경한다. 대시보드 build·기동 검사는 통과했지만 두 runtime 세대 변경을 함께
   승인할지 검토가 필요하다.
@@ -181,7 +181,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 7 (`#10`–`#16`, Dependabot 검토 대기)
+- open pull requests: 6 (`#11`–`#16`, Dependabot 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0

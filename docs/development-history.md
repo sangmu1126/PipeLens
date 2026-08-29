@@ -153,6 +153,8 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   추가하고 대시보드의 Node·Nginx 변경을 하나의 검증 가능한 PR로 묶었다.
 - `4d371c6`: Python 지원 범위를 3.12 이상 3.15 미만으로 명시하고 3.14 호환성 job과 API
   컨테이너 `/readyz` smoke test를 CI에 추가했다.
+- `95b9970`: 새 Python 3.14 compatibility와 API 기동 gate를 통과한 뒤 API runtime image를
+  `python:3.14-slim`으로 갱신했다.
 
 ## 현재까지의 검증 방식
 
