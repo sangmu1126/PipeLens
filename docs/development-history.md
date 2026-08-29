@@ -173,6 +173,11 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `a117d2b`: API·worker metrics에 사용하는 Prometheus client의 최소 버전을 0.21에서
   0.26.0으로 올렸다. 독립 CollectorRegistry 사용을 확인하고 metrics·pipeline·worker·webhook
   테스트 18개와 진단 fixture 10/10, 최신 `main` 전체 CI·CodeQL 통과 뒤 squash merge했다.
+- `2ab347d`: cryptography major 업데이트 전에 GitHub App private key의 escaped newline 복원,
+  RS256 JWT 서명과 공개키 검증을 직접 수행하는 회귀 테스트를 추가했다.
+- `448565c`: Fernet token 암호화와 GitHub App JWT 서명에 사용하는 cryptography의 지원
+  범위를 44–46에서 50.0.1–50로 갱신했다. OAuth/Fernet·GitHub client·production 설정 테스트
+  27개와 진단 fixture 10/10, 최신 `main` 전체 CI·CodeQL 통과 뒤 squash merge했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기

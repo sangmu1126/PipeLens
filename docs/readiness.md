@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `a117d2b`.
+기준 시점: **2026-08-30**, 기능 기준 commit `448565c`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -30,6 +30,8 @@
 - [HTTPX 0.28 PR CodeQL run 33265290641](https://github.com/sangmu1126/PipeLens/actions/runs/33265290641)
 - [Prometheus client 0.26 PR CI run 33265608928](https://github.com/sangmu1126/PipeLens/actions/runs/33265608928)
 - [Prometheus client 0.26 PR CodeQL run 33265608942](https://github.com/sangmu1126/PipeLens/actions/runs/33265608942)
+- [cryptography 50 PR CI run 33267108019](https://github.com/sangmu1126/PipeLens/actions/runs/33267108019)
+- [cryptography 50 PR CodeQL run 33267108013](https://github.com/sangmu1126/PipeLens/actions/runs/33267108013)
 
 ## 2. 자동 검증 상세
 
@@ -118,9 +120,13 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
   0.21에서 0.26.0으로 갱신했다. 독립 registry와 실제 `/metrics` 노출, pipeline·worker
   metric 기록 테스트 18개 및 최신 `main` 전체 CI·CodeQL을 통과해 `a117d2b`으로 squash
   merge했다.
-- [#15–#16](https://github.com/sangmu1126/PipeLens/pulls)은 cryptography와 SQLAlchemy 최소
-  버전을 각각 갱신한다. 보안·영속성 runtime dependency이므로 암호화 token 호환성과 실제
-  database integration을 각각 검토한다.
+- [#15](https://github.com/sangmu1126/PipeLens/pull/15)는 cryptography 지원 범위를
+  44–46에서 50.0.1–50로 갱신했다. 50.0.0의 PKCS#7 oracle 보안 수정도 포함하지만 PipeLens는
+  해당 API를 사용하지 않는다. Fernet OAuth token round-trip과 새 RS256 JWT 서명 테스트,
+  최신 `main` 전체 CI·CodeQL을 통과해 `448565c`으로 squash merge했다.
+- [#16](https://github.com/sangmu1126/PipeLens/pull/16)은 SQLAlchemy 최소 버전을 갱신한다.
+  마지막 미병합 dependency PR이며 SQLite·PostgreSQL migration과 transaction 동작을 실제
+  integration으로 검토한다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
 digest 고정은 아직 남은 공급망 작업이다.
@@ -131,6 +137,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 
 - GitHub webhook HMAC-SHA256 검증
 - GitHub App installation token 사용과 최소 권한 문서화
+- GitHub App RS256 JWT 서명·공개키 검증 회귀 테스트
 - OAuth state 검증, HttpOnly/SameSite session cookie
 - 사용자 token Fernet 암호화 저장
 - installation 단위 분석 접근 제어
@@ -213,7 +220,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 2 (`#15`–`#16`, Python runtime dependency 검토 대기)
+- open pull requests: 1 (`#16`, SQLAlchemy 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0
