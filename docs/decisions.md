@@ -188,3 +188,14 @@
 - 결과: 실행 수는 늘지만 Python·TypeScript 분석, 실제 service 통합과 이미지 회귀를 독립적으로
   확인할 수 있다.
 - 관련: `8462d52`, `41ce378`, `6a5d2ea`, `6fc8d83`.
+
+## D-022. Dockerfile별 업데이트 경계와 대시보드 image grouping
+
+- 결정: API와 대시보드 Dockerfile을 별도 Dependabot directory로 관리하고 대시보드의
+  Node build image와 Nginx runtime image 업데이트는 한 PR로 묶는다.
+- 이유: 두 Dockerfile은 build context와 검증 대상이 다르지만 대시보드의 build/runtime
+  조합은 한 번의 production build와 smoke test로 함께 검증하는 편이 안전하다.
+- 대안: base image 수동 업데이트, 모든 image를 각각 별도 PR로 생성.
+- 결과: API image 변경은 독립적으로 검증되고 대시보드 image 조합은 원자적으로 검토된다.
+  Compose에서만 참조하는 service image는 이 설정 범위에 포함되지 않는다.
+- 관련: `d72d4da`.

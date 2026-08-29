@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-29**, commit `92e11f8`.
+기준 시점: **2026-08-29**, 기능 기준 commit `d72d4da`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -69,11 +69,13 @@ Python과 `javascript-typescript`를 독립 matrix job으로 분석한다. workf
 
 ### Dependency 유지보수
 
-Dependabot이 pip, npm, GitHub Actions minor·patch 업데이트를 매주 월요일 순차 실행한다.
-2026-08-29에 생성됐던 dependency PR은 호환성 검증 후 모두 반영됐고 현재 open PR은 없다.
+Dependabot이 pip, npm, GitHub Actions와 API·대시보드 Dockerfile의 base image 업데이트를
+매주 월요일 순차 실행한다. 대시보드의 Node·Nginx 변경은 한 PR로 묶어 동일한 image build와
+smoke test를 함께 거치게 한다. 2026-08-29에 생성됐던 dependency PR은 호환성 검증 후 모두
+반영됐고 현재 open PR은 없다.
 
-아직 Docker base image에 대한 Dependabot 항목은 없다. base image update와 digest 고정은
-남은 공급망 작업이다.
+Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
+digest 고정은 아직 남은 공급망 작업이다.
 
 ## 3. 보안 통제 현황
 
@@ -91,7 +93,7 @@ Dependabot이 pip, npm, GitHub Actions minor·patch 업데이트를 매주 월�
 - API·Nginx 보안 응답 header
 - API·dashboard non-root container
 - Docker build context allowlist
-- CodeQL과 dependency 자동 업데이트
+- CodeQL과 pip·npm·Actions·Dockerfile dependency 자동 업데이트
 
 ### 미구현 또는 외부 설정 필요
 
@@ -139,7 +141,7 @@ Dependabot이 pip, npm, GitHub Actions minor·patch 업데이트를 매주 월�
 1. version tag와 GitHub Release 정책 정의
 2. GHCR에 API·dashboard image를 build/push하는 release workflow 추가
 3. container vulnerability scan, SBOM과 provenance 추가
-4. Docker base image 업데이트 자동화와 immutable digest 정책 결정
+4. Compose 전용 image 업데이트 자동화와 immutable digest 정책 결정
 
 ### P1 — 운영 신뢰성
 

@@ -149,6 +149,8 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   했다.
 - `92e11f8`: 대시보드를 NGINX 비권한 이미지와 8080 포트로 전환하고 실제 HTTP smoke test를
   추가했다.
+- `d72d4da`: API와 대시보드 Dockerfile의 base image를 Dependabot 주간 업데이트 대상에
+  추가하고 대시보드의 Node·Nginx 변경을 하나의 검증 가능한 PR로 묶었다.
 
 ## 현재까지의 검증 방식
 
