@@ -49,6 +49,10 @@ jobs:
           -v "$PWD/ops/prometheus:/etc/prometheus:ro"
           prom/prometheus:v3.5.0
           check config /etc/prometheus/prometheus.yml
+      - name: Validate observability stack
+        run: |
+          docker compose config --quiet
+          python -m json.tool ops/grafana/dashboards/pipelens-overview.json >/dev/null
       - name: Test PostgreSQL and Redis integration
         run: pytest -q tests/integration
         env:
