@@ -33,6 +33,8 @@ class AnalysisQueue(Protocol):
 
     async def recover_orphaned(self) -> int: ...
 
+    async def healthcheck(self) -> None: ...
+
     async def size(self) -> int: ...
 
     async def close(self) -> None: ...
@@ -72,6 +74,9 @@ class InMemoryAnalysisQueue:
 
     async def recover_orphaned(self) -> int:
         return 0
+
+    async def healthcheck(self) -> None:
+        return None
 
     async def size(self) -> int:
         return self._queue.qsize()
@@ -215,6 +220,9 @@ class RedisAnalysisQueue:
                 self.workers_key,
             )
         return recovered
+
+    async def healthcheck(self) -> None:
+        await self.redis.ping()
 
     async def size(self) -> int:
         return await self.redis.llen(self.pending_key)

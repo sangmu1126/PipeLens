@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from pipelens.auth import AuthenticatedSession, AuthenticationError, AuthService
@@ -96,6 +96,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/healthz", tags=["system"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/readyz", tags=["system"])
+    async def readiness(
+        request: Request,
+        analysis_store: Annotated[AnalysisStore, Depends(get_store)],
+    ) -> Response:
+        checks: dict[str, str] = {}
+        try:
+            analysis_store.healthcheck()
+        except Exception:
+            checks["database"] = "unavailable"
+        else:
+            checks["database"] = "ok"
+        try:
+            await request.app.state.queue.healthcheck()
+        except Exception:
+            checks["queue"] = "unavailable"
+        else:
+            checks["queue"] = "ok"
+        ready = all(result == "ok" for result in checks.values())
+        return JSONResponse(
+            status_code=status.HTTP_200_OK if ready else status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "ready" if ready else "not_ready", "checks": checks},
+        )
 
     @app.get("/metrics", include_in_schema=False)
     async def prometheus_metrics() -> Response:

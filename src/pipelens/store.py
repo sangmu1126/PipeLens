@@ -19,6 +19,7 @@ from sqlalchemy import (
     delete,
     insert,
     select,
+    text,
     update,
 )
 from sqlalchemy.engine import Engine, RowMapping
@@ -177,6 +178,10 @@ class AnalysisStore:
 
     def initialize(self) -> None:
         metadata.create_all(self.engine)
+
+    def healthcheck(self) -> None:
+        with self.engine.connect() as connection:
+            connection.execute(text("SELECT 1")).scalar_one()
 
     def create_if_absent(self, record: AnalysisRecord) -> bool:
         values = {

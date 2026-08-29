@@ -18,6 +18,7 @@ def _request() -> AnalysisRequest:
 @pytest.mark.asyncio
 async def test_memory_queue_retries_with_incremented_attempt() -> None:
     queue = InMemoryAnalysisQueue()
+    await queue.healthcheck()
     assert await queue.enqueue(_request()) is True
     assert await queue.enqueue(_request()) is False
 
@@ -36,12 +37,14 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
     redis = MagicMock()
     pipeline = MagicMock()
     pipeline.execute = AsyncMock()
+    redis.ping = AsyncMock(return_value=True)
     redis.pipeline.return_value = pipeline
     envelope = QueueEnvelope(request=_request())
     redis.brpoplpush = AsyncMock(return_value=envelope.model_dump_json())
     redis.eval = AsyncMock(return_value=1)
     queue = RedisAnalysisQueue(redis, "analyses", worker_id="worker-a")
 
+    await queue.healthcheck()
     job = await queue.dequeue(timeout=2)
     await queue.acknowledge(job)
 
@@ -59,6 +62,7 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
     pipeline.set.assert_called_once_with(
         "analyses:processing:worker-a:lease", "worker-a", ex=60
     )
+    redis.ping.assert_awaited_once_with()
 
 
 @pytest.mark.asyncio
