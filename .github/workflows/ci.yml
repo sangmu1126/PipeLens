@@ -43,6 +43,12 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest -q
+      - name: Validate Prometheus configuration
+        run: >-
+          docker run --rm --entrypoint promtool
+          -v "$PWD/ops/prometheus:/etc/prometheus:ro"
+          prom/prometheus:v3.5.0
+          check config /etc/prometheus/prometheus.yml
       - name: Test PostgreSQL and Redis integration
         run: pytest -q tests/integration
         env:

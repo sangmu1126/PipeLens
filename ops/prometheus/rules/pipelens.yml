@@ -1,0 +1,42 @@
+groups:
+  - name: pipelens-availability
+    rules:
+      - alert: PipeLensApiUnavailable
+        expr: up{job="pipelens-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: PipeLens API metrics endpoint is unavailable
+
+      - alert: PipeLensWorkerUnavailable
+        expr: up{job="pipelens-worker"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: PipeLens worker metrics endpoint is unavailable
+
+  - name: pipelens-slo
+    rules:
+      - alert: PipeLensAnalysisStartSloBreached
+        expr: increase(pipelens_slo_results_total{phase="start", outcome="breached"}[15m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: At least one analysis missed the start SLO in the last 15 minutes
+
+      - alert: PipeLensAnalysisCompletionSloBreached
+        expr: increase(pipelens_slo_results_total{phase="completion", outcome="breached"}[15m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: At least one analysis missed the completion SLO in the last 15 minutes
+
+      - alert: PipeLensAnalysisQueueBacklog
+        expr: max(pipelens_analysis_queue_depth) > 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: PipeLens analysis queue has remained above 20 jobs for 5 minutes
