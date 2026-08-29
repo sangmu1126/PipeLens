@@ -213,3 +213,20 @@
 - 결과: Python 3.13은 명시 범위에 포함되지만 양 끝 버전으로 호환성을 대표 검증한다.
   Python 3.15 지원은 dependency 호환성과 CI 추가 검토 후 별도로 연다.
 - 관련: `4d371c6`.
+
+## D-024. 대시보드 build runtime은 Node LTS만 지원
+
+- 결정: 대시보드의 Node 지원 범위를 `^22.13.0 || ^24.0.0`으로 명시한다. 일반 CI는 지원
+  하한인 Node 22를 검사하고 Docker production build는 최신 LTS인 Node 24를 사용한다.
+  Dependabot은 Node의 semver-major 자동 업데이트를 무시하되 Nginx 업데이트는 계속
+  제안하도록 한다.
+- 이유: 2026-08-30 기준 Node 26은 Current release이며 공식 일정상 2026-10-28에 LTS로
+  전환될 예정이다. production artifact를 만드는 build toolchain은 Current보다 LTS에서
+  재현성과 dependency 지원을 확인하는 편이 안전하다.
+- 대안: 항상 최신 Node major를 자동 반영, Node 24 image만 고정하고 지원 정책은 명시하지
+  않음, 모든 지원 major에서 동일한 전체 CI 반복.
+- 결과: Node major 전환은 LTS 승격 뒤 compatibility와 container build를 명시적으로 검토해야
+  한다. Node major가 제외되어도 같은 Dependabot group의 Nginx 업데이트는 독립적으로 생성될
+  수 있다.
+- 근거: [Node.js release schedule](https://github.com/nodejs/Release/blob/main/schedule.json).
+- 관련: `1f90715`.

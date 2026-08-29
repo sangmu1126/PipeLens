@@ -2,7 +2,7 @@
 
 ## 기록 범위
 
-이 문서는 Git commit graph와 현재 코드를 기준으로 2026-08-28부터 2026-08-29까지의 개발
+이 문서는 Git commit graph와 현재 코드를 기준으로 2026-08-28부터 2026-08-30까지의 개발
 흐름을 재구성한다. 커밋 메시지에서 확인되지 않는 개인적 동기는 기록하지 않는다. 아래
 hash는 모두 `main` 이력에 존재한다.
 
@@ -156,6 +156,16 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `95b9970`: 새 Python 3.14 compatibility와 API 기동 gate를 통과한 뒤 API runtime image를
   `python:3.14-slim`으로 갱신했다.
 
+## 2026-08-30: runtime 지원 경계 정리
+
+- `1f90715`: 대시보드 package에 Node 22·24 LTS 지원 범위를 명시하고 Dependabot이 LTS 전환
+  전 Node major를 자동 제안하지 않도록 했다. CI의 Node 22와 Docker build의 Node 24가 지원
+  범위 양 끝을 각각 검증한다.
+
+이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
+Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 다시 생성하도록 만들기 위해
+내려졌다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -167,7 +177,7 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - Vitest 대시보드 사용자 흐름·접근성 테스트
 - TypeScript와 Vite production build
 - Prometheus config와 Compose config 검증
-- API·대시보드 컨테이너 빌드, 최종 USER 검사와 대시보드 HTTP smoke test
+- API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
 - Python·JavaScript/TypeScript CodeQL
 
 ## 아직 기록할 수 없는 것
