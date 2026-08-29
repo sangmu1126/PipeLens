@@ -1,10 +1,29 @@
 import json
 
 import httpx
+import jwt
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from pipelens.github import GitHubClient
 from pipelens.models import TrustLevel
+
+
+def test_app_jwt_is_signed_with_configured_rsa_key() -> None:
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode()
+    github = GitHubClient("12345", private_pem.replace("\n", "\\n"), 1024)
+
+    token = github._app_jwt()
+    claims = jwt.decode(token, private_key.public_key(), algorithms=["RS256"], issuer="12345")
+
+    assert claims["iss"] == "12345"
+    assert claims["exp"] > claims["iat"]
 
 
 @pytest.mark.asyncio
