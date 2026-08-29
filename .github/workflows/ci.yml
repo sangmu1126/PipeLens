@@ -90,7 +90,7 @@ jobs:
           - name: dashboard
             context: frontend
             dockerfile: frontend/Dockerfile
-            expected_user: ""
+            expected_user: nginx
     steps:
       - uses: actions/checkout@v7
       - name: Build image
@@ -105,3 +105,19 @@ jobs:
           test
           "$(docker image inspect "pipelens-${{ matrix.name }}:ci" --format '{{.Config.User}}')"
           = "${{ matrix.expected_user }}"
+      - name: Smoke test dashboard container
+        if: matrix.name == 'dashboard'
+        run: |
+          dashboard_container="pipelens-dashboard-smoke"
+          docker run --detach --rm --name "$dashboard_container" \
+            --add-host api:127.0.0.1 "pipelens-${{ matrix.name }}:ci"
+          trap 'docker stop "$dashboard_container"' EXIT
+          for attempt in {1..10}; do
+            if docker exec "$dashboard_container" \
+              wget --quiet --output-document=/dev/null http://127.0.0.1:8080/; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$dashboard_container"
+          exit 1
