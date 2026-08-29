@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `89ffa86`.
+기준 시점: **2026-08-30**, 기능 기준 commit `c4d362e`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -14,6 +14,7 @@
 | API·대시보드 이미지 | 통과 | 실제 Docker build, 최종 non-root USER 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
+| 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | Compose는 있으나 release·registry·TLS·backup 절차 없음 |
@@ -38,6 +39,8 @@
 - [컨테이너 취약점 최초 검출 CI run 33268226647](https://github.com/sangmu1126/PipeLens/actions/runs/33268226647)
 - [컨테이너 보안 수정 검증 CI run 33268380682](https://github.com/sangmu1126/PipeLens/actions/runs/33268380682)
 - [컨테이너 보안 수정 CodeQL run 33268380597](https://github.com/sangmu1126/PipeLens/actions/runs/33268380597)
+- [컨테이너 SBOM CI run 33270531568](https://github.com/sangmu1126/PipeLens/actions/runs/33270531568)
+- [컨테이너 SBOM CodeQL run 33270531626](https://github.com/sangmu1126/PipeLens/actions/runs/33270531626)
 
 ## 2. 자동 검증 상세
 
@@ -79,6 +82,8 @@ Node Current release는 LTS 전환과 dependency compatibility 검토 전까지 
 - API와 대시보드 context를 matrix로 병렬 빌드한다.
 - 빌드 직후 실제 image에서 OS와 language package를 검사하며 수정 가능한 HIGH/CRITICAL
   취약점이 있으면 실패한다. 수정 버전이 아직 없는 항목은 gate 대상에서 제외한다.
+- 같은 image의 모든 발견 package를 CycloneDX JSON으로 만들고 형식과 component 존재를
+  검증한 뒤 API·대시보드별 artifact로 14일간 보관한다.
 - API image `Config.User`가 `pipelens`인지 검사한다.
 - dashboard image `Config.User`가 `nginx`인지 검사한다.
 - API container를 실제로 기동하고 SQLite 초기화·메모리 queue를 포함한 내부 `8000`의
@@ -141,7 +146,7 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
-digest 고정, SBOM과 provenance는 아직 남은 공급망 작업이다.
+digest 고정, release image에 연결된 장기 SBOM과 provenance는 아직 남은 공급망 작업이다.
 
 ## 3. 보안 통제 현황
 
@@ -161,12 +166,13 @@ digest 고정, SBOM과 provenance는 아직 남은 공급망 작업이다.
 - API·dashboard non-root container
 - Docker build context allowlist
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL 취약점 gate
+- 실제 빌드 이미지의 CycloneDX SBOM 생성·검증·단기 artifact 보관
 - CodeQL과 pip·npm·Actions·Dockerfile dependency 자동 업데이트
 
 ### 미구현 또는 외부 설정 필요
 
 - `main` branch protection/ruleset과 필수 status check
-- SBOM, provenance/attestation과 서명된 release image
+- provenance/attestation, 장기 SBOM과 서명된 release image
 - immutable base image digest 정책
 - production secret manager와 key rotation 절차
 - TLS reverse proxy의 HSTS
@@ -207,7 +213,7 @@ digest 고정, SBOM과 provenance는 아직 남은 공급망 작업이다.
 
 1. version tag와 GitHub Release 정책 정의
 2. GHCR에 API·dashboard image를 build/push하는 release workflow 추가
-3. SBOM과 provenance/attestation 추가
+3. release image digest에 연결된 SBOM과 provenance/attestation 추가
 4. Compose 전용 image 업데이트 자동화와 immutable digest 정책 결정
 
 ### P1 — 운영 신뢰성
@@ -249,7 +255,8 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [ ] `main` 필수 review/status check
 - [ ] immutable release image
 - [x] fixable HIGH/CRITICAL container vulnerability scan
-- [ ] SBOM·provenance
+- [x] CI build image CycloneDX SBOM
+- [ ] release image SBOM·provenance
 - [ ] secret manager와 rotation
 - [ ] PostgreSQL backup/restore drill
 - [ ] Alertmanager 연결

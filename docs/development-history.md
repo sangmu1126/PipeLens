@@ -190,6 +190,10 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   불필요한 pip·setuptools를 제거했다. 대시보드 runtime에는 Alpine 보안 업데이트를 적용했다.
   같은 gate 재실행에서 두 이미지가 취약점 scan, non-root USER 검사와 HTTP readiness/smoke
   test를 모두 통과했다.
+- `c4d362e`: 같은 실제 빌드 image에서 CycloneDX JSON SBOM을 생성하고 형식·component 존재를
+  검증한 뒤 image별 CI artifact로 14일간 보관하도록 했다. 첫 성공 실행에서 내려받은 CycloneDX
+  1.6 문서는 API 125개, 대시보드 71개 component를 포함했다. Trivy v0.36.0과
+  `upload-artifact` v7.0.1은 검증한 commit SHA로 고정했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
@@ -212,6 +216,7 @@ Nginx는 별도 PR로 분리했다.
 - Prometheus config와 Compose config 검증
 - API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·language package 취약점 gate
+- 실제 빌드 이미지의 CycloneDX SBOM 생성·내용 검증·artifact 보관
 - Python·JavaScript/TypeScript CodeQL
 
 ## 아직 기록할 수 없는 것

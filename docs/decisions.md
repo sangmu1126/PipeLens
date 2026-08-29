@@ -245,3 +245,17 @@
   영구 정지시키지 않도록 gate에서 제외하므로 별도 관찰·대응 절차가 필요하다. mutable base
   tag의 최신 보안 패치를 반영하기 위해 Debian/Alpine package upgrade를 image build에 포함한다.
 - 관련: `ec7105c`, `89ffa86`.
+
+## D-026. 실제 빌드 이미지마다 CycloneDX SBOM을 CI 증적으로 보관
+
+- 결정: 취약점 gate를 통과한 API·대시보드 image에서 모든 발견 package를 포함한 CycloneDX
+  JSON SBOM을 생성한다. CI가 형식과 component 존재 여부를 검증하고 image별 artifact로 14일간
+  보관한다. Trivy와 artifact upload Action은 모두 commit SHA로 고정한다.
+- 이유: source dependency 목록만으로는 base image의 OS package와 build 뒤 runtime에 남은
+  component를 재구성할 수 없다. 취약점 판정에 사용한 실제 image에서 machine-readable inventory를
+  함께 남겨야 사후 조사와 release 자동화의 입력으로 재사용할 수 있다.
+- 대안: repository manifest만 보관, SPDX 형식 사용, SBOM을 생성하지만 CI artifact로 남기지 않음.
+- 결과: 모든 `main`·PR image build에서 단기 검증 증적을 얻는다. CI artifact는 release에 연결된
+  영구 배포물이나 서명된 attestation이 아니므로, GHCR release workflow에서 digest에 결합한
+  provenance와 장기 SBOM 게시가 별도로 필요하다.
+- 관련: `c4d362e`.
