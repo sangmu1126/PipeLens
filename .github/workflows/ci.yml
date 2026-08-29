@@ -75,3 +75,25 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+
+  containers:
+    name: Build container (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: .
+            dockerfile: Dockerfile
+          - name: dashboard
+            context: frontend
+            dockerfile: frontend/Dockerfile
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: >-
+          docker build
+          --file "${{ matrix.dockerfile }}"
+          --tag "pipelens-${{ matrix.name }}:ci"
+          "${{ matrix.context }}"
