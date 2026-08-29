@@ -199,3 +199,17 @@
 - 결과: API image 변경은 독립적으로 검증되고 대시보드 image 조합은 원자적으로 검토된다.
   Compose에서만 참조하는 service image는 이 설정 범위에 포함되지 않는다.
 - 관련: `d72d4da`.
+
+## D-023. Python 지원 범위의 하한·상한 직전 검증
+
+- 결정: 지원 범위를 `>=3.12,<3.15`로 명시하고 3.12에서 전체 service integration을,
+  3.14에서 단위·API와 진단 평가를 실행한다. API image는 build와 USER 검사 뒤 실제
+  `/readyz` 응답까지 확인한다.
+- 이유: 모든 minor에서 무거운 PostgreSQL·Redis 통합 검사를 반복하지 않으면서 최소 지원
+  버전과 최신 지원 버전의 packaging·runtime 호환성을 모두 확인해야 한다. Docker build
+  성공만으로는 애플리케이션 import, SQLite 쓰기 권한과 queue readiness를 보장하지 않는다.
+- 대안: Python 3.12만 지원·검사, 모든 3.12–3.14 조합에서 전체 integration 반복, image
+  build만 검사.
+- 결과: Python 3.13은 명시 범위에 포함되지만 양 끝 버전으로 호환성을 대표 검증한다.
+  Python 3.15 지원은 dependency 호환성과 CI 추가 검토 후 별도로 연다.
+- 관련: `4d371c6`.

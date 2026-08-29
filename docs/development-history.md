@@ -151,6 +151,8 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   추가했다.
 - `d72d4da`: API와 대시보드 Dockerfile의 base image를 Dependabot 주간 업데이트 대상에
   추가하고 대시보드의 Node·Nginx 변경을 하나의 검증 가능한 PR로 묶었다.
+- `4d371c6`: Python 지원 범위를 3.12 이상 3.15 미만으로 명시하고 3.14 호환성 job과 API
+  컨테이너 `/readyz` smoke test를 CI에 추가했다.
 
 ## 현재까지의 검증 방식
 
