@@ -94,6 +94,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.metrics = metrics
     app.state.auth = auth
 
+    @app.middleware("http")
+    async def add_security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = "camera=(), geolocation=(), microphone=()"
+        return response
+
     def get_store(request: Request) -> AnalysisStore:
         return request.app.state.store
 

@@ -136,6 +136,10 @@ PIPELENS_WORKER_HEARTBEAT_SECONDS=15
 `PIPELENS_ENVIRONMENT=production`에서는 인증 활성화, 외부 URL의 HTTPS 사용, Secure 세션
 쿠키, 32자 이상의 Webhook·세션 secret, 별도 Fernet 토큰 암호화 키를 시작 시 검증합니다.
 안전하지 않은 설정이 남아 있으면 API가 시작되지 않습니다.
+API 응답에는 MIME sniffing·iframe 삽입·불필요한 referrer와 브라우저 권한 사용을 제한하는
+보안 헤더가 포함됩니다. Compose 대시보드 Nginx는 같은 헤더와 Content Security Policy를
+정적 파일 및 프록시 응답에 적용합니다. HSTS는 HTTPS를 종료하는 외부 프록시에서 설정해야
+합니다.
 
 GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
 requests(read/write), Metadata(read)를 사용합니다. `PIPELENS_PUBLISH_CHECKS=true`이면 PR이
