@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `e6016f0`.
+기준 시점: **2026-08-30**, 기능 기준 commit `47d2c60`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -26,6 +26,8 @@
 - [Nginx 1.31 PR CodeQL run 33263438485](https://github.com/sangmu1126/PipeLens/actions/runs/33263438485)
 - [Ruff 0.16 PR CI run 33264600380](https://github.com/sangmu1126/PipeLens/actions/runs/33264600380)
 - [Ruff 0.16 PR CodeQL run 33264600379](https://github.com/sangmu1126/PipeLens/actions/runs/33264600379)
+- [HTTPX 0.28 PR CI run 33265290645](https://github.com/sangmu1126/PipeLens/actions/runs/33265290645)
+- [HTTPX 0.28 PR CodeQL run 33265290641](https://github.com/sangmu1126/PipeLens/actions/runs/33265290641)
 
 ## 2. 자동 검증 상세
 
@@ -45,6 +47,11 @@
 3.14는 상한 직전 호환성 검증을 담당한다. 로컬 3.14에서는 일부 dependency가 Python 3.16을
 앞두고 제거될 asyncio API에 대한 deprecation warning을 출력하지만 테스트 결과에는 영향을
 주지 않는다.
+
+현재 FastAPI/Starlette 테스트 클라이언트는 HTTPX 0.28.1에서 정상 동작하지만 Starlette가
+향후 `httpx2` package 전환을 요구하는 deprecation warning을 출력한다. production HTTPX
+client와는 별개인 테스트 adapter 경로이며, FastAPI·Starlette 지원 정책에 맞춘 전환을 후속
+호환성 작업으로 관리한다.
 
 ### 대시보드 CI
 
@@ -102,7 +109,10 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
   버전을 0.8에서 0.16.4로 갱신했다. 최신 `main`으로 PR을 재생성하고 전체 CI·CodeQL을
   통과했으며, 로컬 Ruff 0.16.5 검사와 백엔드 105개 테스트, 진단 평가 10/10 확인 뒤
   `e6016f0`으로 squash merge했다.
-- [#13–#16](https://github.com/sangmu1126/PipeLens/pulls)은 HTTPX, Prometheus client,
+- [#13](https://github.com/sangmu1126/PipeLens/pull/13)은 HTTPX 최소 버전을 0.27에서
+  0.28.1로 갱신했다. 제거 API 미사용, 관련 GitHub·OpenAI·retry·API 테스트 38개와 최신
+  `main` 전체 CI·CodeQL 통과를 확인해 `47d2c60`으로 squash merge했다.
+- [#14–#16](https://github.com/sangmu1126/PipeLens/pulls)은 Prometheus client,
   cryptography와 SQLAlchemy 최소 버전을 각각 갱신한다. runtime dependency이므로 각 PR의
   전체 검사와 API 동작 영향을 독립적으로 검토한다.
 
@@ -188,6 +198,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 2. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가
 3. Python 3.15 지원 시점과 dependency compatibility 결정
 4. API schema versioning과 upgrade/deprecation 정책
+5. FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환 시점 검토
 
 ## 6. 현재 GitHub 저장소 관리 상태
 
@@ -196,7 +207,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 4 (`#13`–`#16`, Python runtime dependency 검토 대기)
+- open pull requests: 3 (`#14`–`#16`, Python runtime dependency 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0

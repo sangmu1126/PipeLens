@@ -167,6 +167,9 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `e6016f0`: 개발 전용 lint 도구 Ruff의 최소 버전을 0.8에서 0.16.4로 올렸다. 최신 `main`
   기반 PR에서 전체 CI와 CodeQL을 통과했고, 로컬 Ruff 0.16.5 검사, 백엔드 105개 테스트와
   진단 fixture 10/10을 추가 확인한 뒤 squash merge했다.
+- `47d2c60`: GitHub·OpenAI client와 retry 계층이 사용하는 HTTPX의 최소 버전을 0.27에서
+  0.28.1로 올렸다. 제거된 `app`·`proxies` 인자를 사용하지 않음을 확인하고 관련 client,
+  retry와 API 테스트 38개 및 최신 `main` 전체 CI·CodeQL 통과 뒤 squash merge했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
