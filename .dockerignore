@@ -1,0 +1,10 @@
+# Keep the API image context aligned with the files copied by Dockerfile.
+**
+!Dockerfile
+!pyproject.toml
+!README.md
+!alembic.ini
+!migrations/
+!migrations/**
+!src/
+!src/**

@@ -1,0 +1,13 @@
+# Keep local dependencies, build output, and unrelated repository files out.
+**
+!Dockerfile
+!package.json
+!package-lock.json
+!index.html
+!nginx.conf
+!vite.config.ts
+!tsconfig.json
+!tsconfig.app.json
+!tsconfig.node.json
+!src/
+!src/**
