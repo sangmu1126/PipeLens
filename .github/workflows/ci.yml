@@ -124,6 +124,41 @@ jobs:
           severity: HIGH,CRITICAL
           scanners: vuln
           timeout: 10m
+      - name: Prepare SBOM output directory
+        run: mkdir -p sbom
+      - name: Generate CycloneDX SBOM
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: "pipelens-${{ matrix.name }}:ci"
+          format: cyclonedx
+          output: "sbom/pipelens-${{ matrix.name }}.cdx.json"
+          exit-code: "0"
+          list-all-pkgs: true
+          scanners: vuln
+          timeout: 10m
+          skip-setup-trivy: true
+      - name: Validate CycloneDX SBOM
+        env:
+          SBOM_PATH: "sbom/pipelens-${{ matrix.name }}.cdx.json"
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          sbom = json.loads(Path(os.environ["SBOM_PATH"]).read_text())
+          assert sbom["bomFormat"] == "CycloneDX"
+          assert sbom["specVersion"]
+          assert sbom.get("components"), "SBOM contains no components"
+          PY
+      - name: Upload CycloneDX SBOM
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "pipelens-${{ matrix.name }}-sbom"
+          path: "sbom/pipelens-${{ matrix.name }}.cdx.json"
+          if-no-files-found: error
+          retention-days: 14
       - name: Verify runtime user
         if: matrix.expected_user != ''
         run: >-
