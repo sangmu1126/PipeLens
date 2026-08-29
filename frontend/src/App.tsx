@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Analysis, CurrentUser, FeedbackAccuracy } from "./types";
+
+type AnalysisFilters = {
+  repository: string;
+  status: Analysis["status"] | "";
+  category: string;
+};
+
+const emptyFilters: AnalysisFilters = { repository: "", status: "", category: "" };
 
 const categoryLabels: Record<string, string> = {
   test_failure: "테스트",
@@ -40,17 +48,31 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<CurrentUser | null | undefined>(undefined);
+  const [filters, setFilters] = useState<AnalysisFilters>(emptyFilters);
+  const [repositoryOptions, setRepositoryOptions] = useState<string[]>([]);
+  const requestSequence = useRef(0);
 
-  const loadAnalyses = useCallback(async () => {
+  const loadAnalyses = useCallback(async (activeFilters: AnalysisFilters) => {
+    const requestId = ++requestSequence.current;
+    const params = new URLSearchParams({ limit: "100" });
+    if (activeFilters.repository) params.set("repository", activeFilters.repository);
+    if (activeFilters.status) params.set("status", activeFilters.status);
+    if (activeFilters.category) params.set("category", activeFilters.category);
+    setLoading(true);
     try {
-      const response = await fetch("/api/analyses?limit=100");
+      const response = await fetch(`/api/analyses?${params.toString()}`);
+      if (requestId !== requestSequence.current) return;
       if (response.status === 401) {
         setUser(null);
         return;
       }
       if (!response.ok) throw new Error(`분석 목록 요청 실패 (${response.status})`);
       const data = (await response.json()) as Analysis[];
+      if (requestId !== requestSequence.current) return;
       setAnalyses(data);
+      setRepositoryOptions((current) =>
+        Array.from(new Set([...current, ...data.map((item) => item.repository)])).sort(),
+      );
       setSelectedRun((current) =>
         current && data.some((item) => item.run_id === current)
           ? current
@@ -58,9 +80,10 @@ function App() {
       );
       setError(null);
     } catch (requestError) {
+      if (requestId !== requestSequence.current) return;
       setError(requestError instanceof Error ? requestError.message : "목록을 불러오지 못했습니다.");
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) setLoading(false);
     }
   }, []);
 
@@ -75,20 +98,20 @@ function App() {
         }
         if (!response.ok) throw new Error(`사용자 정보 요청 실패 (${response.status})`);
         setUser((await response.json()) as CurrentUser);
-        await loadAnalyses();
       } catch (requestError) {
         setError(requestError instanceof Error ? requestError.message : "연결하지 못했습니다.");
         setLoading(false);
       }
     };
     void initialize();
-  }, [loadAnalyses]);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
-    const timer = window.setInterval(() => void loadAnalyses(), 30_000);
+    void loadAnalyses(filters);
+    const timer = window.setInterval(() => void loadAnalyses(filters), 30_000);
     return () => window.clearInterval(timer);
-  }, [loadAnalyses, user]);
+  }, [filters, loadAnalyses, user]);
 
   const selected = analyses.find((analysis) => analysis.run_id === selectedRun) ?? null;
   const stats = useMemo(() => {
@@ -173,8 +196,62 @@ function App() {
           <div className="list-panel">
             <div className="section-heading">
               <div><p className="eyebrow">RECENT RUNS</p><h2>최근 분석</h2></div>
-              <button className="refresh" onClick={() => void loadAnalyses()} disabled={loading}>
+              <button className="refresh" onClick={() => void loadAnalyses(filters)} disabled={loading}>
                 {loading ? "불러오는 중" : "새로고침"}
+              </button>
+            </div>
+            <div className="filter-bar" aria-label="분석 목록 필터">
+              <label>
+                <span>저장소</span>
+                <select
+                  value={filters.repository}
+                  onChange={(event) => setFilters((current) => ({
+                    ...current,
+                    repository: event.target.value,
+                  }))}
+                >
+                  <option value="">전체 저장소</option>
+                  {repositoryOptions.map((repository) => (
+                    <option key={repository} value={repository}>{repository}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>상태</span>
+                <select
+                  value={filters.status}
+                  onChange={(event) => setFilters((current) => ({
+                    ...current,
+                    status: event.target.value as AnalysisFilters["status"],
+                  }))}
+                >
+                  <option value="">전체 상태</option>
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>오류 유형</span>
+                <select
+                  value={filters.category}
+                  onChange={(event) => setFilters((current) => ({
+                    ...current,
+                    category: event.target.value,
+                  }))}
+                >
+                  <option value="">전체 유형</option>
+                  {Object.entries(categoryLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="clear-filters"
+                onClick={() => setFilters(emptyFilters)}
+                disabled={!filters.repository && !filters.status && !filters.category}
+              >
+                초기화
               </button>
             </div>
             <div className="table-wrap">
@@ -196,7 +273,7 @@ function App() {
                     </tr>
                   ))}
                   {!loading && analyses.length === 0 && (
-                    <tr><td colSpan={5} className="empty-row">아직 수집된 Workflow 실패가 없습니다.</td></tr>
+                    <tr><td colSpan={5} className="empty-row">조건에 맞는 Workflow 실패 분석이 없습니다.</td></tr>
                   )}
                 </tbody>
               </table>

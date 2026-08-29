@@ -57,6 +57,10 @@ main { width: min(1480px, 94vw); margin: 0 auto; }
 .section-heading { height: 90px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .section-heading .eyebrow { margin-bottom: 5px; }.section-heading h2 { margin: 0; font-size: 21px; letter-spacing: -.03em; }
 .refresh { padding: 9px 13px; background: transparent; border: 1px solid #b6bfba; cursor: pointer; font-size: 11px; }.refresh:hover { border-color: var(--ink); }.refresh:disabled { opacity: .5; }
+.filter-bar { display: flex; align-items: end; gap: 10px; padding: 12px 16px; background: #f5f7f4; border-bottom: 1px solid var(--line); }
+.filter-bar label { min-width: 0; flex: 1; display: grid; gap: 5px; }.filter-bar label span { color: var(--muted); font: 8px "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.filter-bar select { width: 100%; min-width: 0; padding: 8px 26px 8px 9px; color: var(--ink); background: var(--paper); border: 1px solid #c7ceca; font-size: 10px; }
+.clear-filters { padding: 8px 10px; color: var(--muted); background: transparent; border: 1px solid #c7ceca; cursor: pointer; font-size: 10px; white-space: nowrap; }.clear-filters:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }.clear-filters:disabled { opacity: .4; cursor: default; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
 th { padding: 13px 16px; color: #85908c; background: #f5f7f4; border-bottom: 1px solid var(--line); font: 500 9px "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
@@ -124,7 +128,7 @@ footer { width: min(1480px, 94vw); margin: 34px auto 0; padding: 22px 0 35px; di
 @media (max-width: 680px) {
   .topbar { padding: 0 18px; }.topbar-meta { display: none; } main { width: calc(100% - 24px); }
   .hero { padding: 46px 4px 36px; }.hero h1 { font-size: 42px; }.stats { grid-template-columns: 1fr 1fr; }
-  .workspace { border-left: 0; border-right: 0; }.section-heading { padding: 0 14px; }
+  .workspace { border-left: 0; border-right: 0; }.section-heading { padding: 0 14px; }.filter-bar { align-items: stretch; flex-direction: column; }.clear-filters { align-self: end; }
   th:nth-child(3), td:nth-child(3), th:nth-child(5), td:nth-child(5) { display: none; }
   th, td { padding-left: 10px; padding-right: 10px; }.detail-content { padding: 20px 16px; }.rating-buttons { grid-template-columns: 1fr; }
   .stage-summary ol { grid-template-columns: repeat(3, 1fr); row-gap: 10px; }
