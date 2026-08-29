@@ -38,8 +38,13 @@ jobs:
           expected = os.environ["RELEASE_TAG"].removeprefix("v")
           backend = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
           dashboard = json.loads(Path("frontend/package.json").read_text())["version"]
+          dashboard_lock = json.loads(Path("frontend/package-lock.json").read_text())
           assert backend == expected, f"backend version {backend!r} != tag {expected!r}"
           assert dashboard == expected, f"dashboard version {dashboard!r} != tag {expected!r}"
+          assert dashboard_lock["version"] == expected, "package-lock root version mismatch"
+          assert dashboard_lock["packages"][""]["version"] == expected, (
+              "package-lock workspace version mismatch"
+          )
           PY
 
   publish:
