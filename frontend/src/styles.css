@@ -17,7 +17,10 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, textarea { font: inherit; }
 button { color: inherit; }
+button:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 code, pre, .eyebrow, .run-id, .status, .confidence { font-family: "DM Mono", monospace; }
+.sr-only { width: 1px; height: 1px; position: absolute; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+.skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; padding: 10px 14px; color: #fff; background: var(--blue); transform: translateY(-150%); }.skip-link:focus { transform: translateY(0); }
 
 .app-shell { min-height: 100vh; }
 .topbar { height: 64px; padding: 0 3.5vw; display: flex; align-items: center; justify-content: space-between; color: #edf1ed; background: #0d1419; border-bottom: 1px solid #263137; }

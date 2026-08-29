@@ -176,6 +176,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">본문 바로가기</a>
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
@@ -188,14 +189,14 @@ function App() {
         </div>
       </header>
 
-      <main>
+      <main id="main-content">
         <section className="hero">
           <div>
             <p className="eyebrow">CI FAILURE INTELLIGENCE</p>
             <h1>실패의 첫 원인을<br />근거와 함께 찾습니다.</h1>
             <p className="hero-copy">로그, 코드 변경, Workflow 설정을 교차 검증한 분석 결과입니다.</p>
           </div>
-          <div className="stats" aria-label="분석 통계">
+          <div className="stats" role="group" aria-label="분석 통계">
             <Stat label="불러온 실행" value={analyses.length.toString().padStart(2, "0")} />
             <Stat label="진단 완료" value={stats.completed.toString().padStart(2, "0")} accent />
             <Stat label="진행 중" value={stats.active.toString().padStart(2, "0")} />
@@ -203,7 +204,7 @@ function App() {
           </div>
         </section>
 
-        {error && <div className="alert"><strong>연결 오류</strong><span>{error}</span></div>}
+        {error && <div className="alert" role="alert"><strong>연결 오류</strong><span>{error}</span></div>}
 
         {user.installations.length === 0 ? (
           <section className="install-card">
@@ -215,7 +216,10 @@ function App() {
         ) : (
 
         <section className="workspace">
-          <div className="list-panel">
+          <div className="list-panel" aria-busy={loading}>
+            <span className="sr-only" role="status" aria-live="polite">
+              {loading ? "분석 목록을 불러오는 중입니다." : `분석 ${analyses.length}개를 불러왔습니다.`}
+            </span>
             <div className="section-heading">
               <div><p className="eyebrow">RECENT RUNS</p><h2>최근 분석</h2></div>
               <button
@@ -230,7 +234,7 @@ function App() {
                 {loading ? "불러오는 중" : "새로고침"}
               </button>
             </div>
-            <div className="filter-bar" aria-label="분석 목록 필터">
+            <div className="filter-bar" role="group" aria-label="분석 목록 필터">
               <label>
                 <span>저장소</span>
                 <select
@@ -286,12 +290,17 @@ function App() {
             </div>
             <div className="table-wrap">
               <table>
+                <caption className="sr-only">최근 GitHub Actions 실패 분석 목록</caption>
                 <thead><tr><th>저장소 / Workflow</th><th>상태</th><th>오류 유형</th><th>신뢰도</th><th>실행 시각</th></tr></thead>
                 <tbody>
                   {analyses.map((analysis) => (
                     <tr key={analysis.run_id} className={analysis.run_id === selectedRun ? "selected" : ""}>
                       <td>
-                        <button className="run-select" onClick={() => selectRun(analysis.run_id)}>
+                        <button
+                          className="run-select"
+                          aria-pressed={analysis.run_id === selectedRun}
+                          onClick={() => selectRun(analysis.run_id)}
+                        >
                           <strong>{analysis.repository}</strong>
                           <span>{analysis.trust_level === "untrusted_fork" ? "외부 Fork · " : ""}{analysis.workflow_name} · {analysis.head_sha.slice(0, 7)}</span>
                         </button>
@@ -320,11 +329,11 @@ function App() {
             )}
           </div>
 
-          <aside className="detail-panel">
+          <aside className="detail-panel" aria-label="선택한 분석 상세">
             {selected ? (
               <AnalysisDetail analysis={selected} onFeedback={updateFeedback} />
             ) : (
-              <div className="detail-empty"><span>◎</span><p>분석을 선택하면 근거와 해결 방법을 확인할 수 있습니다.</p></div>
+              <div className="detail-empty"><span aria-hidden="true">◎</span><p>분석을 선택하면 근거와 해결 방법을 확인할 수 있습니다.</p></div>
             )}
           </aside>
         </section>
@@ -338,7 +347,7 @@ function App() {
 function AccessScreen({ loading = false, error = null }: { loading?: boolean; error?: string | null }) {
   return <div className="access-shell">
     <div className="access-brand"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>PipeLens</div>
-    <main className="access-card">
+    <main className="access-card" aria-live="polite">
       <p className="eyebrow">CI FAILURE INTELLIGENCE</p>
       <h1>{loading ? "연결 상태를 확인하고 있습니다." : "GitHub와 연결해 분석을 시작하세요."}</h1>
       <p>{error ?? "접근 가능한 GitHub App 설치만 확인하고, 해당 저장소의 실패 분석만 보여드립니다."}</p>
@@ -352,13 +361,13 @@ function Stat({ label, value, accent = false }: { label: string; value: string; 
 }
 
 function StatusBadge({ status }: { status: Analysis["status"] }) {
-  return <span className={`status status-${status}`}><i />{statusLabels[status]}</span>;
+  return <span className={`status status-${status}`}><i aria-hidden="true" />{statusLabels[status]}</span>;
 }
 
 function Confidence({ value }: { value: number | undefined }) {
   if (value === undefined) return <span className="muted">—</span>;
   const percent = Math.round(value * 100);
-  return <span className="confidence"><i><b style={{ width: `${percent}%` }} /></i>{percent}%</span>;
+  return <span className="confidence" aria-label={`신뢰도 ${percent}%`}><i aria-hidden="true"><b style={{ width: `${percent}%` }} /></i>{percent}%</span>;
 }
 
 function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedback: (runId: number, feedback: Analysis["feedback"]) => void }) {
@@ -385,7 +394,7 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
           <ol>
             {latestStages.map((event) => (
               <li className={`stage-${event.status}`} key={event.stage} title={event.error ?? undefined}>
-                <i />{stageLabels[event.stage]}
+                <i aria-hidden="true" />{stageLabels[event.stage]}
               </li>
             ))}
           </ol>
@@ -498,16 +507,16 @@ function FeedbackForm({ analysis, onSaved }: { analysis: Analysis; onSaved: (fee
 
   return <section className="feedback-box">
     <p className="eyebrow">FEEDBACK LOOP</p><h3>이 분석이 도움이 되었나요?</h3>
-    <div className="rating-buttons">
+    <div className="rating-buttons" role="group" aria-label="분석 정확도">
       {(["accurate", "partial", "inaccurate"] as FeedbackAccuracy[]).map((value) => (
-        <button key={value} className={accuracy === value ? "active" : ""} onClick={() => setAccuracy(value)}>
+        <button key={value} aria-pressed={accuracy === value} className={accuracy === value ? "active" : ""} onClick={() => setAccuracy(value)}>
           {value === "accurate" ? "정확함" : value === "partial" ? "일부 정확" : "정확하지 않음"}
         </button>
       ))}
     </div>
     <label className="resolved-check"><input type="checkbox" checked={resolved} onChange={(event) => setResolved(event.target.checked)} /><span>제안으로 문제가 해결됨</span></label>
-    <textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={2000} placeholder="규칙과 프롬프트 개선에 도움이 될 내용을 남겨주세요. (선택)" />
-    <div className="feedback-actions"><span>{state === "saved" ? "저장되었습니다." : state === "error" ? "저장하지 못했습니다." : ""}</span><button onClick={() => void submit()} disabled={!accuracy || state === "saving"}>{state === "saving" ? "저장 중" : "피드백 저장"}</button></div>
+    <textarea aria-label="피드백 의견" value={comment} onChange={(event) => setComment(event.target.value)} maxLength={2000} placeholder="규칙과 프롬프트 개선에 도움이 될 내용을 남겨주세요. (선택)" />
+    <div className="feedback-actions"><span role="status" aria-live="polite">{state === "saved" ? "저장되었습니다." : state === "error" ? "저장하지 못했습니다." : ""}</span><button onClick={() => void submit()} disabled={!accuracy || state === "saving"}>{state === "saving" ? "저장 중" : "피드백 저장"}</button></div>
   </section>;
 }
 
