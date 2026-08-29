@@ -74,6 +74,7 @@ tbody tr { transition: background .15s ease; } tbody tr:hover, tbody tr.selected
 .confidence { display: inline-flex; gap: 8px; align-items: center; font-size: 9px; }
 .confidence > i { display: block; width: 42px; height: 3px; background: #d8ded9; }.confidence b { display: block; height: 100%; background: var(--blue); }
 .date-cell { color: var(--muted); font: 10px "DM Mono", monospace; white-space: nowrap; }.empty-row { padding: 70px 20px; text-align: center; color: var(--muted); }
+.pagination-bar { padding: 14px 16px; text-align: center; border-top: 1px solid var(--line); }.pagination-bar button { padding: 9px 18px; color: var(--ink); background: transparent; border: 1px solid #b6bfba; cursor: pointer; font-size: 10px; }.pagination-bar button:hover:not(:disabled) { border-color: var(--ink); }.pagination-bar button:disabled { opacity: .5; cursor: default; }
 
 .detail-panel { max-height: calc(100vh - 92px); position: sticky; top: 14px; overflow-y: auto; scrollbar-width: thin; }
 .detail-content { padding: 24px 26px 30px; }

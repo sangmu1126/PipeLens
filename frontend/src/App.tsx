@@ -50,14 +50,22 @@ function App() {
   const [user, setUser] = useState<CurrentUser | null | undefined>(undefined);
   const [filters, setFilters] = useState<AnalysisFilters>(emptyFilters);
   const [repositoryOptions, setRepositoryOptions] = useState<string[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const requestSequence = useRef(0);
+  const loadedCount = useRef(30);
 
-  const loadAnalyses = useCallback(async (activeFilters: AnalysisFilters) => {
+  const loadAnalyses = useCallback(async (
+    activeFilters: AnalysisFilters,
+    cursor: string | null = null,
+    replaceLimit = 30,
+  ) => {
     const requestId = ++requestSequence.current;
-    const params = new URLSearchParams({ limit: "100" });
+    const append = cursor !== null;
+    const params = new URLSearchParams({ limit: (append ? 30 : replaceLimit).toString() });
     if (activeFilters.repository) params.set("repository", activeFilters.repository);
     if (activeFilters.status) params.set("status", activeFilters.status);
     if (activeFilters.category) params.set("category", activeFilters.category);
+    if (cursor) params.set("cursor", cursor);
     setLoading(true);
     try {
       const response = await fetch(`/api/analyses?${params.toString()}`);
@@ -69,15 +77,24 @@ function App() {
       if (!response.ok) throw new Error(`분석 목록 요청 실패 (${response.status})`);
       const data = (await response.json()) as Analysis[];
       if (requestId !== requestSequence.current) return;
-      setAnalyses(data);
+      setAnalyses((current) => {
+        if (!append) return data;
+        const existing = new Set(current.map((item) => item.run_id));
+        return [...current, ...data.filter((item) => !existing.has(item.run_id))];
+      });
+      loadedCount.current = append
+        ? loadedCount.current + data.length
+        : data.length;
+      setNextCursor(response.headers.get("X-PipeLens-Next-Cursor"));
       setRepositoryOptions((current) =>
         Array.from(new Set([...current, ...data.map((item) => item.repository)])).sort(),
       );
-      setSelectedRun((current) =>
-        current && data.some((item) => item.run_id === current)
+      setSelectedRun((current) => {
+        if (append && current) return current;
+        return current && data.some((item) => item.run_id === current)
           ? current
-          : data[0]?.run_id ?? null,
-      );
+          : data[0]?.run_id ?? null;
+      });
       setError(null);
     } catch (requestError) {
       if (requestId !== requestSequence.current) return;
@@ -108,8 +125,12 @@ function App() {
 
   useEffect(() => {
     if (!user) return;
+    loadedCount.current = 30;
     void loadAnalyses(filters);
-    const timer = window.setInterval(() => void loadAnalyses(filters), 30_000);
+    const timer = window.setInterval(
+      () => void loadAnalyses(filters, null, Math.min(100, Math.max(30, loadedCount.current))),
+      30_000,
+    );
     return () => window.clearInterval(timer);
   }, [filters, loadAnalyses, user]);
 
@@ -136,6 +157,7 @@ function App() {
     await fetch("/auth/logout", { method: "POST" });
     setUser(null);
     setAnalyses([]);
+    setNextCursor(null);
   };
 
   const selectRun = (runId: number) => {
@@ -174,7 +196,7 @@ function App() {
             <p className="hero-copy">로그, 코드 변경, Workflow 설정을 교차 검증한 분석 결과입니다.</p>
           </div>
           <div className="stats" aria-label="분석 통계">
-            <Stat label="전체 실행" value={analyses.length.toString().padStart(2, "0")} />
+            <Stat label="불러온 실행" value={analyses.length.toString().padStart(2, "0")} />
             <Stat label="진단 완료" value={stats.completed.toString().padStart(2, "0")} accent />
             <Stat label="진행 중" value={stats.active.toString().padStart(2, "0")} />
             <Stat label="평균 신뢰도" value={`${Math.round(stats.average * 100)}%`} />
@@ -196,7 +218,15 @@ function App() {
           <div className="list-panel">
             <div className="section-heading">
               <div><p className="eyebrow">RECENT RUNS</p><h2>최근 분석</h2></div>
-              <button className="refresh" onClick={() => void loadAnalyses(filters)} disabled={loading}>
+              <button
+                className="refresh"
+                onClick={() => void loadAnalyses(
+                  filters,
+                  null,
+                  Math.min(100, Math.max(30, loadedCount.current)),
+                )}
+                disabled={loading}
+              >
                 {loading ? "불러오는 중" : "새로고침"}
               </button>
             </div>
@@ -278,6 +308,16 @@ function App() {
                 </tbody>
               </table>
             </div>
+            {nextCursor && (
+              <div className="pagination-bar">
+                <button
+                  onClick={() => void loadAnalyses(filters, nextCursor)}
+                  disabled={loading}
+                >
+                  {loading ? "불러오는 중" : "이전 분석 더 보기"}
+                </button>
+              </div>
+            )}
           </div>
 
           <aside className="detail-panel">
