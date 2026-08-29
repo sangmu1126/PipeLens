@@ -3,6 +3,14 @@
 PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그와 실행 정보를 교차
 검증해 근거가 있는 원인과 해결 방향을 제시하는 CI 진단 시스템입니다.
 
+개발 과정과 현재 판단을 포함한 상세 기록은 [`docs/`](docs/README.md)에서 확인할 수
+있습니다.
+
+- [개발 연혁](docs/development-history.md)
+- [현재 아키텍처](docs/architecture.md)
+- [주요 의사결정 기록](docs/decisions.md)
+- [검증 및 운영 준비 현황](docs/readiness.md)
+
 현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.
 
 - `workflow_run.completed` webhook 수신 및 HMAC-SHA256 서명 검증
