@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `1f90715`.
+기준 시점: **2026-08-30**, 기능 기준 commit `afff1ec`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -22,6 +22,8 @@
 
 - [CI run 33252323077](https://github.com/sangmu1126/PipeLens/actions/runs/33252323077)
 - [CodeQL run 33252323079](https://github.com/sangmu1126/PipeLens/actions/runs/33252323079)
+- [Nginx 1.31 PR CI run 33263438479](https://github.com/sangmu1126/PipeLens/actions/runs/33263438479)
+- [Nginx 1.31 PR CodeQL run 33263438485](https://github.com/sangmu1126/PipeLens/actions/runs/33263438485)
 
 ## 2. 자동 검증 상세
 
@@ -89,9 +91,11 @@ Docker PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바�
   3.14로 변경했다. Python 3.14 compatibility와 API image 기동 smoke test를 `main`에 먼저
   추가한 뒤 PR을 rebase했고, 모든 gate 통과 후 `95b9970`으로 squash merge했다.
 - [#11](https://github.com/sangmu1126/PipeLens/pull/11)은 Node 24→26과 Nginx 1.29→1.31을
-  함께 변경했지만 merge하지 않는다. 2026-08-30 기준 Node 26은 Current이며 공식 일정상
-  2026-10-28에 LTS로 전환될 예정이므로 Node major 자동 업데이트를 제외했다. 설정 반영 뒤
-  PR을 다시 생성해 Nginx 1.31 변경만 기존 image build·non-root·HTTP smoke gate로 검증한다.
+  함께 변경했지만 merge하지 않고 닫았다. 2026-08-30 기준 Node 26은 Current이며 공식
+  일정상 2026-10-28에 LTS로 전환될 예정이므로 Node major 자동 업데이트를 제외했다.
+- 새 설정이 만든 [#17](https://github.com/sangmu1126/PipeLens/pull/17)은 Nginx
+  1.29→1.31만 포함했다. 최신 `main` 기반에서 전체 CI, image build·non-root·HTTP smoke와
+  CodeQL을 모두 통과해 `afff1ec`으로 squash merge했다.
 - [#12–#16](https://github.com/sangmu1126/PipeLens/pulls)은 Ruff, HTTPX, Prometheus client,
   cryptography와 SQLAlchemy 최소 버전을 각각 갱신한다. 각 PR의 전체 검사가 끝난 뒤 독립
   호환성 변경으로 처리한다.
@@ -181,12 +185,12 @@ digest 고정은 아직 남은 공급망 작업이다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
 
-2026-08-29 조회 결과:
+2026-08-30 조회 결과:
 
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 6 (`#11`–`#16`, Dependabot 검토 대기)
+- open pull requests: 5 (`#12`–`#16`, Python Dependabot 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0

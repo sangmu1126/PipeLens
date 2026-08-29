@@ -161,10 +161,13 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `1f90715`: 대시보드 package에 Node 22·24 LTS 지원 범위를 명시하고 Dependabot이 LTS 전환
   전 Node major를 자동 제안하지 않도록 했다. CI의 Node 22와 Docker build의 Node 24가 지원
   범위 양 끝을 각각 검증한다.
+- `afff1ec`: 새 정책으로 재생성된 Dependabot PR #17에서 Node 24는 유지하고 Nginx
+  unprivileged runtime만 `1.29-alpine`에서 `1.31-alpine`로 갱신했다. 전체 CI, container
+  non-root·HTTP smoke test와 CodeQL 통과 뒤 squash merge했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
-Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 다시 생성하도록 만들기 위해
-내려졌다.
+Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
+위해 내려졌다.
 
 ## 현재까지의 검증 방식
 
