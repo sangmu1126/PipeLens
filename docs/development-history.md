@@ -164,6 +164,9 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `afff1ec`: 새 정책으로 재생성된 Dependabot PR #17에서 Node 24는 유지하고 Nginx
   unprivileged runtime만 `1.29-alpine`에서 `1.31-alpine`로 갱신했다. 전체 CI, container
   non-root·HTTP smoke test와 CodeQL 통과 뒤 squash merge했다.
+- `e6016f0`: 개발 전용 lint 도구 Ruff의 최소 버전을 0.8에서 0.16.4로 올렸다. 최신 `main`
+  기반 PR에서 전체 CI와 CodeQL을 통과했고, 로컬 Ruff 0.16.5 검사, 백엔드 105개 테스트와
+  진단 fixture 10/10을 추가 확인한 뒤 squash merge했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기

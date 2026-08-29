@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `afff1ec`.
+기준 시점: **2026-08-30**, 기능 기준 commit `e6016f0`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -24,6 +24,8 @@
 - [CodeQL run 33252323079](https://github.com/sangmu1126/PipeLens/actions/runs/33252323079)
 - [Nginx 1.31 PR CI run 33263438479](https://github.com/sangmu1126/PipeLens/actions/runs/33263438479)
 - [Nginx 1.31 PR CodeQL run 33263438485](https://github.com/sangmu1126/PipeLens/actions/runs/33263438485)
+- [Ruff 0.16 PR CI run 33264600380](https://github.com/sangmu1126/PipeLens/actions/runs/33264600380)
+- [Ruff 0.16 PR CodeQL run 33264600379](https://github.com/sangmu1126/PipeLens/actions/runs/33264600379)
 
 ## 2. 자동 검증 상세
 
@@ -85,7 +87,7 @@ Dependabot이 pip, npm, GitHub Actions와 API·대시보드 Dockerfile의 base i
 smoke test를 함께 거치게 한다. Docker 설정을 처음 반영한 2026-08-29 검사에서 Docker 2개와
 Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 
-Docker PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바로 merge하지 않았다.
+의존성 PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바로 merge하지 않았다.
 
 - [#10](https://github.com/sangmu1126/PipeLens/pull/10)은 API runtime을 Python 3.12에서
   3.14로 변경했다. Python 3.14 compatibility와 API image 기동 smoke test를 `main`에 먼저
@@ -96,9 +98,13 @@ Docker PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바�
 - 새 설정이 만든 [#17](https://github.com/sangmu1126/PipeLens/pull/17)은 Nginx
   1.29→1.31만 포함했다. 최신 `main` 기반에서 전체 CI, image build·non-root·HTTP smoke와
   CodeQL을 모두 통과해 `afff1ec`으로 squash merge했다.
-- [#12–#16](https://github.com/sangmu1126/PipeLens/pulls)은 Ruff, HTTPX, Prometheus client,
-  cryptography와 SQLAlchemy 최소 버전을 각각 갱신한다. 각 PR의 전체 검사가 끝난 뒤 독립
-  호환성 변경으로 처리한다.
+- [#12](https://github.com/sangmu1126/PipeLens/pull/12)는 개발 전용 lint 도구 Ruff의 최소
+  버전을 0.8에서 0.16.4로 갱신했다. 최신 `main`으로 PR을 재생성하고 전체 CI·CodeQL을
+  통과했으며, 로컬 Ruff 0.16.5 검사와 백엔드 105개 테스트, 진단 평가 10/10 확인 뒤
+  `e6016f0`으로 squash merge했다.
+- [#13–#16](https://github.com/sangmu1126/PipeLens/pulls)은 HTTPX, Prometheus client,
+  cryptography와 SQLAlchemy 최소 버전을 각각 갱신한다. runtime dependency이므로 각 PR의
+  전체 검사와 API 동작 영향을 독립적으로 검토한다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update, immutable
 digest 고정은 아직 남은 공급망 작업이다.
@@ -190,7 +196,7 @@ digest 고정은 아직 남은 공급망 작업이다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 5 (`#12`–`#16`, Python Dependabot 검토 대기)
+- open pull requests: 4 (`#13`–`#16`, Python runtime dependency 검토 대기)
 - releases: 0
 - branch protection: 없음
 - repository rulesets: 0
