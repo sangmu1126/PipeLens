@@ -83,3 +83,8 @@ updates:
       time: "10:15"
       timezone: Asia/Seoul
     open-pull-requests-limit: 4
+    ignore:
+      - dependency-name: prom/prometheus
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
