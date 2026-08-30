@@ -51,11 +51,11 @@ def main() -> int:
         raise SystemExit("port must be between 1 and 65535")
     AlertHandler.output_path = args.output
     server = HTTPServer(("0.0.0.0", args.port), AlertHandler)
-    server.timeout = 30
+    server.timeout = 60
     server.handle_request()
     server.server_close()
     if not args.output.exists():
-        raise SystemExit("no Alertmanager webhook received within 30 seconds")
+        raise SystemExit("no Alertmanager webhook received within 60 seconds")
     return 0
 
 
