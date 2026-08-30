@@ -39,6 +39,16 @@ receiver는 최대 1 MiB JSON 하나만 받고 30초 뒤 종료한다. 모든 co
 payload는 성공·실패와 관계없이 정리한다. webhook URL과 테스트 alert는 CI fixture에만 있으며
 기본 Compose config에는 포함되지 않는다.
 
+PR #45의 첫 CI run `33325807628`은 합성 Prometheus config가 실제 mount 경로와 다른 rule
+glob을 참조해 rule 0개로 기동했고 webhook 대기 시간이 초과됐다. fixture가 mount한
+`/etc/prometheus/probe.yml`을 직접 참조하도록 고친 뒤 run `33325903043`에서 config 1개와
+rule 1개, Alertmanager 기본·CI config, firing webhook payload와 Prometheus·Alertmanager API
+상태를 모두 통과했다. 같은 revision의 CodeQL run
+`33325903025`도 성공했다.
+
+Compose healthcheck 명령 검증을 추가한 최종 PR CI run `33326106111`에서도 같은 전체 경로가
+성공했고 CodeQL run `33326106102`를 포함한 필수 gate 7개가 모두 통과했다.
+
 ## 로컬 검증
 
 Docker daemon이 실행 중일 때 Compose에서 정확한 image 참조를 읽어 실행한다.

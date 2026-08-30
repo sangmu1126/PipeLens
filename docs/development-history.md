@@ -324,7 +324,7 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   Prometheus readiness만 확인해 alert가 notification receiver까지 전달되는지는 검증하지 못했다.
 - 공식 최신 stable 0.33.1 image의 multi-platform digest와 amd64·arm64를 확인했다. 신규 설치
   권고에 맞춰 UTF-8 strict mode를 사용하고 0.x minor는 자동 업데이트하지 않도록 경계를 뒀다.
-- `811e0bf`: Compose에 digest-pinned Alertmanager, persistent volume과 readiness를 추가하고
+- `0c675a4`: Compose에 digest-pinned Alertmanager, persistent volume과 readiness를 추가하고
   Prometheus가 `alertmanager:9093`으로 rule을 전송하게 했다. 기본 receiver는 외부 integration이
   없어 개발 실행이 실제 호출을 만들지 않는다.
 - CI drill은 격리 network에서 `vector(1)` critical alert를 firing하고 Prometheus→Alertmanager→
@@ -333,6 +333,15 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 실제 PagerDuty·incident.io·Slack 등 조직 채널은 token을 repository에 저장하지 않고
   production secret manager로 주입해야 한다. staging firing/resolved 호출과 acknowledgment
   증적 전에는 외부 채널 연결을 완료로 기록하지 않는다.
+- [PR #45](https://github.com/sangmu1126/PipeLens/pull/45)의 첫 CI `33325807628`에서는 fixture
+  config가 mount된 단일 probe 파일 대신 production rule glob을 가리켜 Prometheus가 rule 0개로
+  기동했고 webhook 수신이 시간 초과됐다. fixture의 `rule_files`를 실제 mount 경로로 교정해
+  실패 원인을 구현 commit에 autosquash했다.
+- 재실행 CI `33325903043`은 `amtool` config 2개, `promtool` config 1개·rule 1개를 확인하고
+  합성 alert가 Prometheus→Alertmanager→webhook 경로를 통과했음을 기록했다. payload와 두 API
+  상태를 검증했으며 CodeQL `33325903025`를 포함한 필수 gate 7개가 모두 성공했다. 이후 drill에
+  Compose가 선언한 `amtool config show` healthcheck 명령 검증도 추가했다. 최종 CI
+  `33326106111`과 CodeQL `33326106102`가 이 보강을 포함해 다시 성공했다.
 
 ### `main` 변경 통제
 
