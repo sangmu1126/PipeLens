@@ -301,7 +301,7 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 기존 검증은 Redis job 하나의 lease key를 직접 지우고 다른 queue가 복구하는 수준이었다.
   여러 worker가 backlog를 나눠 처리할 때의 processing list 경쟁, 실제 TTL 만료, 중복 처리와
   사용자 SLO는 함께 측정하지 않았다.
-- `4290fd3`: 합성 요청 200개 중 하나를 `abandoned` worker가 claim한 뒤 ack하지 않고, 독립 Redis
+- `800e531`: 합성 요청 200개 중 하나를 `abandoned` worker가 claim한 뒤 ack하지 않고, 독립 Redis
   connection·processing list·lease를 가진 replica 4개가 나머지와 회수된 job을 처리하는 CI
   drill을 추가했다. lease 2초와 heartbeat 0.5초를 실제 시간으로 사용한다.
 - 모든 run의 시작·완료가 정확히 한 번인지, replica가 모두 작업에 참여했는지, recovery metric이
@@ -314,6 +314,9 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   replica별 49/50/50/51개로 분배됐다. 실제 TTL 만료 뒤 orphan 1개를 2.096초에 회수했고 최대
   시작 2.096초, 완료 2.107초로 60초/120초 SLO와 정확한 1회 처리·최종 queue drain을 통과했다.
   CodeQL `33323312384`도 성공했다.
+- 구현 `800e531`, 절차 `1ddce3e`, 첫 증적 `49a7a76`을 rebase merge했다. 병합 후 CI
+  `33323532906`은 같은 분배에서 orphan을 2.060초에 복구하고 최대 2.071초에 완료했으며 CodeQL
+  `33323532969`도 성공했다.
 
 ### `main` 변경 통제
 

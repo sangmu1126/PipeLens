@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `4290fd3`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `800e531`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -21,7 +21,7 @@
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
-| Worker replica drill | 통과 | 4 replica·200 job, orphan 1개 2.096초 복구, 최대 완료 2.107초 |
+| Worker replica drill | 통과 | 4 replica·200 job, orphan 1개 2.060초 복구, 최대 완료 2.071초 |
 | PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
 | Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
@@ -35,6 +35,8 @@
 - [`Worker replica drill PR #43`](https://github.com/sangmu1126/PipeLens/pull/43)
 - [Worker replica drill PR CI run 33323312380](https://github.com/sangmu1126/PipeLens/actions/runs/33323312380)
 - [Worker replica drill PR CodeQL run 33323312384](https://github.com/sangmu1126/PipeLens/actions/runs/33323312384)
+- [Worker replica drill 병합 후 CI run 33323532906](https://github.com/sangmu1126/PipeLens/actions/runs/33323532906)
+- [Worker replica drill 병합 후 CodeQL run 33323532969](https://github.com/sangmu1126/PipeLens/actions/runs/33323532969)
 - [`GHCR 보존 정책 PR #41`](https://github.com/sangmu1126/PipeLens/pull/41)
 - [GHCR 보존 정책 PR CI run 33322207726](https://github.com/sangmu1126/PipeLens/actions/runs/33322207726)
 - [GHCR 보존 정책 PR CodeQL run 33322207722](https://github.com/sangmu1126/PipeLens/actions/runs/33322207722)
