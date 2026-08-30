@@ -432,4 +432,5 @@
   보완한다. 정책 변경 전에는 외부 archive와 rollback 보존 기간을 먼저 결정해야 한다.
 - 근거: [GitHub package 삭제와 복원](https://docs.github.com/packages/learn-github-packages/deleting-and-restoring-a-package),
   [Packages REST API](https://docs.github.com/rest/packages/packages).
-- 관련: `3285ba4`, [GHCR 보존 정책](ghcr-retention.md).
+- 관련: `e4551ef`, [PR #41](https://github.com/sangmu1126/PipeLens/pull/41),
+  [GHCR 보존 정책](ghcr-retention.md).
