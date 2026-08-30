@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `f5e059d`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-30**, 기능 기준 commit `3b0b203`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -18,6 +18,7 @@
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
 | Compose service image | 통과 | 4개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
+| Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
@@ -26,6 +27,11 @@
 
 최근 검증 실행:
 
+- [`Uvicorn 0.52.4 PR #25`](https://github.com/sangmu1126/PipeLens/pull/25)
+- [Uvicorn 0.52.4 PR CI run 33295968358](https://github.com/sangmu1126/PipeLens/actions/runs/33295968358)
+- [Uvicorn 0.52.4 PR CodeQL run 33295968363](https://github.com/sangmu1126/PipeLens/actions/runs/33295968363)
+- [Uvicorn 병합 후 CI run 33296035915](https://github.com/sangmu1126/PipeLens/actions/runs/33296035915)
+- [Uvicorn 병합 후 CodeQL run 33296035880](https://github.com/sangmu1126/PipeLens/actions/runs/33296035880)
 - [`psycopg 3.3.4 PR #26`](https://github.com/sangmu1126/PipeLens/pull/26)
 - [psycopg 3.3.4 PR CI run 33294950950](https://github.com/sangmu1126/PipeLens/actions/runs/33294950950)
 - [psycopg 병합 후 CI run 33295005385](https://github.com/sangmu1126/PipeLens/actions/runs/33295005385)
@@ -171,6 +177,12 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
   psycopg 3.2에서 3.3.4로 갱신했다. Python 3.12·3.14 binary wheel, API image build·기동,
   PostgreSQL 17 migration·analysis lifecycle과 Redis integration을 최신 `main`에서 통과해
   `73e4641`로 squash merge했다.
+- [#25](https://github.com/sangmu1126/PipeLens/pull/25)는 ASGI server Uvicorn의 최소 버전을
+  0.30에서 0.52.4로 갱신했다. 공식 변경 기록에서 Python 3.14 지원과 제거·기본값 변경을
+  검토하고 PipeLens가 제거 API, reload·worker·TLS option, WebSocket route나 experimental
+  `zttp`를 사용하지 않음을 확인했다. Uvicorn 0.52.4, httptools 0.8.0, websockets 17.1로
+  Python 3.12·3.14, 전체 테스트, CodeQL과 실제 API `/readyz` 기동을 통과해 `3b0b203`으로
+  squash merge했다.
 
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
@@ -269,7 +281,7 @@ manifest-list digest로 고정했고, digest 누락을 CI에서 차단한다. �
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 0
+- open pull requests: 4 (#21 Grafana 13, #23 Redis 8, #24 PostgreSQL 18, #27 redis-py 8)
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false)
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
