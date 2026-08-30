@@ -324,7 +324,7 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   Prometheus readiness만 확인해 alert가 notification receiver까지 전달되는지는 검증하지 못했다.
 - 공식 최신 stable 0.33.1 image의 multi-platform digest와 amd64·arm64를 확인했다. 신규 설치
   권고에 맞춰 UTF-8 strict mode를 사용하고 0.x minor는 자동 업데이트하지 않도록 경계를 뒀다.
-- `0c675a4`: Compose에 digest-pinned Alertmanager, persistent volume과 readiness를 추가하고
+- `9b1c25d`: Compose에 digest-pinned Alertmanager, persistent volume과 readiness를 추가하고
   Prometheus가 `alertmanager:9093`으로 rule을 전송하게 했다. 기본 receiver는 외부 integration이
   없어 개발 실행이 실제 호출을 만들지 않는다.
 - CI drill은 격리 network에서 `vector(1)` critical alert를 firing하고 Prometheus→Alertmanager→
@@ -346,6 +346,9 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   사용한 뒤 30초 절대 제한 안에 webhook을 보내지 못해 실패했다. 단일 replica에서 기본
   clustering을 유지할 이유가 없으므로 공식 권고대로 `--cluster.listen-address=`를 적용하고,
   receiver 제한을 60초로 늘려 느린 runner에서도 전체 경로 자체를 판정하도록 교정했다.
+- 안정화 구현 `d49e9f7`과 문서 `d1d4079`는
+  [PR #48](https://github.com/sangmu1126/PipeLens/pull/48)에 rebase merge됐다. 병합 후 `main` CI
+  `33327158576`은 라우팅 단계를 포함한 전체 gate를 통과했고 CodeQL `33327158575`도 성공했다.
 
 ### `main` 변경 통제
 

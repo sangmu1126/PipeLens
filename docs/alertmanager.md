@@ -49,6 +49,11 @@ rule 1개, Alertmanager 기본·CI config, firing webhook payload와 Prometheus�
 Compose healthcheck 명령 검증을 추가한 최종 PR CI run `33326106111`에서도 같은 전체 경로가
 성공했고 CodeQL run `33326106102`를 포함한 필수 gate 7개가 모두 통과했다.
 
+병합 직후 기본 HA gossip이 남은 상태의 `main` CI run `33326887437`은 webhook 30초 제한으로
+실패했다. 단일-node HA를 끄고 제한을 60초로 보강한 PR #48 CI run `33327036671`과 병합 후
+`main` CI run `33327158576`은 라우팅을 각각 통과했다. 최종 `main` CodeQL run
+`33327158575`도 성공했다.
+
 ## 로컬 검증
 
 Docker daemon이 실행 중일 때 Compose에서 정확한 image 참조를 읽어 실행한다.
