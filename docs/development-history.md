@@ -359,15 +359,28 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   `sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2`가 PostgreSQL
   18.6 Alpine이며 linux/amd64와 linux/arm64를 포함함을 확인했다. 공식 정책상 18은
   2030-11-14까지 지원되며 major 전환에는 dump/reload 또는 `pg_upgrade`가 필요하다.
-- `22fc381`: GitHub Actions의 별도 PostgreSQL 17 service를 제거하고 Compose digest를 실제
+- `3a13cff`: GitHub Actions의 별도 PostgreSQL 17 service를 제거하고 Compose digest를 실제
   integration 단일 원본으로 사용한다. 새 script는 고정된 17 source에 migration·표본 데이터를
   만들고 18 target으로 custom-format dump를 복원한 뒤 데이터와 `alembic check`를 검증한다.
-- `5b179bf`: Compose를 PostgreSQL 18.6 multi-platform digest로 전환하고 공식 image 18의
+- `791cabb`: Compose를 PostgreSQL 18.6 multi-platform digest로 전환하고 공식 image 18의
   새 volume target `/var/lib/postgresql`을 적용했다. 기존 `postgres-data`와 다른
   `postgres18-data`를 선언해 17 data를 보존하며 Dependabot은 다음 major를 자동 제안하지 않는다.
 - 운영 절차는 쓰기 중단, database·globals backup, 새 volume 복원, Alembic과 대표 데이터
   검증 및 rollback 한계를 [PostgreSQL 18 업그레이드](postgres-18-upgrade.md)에 기록했다.
   로컬 Docker daemon이 실행 중이지 않아 container drill은 PR의 GitHub runner에서 판정한다.
+- [PR #36](https://github.com/sangmu1126/PipeLens/pull/36)의 첫 CI `33301544816`은 18 image
+  초기화 중 임시 server의 첫 readiness를 잡은 뒤 final server 재시작 틈에 `pg_restore`가
+  접속해 실패했다. init 완료 log와 최종 `pg_isready`를 함께 요구하도록 대기를 강화했다.
+  두 번째 CI `33302704142`에서는 복원과 표본 조회가 성공했지만 표본 전용 table을
+  `alembic check`가 제거 대상으로 감지했다. 표본 값을 확인한 뒤 해당 table을 정리하고
+  애플리케이션 schema만 비교하도록 순서를 교정했다. 두 수정은 CI 역할 commit에 autosquash했다.
+- 최종 PR CI `33302816133`은 PostgreSQL 17에서 migration 9개와 표본 데이터를 생성하고
+  PostgreSQL 18.6으로 복원한 뒤 `No new upgrade operations detected`를 확인했다. 이어 같은
+  18 digest에서 PostgreSQL lifecycle과 Redis queue integration 2개, 전체 106개 테스트,
+  Python 3.14, image build를 통과했고 CodeQL `33302816136`도 성공했다.
+- 세 역할별 commit `3a13cff`, `791cabb`, `2a5ff15`는 rebase 방식으로 병합했다. `main` CI
+  `33302884926`과 CodeQL `33302884947`이 같은 검증을 다시 통과했고 PostgreSQL 18 한 줄만
+  바꾸던 Dependabot PR #24는 새 update 경계 적용 뒤 자동으로 닫혔다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기

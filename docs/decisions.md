@@ -390,5 +390,6 @@
 - 근거: [PostgreSQL 18 release notes](https://www.postgresql.org/docs/18/release-18.html),
   [PostgreSQL versioning policy](https://www.postgresql.org/support/versioning/),
   [Docker Official Image: postgres](https://hub.docker.com/_/postgres).
-- 관련: `22fc381`, `5b179bf`, [업그레이드 절차](postgres-18-upgrade.md),
-  [대체하는 PR #24](https://github.com/sangmu1126/PipeLens/pull/24).
+- 관련: [PR #36](https://github.com/sangmu1126/PipeLens/pull/36),
+  [대체한 PR #24](https://github.com/sangmu1126/PipeLens/pull/24), `3a13cff`, `791cabb`,
+  [업그레이드 절차](postgres-18-upgrade.md).
