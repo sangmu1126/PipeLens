@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `2e350bd`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-30**, 기능 기준 commit `9bc43ee`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -29,8 +29,10 @@
 최근 검증 실행:
 
 - [`Redis 8.2 Extended PR #34`](https://github.com/sangmu1126/PipeLens/pull/34)
-- [Redis 8.2 PR CI run 33299999217](https://github.com/sangmu1126/PipeLens/actions/runs/33299999217)
-- [Redis 8.2 PR CodeQL run 33299999240](https://github.com/sangmu1126/PipeLens/actions/runs/33299999240)
+- [Redis 8.2 PR CI run 33300129032](https://github.com/sangmu1126/PipeLens/actions/runs/33300129032)
+- [Redis 8.2 PR CodeQL run 33300129030](https://github.com/sangmu1126/PipeLens/actions/runs/33300129030)
+- [Redis 8.2 병합 후 CI run 33300182440](https://github.com/sangmu1126/PipeLens/actions/runs/33300182440)
+- [Redis 8.2 병합 후 CodeQL run 33300182403](https://github.com/sangmu1126/PipeLens/actions/runs/33300182403)
 - [`redis-py 8.1.0 PR #27`](https://github.com/sangmu1126/PipeLens/pull/27)
 - [redis-py 8.1.0 PR CI run 33299569088](https://github.com/sangmu1126/PipeLens/actions/runs/33299569088)
 - [redis-py 8.1.0 PR CodeQL run 33299569060](https://github.com/sangmu1126/PipeLens/actions/runs/33299569060)
@@ -199,6 +201,11 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
   검토했다. Redis 7.4.11에서 enqueue·blocking dequeue·heartbeat·orphan recovery·acknowledge를
   수행하는 통합 테스트, Python 3.12·3.14 전체 테스트, API image·CodeQL을 통과해 `7258f5c`로
   squash merge했다. pool·retry의 고동시성 지연은 production 부하 검증 항목으로 유지한다.
+- [#34](https://github.com/sangmu1126/PipeLens/pull/34)는 floating Redis 8.10 제안 #23 대신
+  2030-09-01까지 지원되는 Redis 8.2 Extended를 선택했다. Compose의 8.2.9 digest를 CI가 직접
+  pull·기동해 redis-py 8.1 RESP3 queue 통합 테스트를 수행하도록 만들고, patch·digest만 자동
+  추적하게 했다. 역할별 `fd286c2`, `9bc43ee`, `9cfdfda`를 rebase merge했으며 새 경계 적용 후
+  #23은 자동으로 닫혔다.
 
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
@@ -298,7 +305,7 @@ immutability는 아직 꺼져 있다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 3 (#21 Grafana 13, #23 Redis 8, #24 PostgreSQL 18)
+- open pull requests: 2 (#21 Grafana 13, #24 PostgreSQL 18)
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false)
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과

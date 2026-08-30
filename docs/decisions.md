@@ -370,4 +370,4 @@
   [Redis licenses](https://redis.io/legal/licenses/),
   [Redis 8.2.9](https://github.com/redis/redis/releases/tag/8.2.9).
 - 관련: [PR #34](https://github.com/sangmu1126/PipeLens/pull/34),
-  [대체하는 PR #23](https://github.com/sangmu1126/PipeLens/pull/23), `6384e90`, `2e350bd`.
+  [대체한 PR #23](https://github.com/sangmu1126/PipeLens/pull/23), `fd286c2`, `9bc43ee`.
