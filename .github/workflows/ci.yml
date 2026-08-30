@@ -44,11 +44,35 @@ jobs:
       - run: ruff check .
       - run: pytest -q
       - name: Validate Prometheus configuration
-        run: >-
-          docker run --rm --entrypoint promtool
-          -v "$PWD/ops/prometheus:/etc/prometheus:ro"
-          prom/prometheus:v3.5.0
-          check config /etc/prometheus/prometheus.yml
+        run: |
+          prometheus_image="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["prometheus"]["image"])
+          ')"
+          docker run --rm --entrypoint promtool \
+            -v "$PWD/ops/prometheus:/etc/prometheus:ro" \
+            "$prometheus_image" check config /etc/prometheus/prometheus.yml
+
+          prometheus_container="pipelens-prometheus-smoke"
+          docker run --detach --rm --name "$prometheus_container" \
+            --network none \
+            -v "$PWD/ops/prometheus:/etc/prometheus:ro" \
+            "$prometheus_image" \
+            --config.file=/etc/prometheus/prometheus.yml \
+            --storage.tsdb.path=/tmp/prometheus \
+            --storage.tsdb.retention.time=1h
+          trap 'docker stop "$prometheus_container"' EXIT
+          for attempt in {1..10}; do
+            if docker exec "$prometheus_container" \
+              promtool check ready --url=http://localhost:9090; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$prometheus_container"
+          exit 1
       - name: Validate observability stack
         run: |
           docker compose config --quiet
