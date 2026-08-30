@@ -305,3 +305,22 @@
   별도로 높여야 한다.
 - 근거: [GitHub protected branches](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches),
   [branch protection REST API](https://docs.github.com/rest/branches/branch-protection#update-branch-protection).
+
+## D-030. Compose service image는 읽을 수 있는 tag와 manifest-list digest를 함께 고정
+
+- 결정: PostgreSQL, Redis, Prometheus와 Grafana image를 `tag@sha256:digest`로 참조한다.
+  digest는 amd64와 arm64를 포함하는 상위 manifest list를 사용하고 CI가 `compose.yaml`의
+  모든 명시적 image에 digest가 있는지 검사한다. 업데이트는 별도 `docker-compose`
+  Dependabot 생태계가 매주 제안한다.
+- 이유: tag만 사용하면 같은 commit도 실행 시점에 따라 다른 image를 받을 수 있다. 반대로
+  platform별 digest를 고정하면 개발자의 arm64 환경과 CI의 amd64 환경에 서로 다른 선언이
+  필요하다. tag를 함께 남기면 PostgreSQL 17·Redis 7 같은 호환성 경계도 review diff에서
+  읽을 수 있다.
+- 대안: mutable tag 유지, platform별 digest 분리, tag 없이 digest만 사용, 수동 업데이트.
+- 결과: Compose 실행 입력은 여러 architecture에서 하나의 불변 참조로 재현된다. 새 image를
+  digest 없이 추가하면 backend CI가 실패하며, tag 또는 digest 변경은 Dependabot PR에서 전체
+  gate를 거친다. Dockerfile base image와 GitHub Actions service container는 별도 업데이트
+  경계로 남는다.
+- 근거: [Docker image digests](https://docs.docker.com/dhi/explore/security-concepts/digests/),
+  [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference).
+- 관련: `23b4363`, `83ed5a0`.
