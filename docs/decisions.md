@@ -434,3 +434,20 @@
   [Packages REST API](https://docs.github.com/rest/packages/packages).
 - 관련: `e4551ef`, [PR #41](https://github.com/sangmu1126/PipeLens/pull/41),
   [GHCR 보존 정책](ghcr-retention.md).
+
+## D-036. Worker 확장은 합성 backlog와 실제 Redis lease 만료를 함께 검증
+
+- 결정: backend CI의 고정 Redis에서 worker replica 4개가 합성 job 200개를 처리하게 한다.
+  별도 worker가 job 하나를 claim한 뒤 ack하지 않는 장애를 만들고 2초 lease 만료 후 정확히 한
+  번 복구되는지 확인한다. 모든 job은 정확히 한 번 완료돼야 하며 시작 60초, 완료 120초 SLO와
+  lease+5초 복구 상한을 적용한다.
+- 이유: mock queue와 단일 orphan 통합 테스트는 replica 간 분배, maintenance 경쟁, backlog 중
+  lease 갱신과 최종 dedupe 정리를 함께 증명하지 못한다. 반대로 전체 GitHub·LLM pipeline 부하는
+  외부 rate limit과 비용이 필요하므로 queue orchestration 회귀와 분리해야 한다.
+- 대안: 단일 worker throughput만 측정, lease key를 즉시 삭제하는 단일 job 테스트만 유지,
+  production E2E가 준비될 때까지 부하 검증을 생략.
+- 결과: CI가 replica별 처리량, 최대 시작·완료 latency, 복구 latency와 recovery metric을
+  machine-readable JSON으로 남긴다. 합성 pipeline과 in-process replica이므로 container resource
+  limit, network partition, PostgreSQL pool과 provider latency를 포함한 production soak test는
+  별도로 남는다.
+- 관련: `4290fd3`, [Worker replica drill](worker-replica-drill.md).

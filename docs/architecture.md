@@ -162,6 +162,10 @@ token·지연·추정 비용은 별도로 기록한다.
 - 실패한 작업은 제한된 횟수만 재시도한다.
 - API 시작 시 DB의 `queued` 요청과 queue를 reconciliation한다.
 
+CI의 [worker replica drill](worker-replica-drill.md)은 독립 processing list와 lease를 가진 replica
+4개로 합성 job 200개를 처리한다. worker 하나가 ack 전 중단된 상태를 만들고 lease 만료 뒤 정확히
+한 job만 복구되는지, 중복 처리 없이 queue가 비는지와 60초 시작/120초 완료 SLO를 함께 검사한다.
+
 ### Fencing
 
 각 분석 시작은 새로운 attempt token을 발급한다. lease 만료 뒤 이전 worker가 재개해도 현재
@@ -235,4 +239,5 @@ Compose는 개발과 통합 검증을 위한 단일 호스트 구성이다. 운�
 - PostgreSQL·Grafana 데이터 백업과 복구 절차
 - Alertmanager와 실제 알림 채널
 - `immutable: true`인 차기 GitHub Release 발행 확인
+- production resource limit·provider latency를 포함한 worker soak/load test
 - 외부에서 접근 가능한 GitHub OAuth callback, App setup URL과 webhook URL
