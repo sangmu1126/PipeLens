@@ -47,3 +47,6 @@ immutability 설정도 활성화해야 한다. `v0.1.0`은 해당 설정 전에 
 
 repository ruleset은 아직 사용하지 않는다. 현재 요구는 단일 `main` branch protection으로
 충족하며, tag pattern 보호나 여러 branch의 공통 정책이 필요할 때 ruleset으로 이전한다.
+
+설정 뒤 첫 보호된 변경은 [PR #18](https://github.com/sangmu1126/PipeLens/pull/18)에서 이
+문서와 readiness 기록을 반영하는 흐름으로 검증한다.
