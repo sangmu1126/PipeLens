@@ -20,7 +20,7 @@
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
-| `main` 보호 | 미설정 | branch protection 404, repository ruleset 빈 목록 |
+| `main` 보호 | 설정됨 | PR, strict CI 5개·CodeQL 2개, conversation·linear history, 관리자 적용 |
 
 최근 검증 실행:
 
@@ -179,7 +179,6 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 
 ### 미구현 또는 외부 설정 필요
 
-- `main` branch protection/ruleset과 필수 status check
 - 다음 release 전 GitHub release immutability 활성화
 - immutable base image digest 정책
 - production secret manager와 key rotation 절차
@@ -214,8 +213,7 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 ### P0 — 서비스 완료 조건
 
 1. 위 GitHub App E2E 인수 테스트 수행
-2. `main` 보호와 CI·CodeQL 필수 status check 설정
-3. 실제 공개 HTTPS 환경의 OAuth·webhook 검증
+2. 실제 공개 HTTPS 환경의 OAuth·webhook 검증
 
 ### P1 — 릴리스와 공급망
 
@@ -250,7 +248,7 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 - releases: 1 (`v0.1.0`, immutable false)
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
 - GHCR retention: 미확정
-- branch protection: 없음
+- branch protection: PR과 7개 GitHub Actions check 필수, 관리자 적용
 - repository rulesets: 0
 - open CodeQL alerts: 0
 - repository description과 homepage: 비어 있음
@@ -262,7 +260,7 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 
 - [ ] GitHub App 실제 설치와 E2E 증적
 - [ ] production HTTPS와 HSTS
-- [ ] `main` 필수 review/status check
+- [x] `main` PR·필수 status check
 - [ ] immutable GitHub Release와 digest-pinned production 배포
 - [x] fixable HIGH/CRITICAL container vulnerability scan
 - [x] CI build image CycloneDX SBOM

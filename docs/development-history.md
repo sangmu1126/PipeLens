@@ -217,6 +217,15 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   게시했다. release immutability를 미리 활성화하지 않아 API상 `immutable: false`이며 다음
   release 전에 별도 설정이 필요하다.
 
+### `main` 변경 통제
+
+- 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를
+  확인하고 모두 `main` 필수 status check로 등록했다.
+- PR, 최신 branch 검증, conversation 해결, 선형 이력과 관리자 적용을 강제하고 force push와
+  branch 삭제를 막았다. 단일 maintainer 교착을 피하기 위해 승인 인원만 0명으로 유지했다.
+- 설정 직후 직접 `main` 문서 push를 계속하지 않고 `docs/main-protection` branch로 전환해 첫
+  보호된 변경 흐름을 시작했다.
+
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
 위해 내려졌다.
