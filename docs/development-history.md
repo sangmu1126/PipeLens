@@ -247,8 +247,27 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   유지하는 rebase 방식으로 `main`에 병합했다. PR의 CI `33292405622`와 CodeQL `33292405611`,
   병합 후 `main`의 CI `33292468235`와 CodeQL `33292468225`가 모두 성공했다.
 - 새 생태계 등록 직후 Dependabot이 Grafana 13, Prometheus 3.14, Redis 8과 PostgreSQL 18을
-  각각 PR #21–#24로 제안해 탐지·PR 생성 경로도 확인됐다. 네 변경은 모두 runtime major
-  upgrade이므로 자동 병합 대상이 아니며 service별 호환성 검증을 거쳐 따로 판정한다.
+  각각 PR #21–#24로 제안해 탐지·PR 생성 경로도 확인됐다. Grafana·Redis·PostgreSQL은 major,
+  Prometheus는 여러 minor를 건너뛰는 runtime upgrade이므로 자동 병합하지 않고 service별
+  호환성 검증을 거쳐 따로 판정한다.
+
+### Prometheus 3.13 LTS 전환
+
+- Dependabot PR #22는 Prometheus 3.5.0에서 최신 3.14.0으로 바로 올렸지만 그대로 병합하지
+  않았다. 공식 지원 주기상 일반 minor는 다음 6주 주기 뒤 bugfix가 중단될 수 있는 반면
+  3.13 LTS는 2027-07-31까지 bug·security fix를 받기 때문이다.
+- [PR #29](https://github.com/sangmu1126/PipeLens/pull/29)에서 3.13.2 LTS의 multi-platform
+  digest `sha256:508729e0e2d18e11fd742a5a5ca70e557b940a93948c3c95fd0123a6fd538b69`로
+  전환했다. manifest에 linux/amd64와 linux/arm64가 모두 있음을 원격 조회로 확인했다.
+- 3.13.0의 credentials cross-host redirect 차단과 UI 보안 수정, 3.13.2의
+  `golang.org/x/text`·gRPC 보안 수정 및 disk-full query tracker 충돌 방지를 검토했다. 현재
+  설정·규칙·Grafana query는 변경된 experimental duration expression, remote write,
+  service discovery나 query API option을 사용하지 않는다.
+- CI run `33293111339`는 Compose의 digest 참조를 직접 읽어 image를 내려받고 Prometheus 설정
+  1개와 alert rule 5개를 `promtool`로 통과시킨 뒤 실제 server가 Ready 상태가 되는 것까지
+  확인했다. 같은 PR의 CodeQL run `33293111348`과 나머지 필수 gate도 모두 성공했다.
+- Dependabot은 Prometheus의 major·minor를 제외하고 3.13의 patch와 digest만 제안한다. 다음
+  LTS line 전환은 공식 지원 기간과 release note, 실제 config·readiness 검증 뒤 수동으로 연다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
@@ -268,7 +287,7 @@ Nginx는 별도 PR로 분리했다.
 - 10개 진단 fixture의 80% 정확도 gate
 - Vitest 대시보드 사용자 흐름·접근성 테스트
 - TypeScript와 Vite production build
-- Prometheus config와 Compose config 검증
+- Prometheus config·규칙과 실제 server readiness, Compose config 검증
 - API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·language package 취약점 gate
 - 실제 빌드 이미지의 CycloneDX SBOM 생성·내용 검증·artifact 보관
