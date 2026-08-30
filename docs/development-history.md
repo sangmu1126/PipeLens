@@ -322,6 +322,31 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   rebase merge됐다. 병합 후 `main` CI `33293260308`과 CodeQL `33293260317`도 성공했으며,
   새 ignore 정책이 적용되자 대체된 3.14 제안 PR #22는 자동으로 닫혔다.
 
+### Redis 8.2 Extended 전환
+
+- Dependabot PR #23의 `redis:8-alpine` digest는 Redis 8.10.1 Standard를 가리켰다. major tag는
+  이후 minor도 자동으로 이동하고 8.10의 EOL은 아직 미정인 반면, Redis 8.2는 공식 Extended
+  line으로 2030-09-01까지 지원되므로 제안을 그대로 병합하지 않았다.
+- `6384e90`: GitHub Actions의 별도 mutable `redis:7-alpine` service를 제거했다. backend CI가
+  Compose config의 Redis image를 단일 원본으로 읽어 digest를 pull하고 container health를
+  확인한 뒤 실제 PostgreSQL·Redis integration test를 실행하고 항상 container를 정리한다.
+- `2e350bd`: Compose를 Redis 8.2.9 multi-platform manifest-list digest
+  `sha256:30abb90e62f14b737010746def3ba99cc79fe19dcdb3d37b41f21fc62e7da19d`로
+  전환했다. 원격 manifest에서 linux/amd64와 linux/arm64를 확인했으며 Dependabot은 8.2의
+  patch·digest만 추적한다.
+- 8.2.9의 `EVAL` ACL key 검사 우회, 악성 RDB memory corruption, blocked-client use-after-free
+  보안 수정을 검토했다. PipeLens는 queue 원자성을 위해 Lua `EVAL`을 사용하므로 patch를
+  포함하는 이점이 있다. Redis 8이 통합한 Search·JSON·TimeSeries·Bloom과 신규 Stream·Bitmap
+  command는 사용하지 않아 queue data model은 list·set·string으로 유지된다.
+- [PR #34](https://github.com/sangmu1126/PipeLens/pull/34)의 CI `33299999217`은 Compose의
+  정확한 digest를 pull·기동하고 redis-py 8.1 RESP3로 enqueue, blocking dequeue, heartbeat,
+  orphan recovery와 acknowledge를 Redis 8.2에서 통과시켰다. 전체 106개 테스트, Python 3.14,
+  image build와 CodeQL `33299999240`도 성공했다. 로컬 Docker daemon은 실행 중이지 않아
+  container test를 재현하지 못했고, registry manifest와 GitHub runner 결과를 근거로 삼았다.
+- Redis 7.4와 8은 모두 RSALv2/SSPLv1 선택지를 제공하며 8은 AGPLv3 선택지를 추가한다. 공식
+  image를 수정 없이 내부 queue로 사용하고 Redis 자체를 managed service로 제공하지 않는 현재
+  배포 경계에서는 전환을 허용하되, 배포 형태 변경 시 라이선스를 다시 검토한다.
+
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
 위해 내려졌다.
