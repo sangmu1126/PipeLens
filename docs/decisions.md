@@ -279,15 +279,15 @@
 ## D-028. Image attestation과 GitHub Release 불변성을 별도로 판정
 
 - 결정: digest·Sigstore attestation 검증 성공만으로 GitHub Release를 immutable이라고 표시하지
-  않는다. `v0.1.0`은 Release API의 `immutable: false`를 그대로 기록하고, 다음 release 전에
-  repository의 release immutability를 활성화한다.
+  않는다. `v0.1.0`은 Release API의 `immutable: false`를 그대로 기록한다. repository의 release
+  immutability는 2026-08-30 활성화하고, 차기 release부터 draft를 완성한 뒤 publish한다.
 - 이유: image provenance는 특정 registry digest의 출처를 증명하지만 GitHub Release의 tag와
   asset 변경을 막지 않는다. GitHub 공식 정책상 immutability 활성화는 미래 release에만 적용돼
   이미 발행한 release를 소급 보호하지 않는다.
 - 대안: attestation을 release lock으로 간주, 기존 release 삭제·재생성, 한계를 기록하지 않음.
-- 결과: `v0.1.0` tag를 임의로 이동하지 않는 프로젝트 정책은 유지하지만 GitHub가 강제하는
-  tag·asset lock은 없다. 다음 release는 설정을 먼저 켜고 draft asset을 완성한 뒤 publish해야
-  한다.
+- 결과: repository API에서 `enabled: true`, `enforced_by_owner: false`를 확인했다. 설정은 미래
+  release에만 적용되므로 `v0.1.0`에는 GitHub가 강제하는 tag·asset lock이 없다. 차기 release는
+  draft asset과 note를 완성한 뒤 publish하고 Release API의 `immutable: true`를 별도로 검증한다.
 - 근거: [GitHub immutable releases](https://docs.github.com/code-security/concepts/supply-chain-security/immutable-releases),
   [preventing release changes](https://docs.github.com/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes).
 
