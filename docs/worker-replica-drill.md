@@ -56,3 +56,20 @@ JSON으로 남긴다. 매 실행은 UUID가 포함된 별도 Redis keyspace를 �
   장시간 arrival rate와 PostgreSQL connection pool을 포함한 별도 soak/load test가 필요하다.
 - stale worker가 복구 뒤 뒤늦게 재개하는 fencing은 DB attempt token 회귀 테스트가 별도로
   검증한다. 이 drill의 abandoned worker는 재개하지 않는다.
+
+## 첫 CI 기준선
+
+[PR #43 CI run 33323312380](https://github.com/sangmu1126/PipeLens/actions/runs/33323312380)의
+GitHub-hosted runner에서 다음 결과로 통과했다.
+
+| 항목 | 결과 |
+| --- | ---: |
+| 합성 job | 200 |
+| replica별 처리 | 49 / 50 / 50 / 51 |
+| 복구 job | 1 |
+| 최대 시작 latency | 2.096초 |
+| orphan recovery latency | 2.096초 |
+| 최대 완료 latency | 2.107초 |
+
+60초 시작·120초 완료 SLO와 lease 2초+grace 5초 상한을 모두 만족했고 정확한 1회 처리와 최종
+queue drain도 통과했다.

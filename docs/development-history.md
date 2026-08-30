@@ -310,6 +310,10 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 합성 pipeline은 job당 10ms만 사용하고 container resource limit, 실제 GitHub·LLM,
   PostgreSQL pool과 network partition은 다루지 않는다. 이 경계는 production soak/load 후속
   작업으로 유지한다.
+- [PR #43](https://github.com/sangmu1126/PipeLens/pull/43)의 첫 CI `33323312380`에서 200개가
+  replica별 49/50/50/51개로 분배됐다. 실제 TTL 만료 뒤 orphan 1개를 2.096초에 회수했고 최대
+  시작 2.096초, 완료 2.107초로 60초/120초 SLO와 정확한 1회 처리·최종 queue drain을 통과했다.
+  CodeQL `33323312384`도 성공했다.
 
 ### `main` 변경 통제
 
