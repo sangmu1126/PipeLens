@@ -1,0 +1,10 @@
+groups:
+  - name: pipelens-alert-routing-probe
+    rules:
+      - alert: PipeLensAlertRoutingProbe
+        expr: vector(1)
+        labels:
+          severity: critical
+        annotations:
+          summary: Synthetic Alertmanager routing probe
+          runbook_url: https://github.com/sangmu1126/PipeLens/blob/main/docs/alertmanager.md

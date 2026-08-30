@@ -74,6 +74,21 @@ jobs:
           assert not unpinned, f"Compose images must be pinned by digest: {unpinned}"
           '
           python -m json.tool ops/grafana/dashboards/pipelens-overview.json >/dev/null
+      - name: Verify Prometheus to Alertmanager webhook routing
+        run: |
+          ALERTMANAGER_IMAGE="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["alertmanager"]["image"])
+          ')" \
+          PROMETHEUS_IMAGE="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["prometheus"]["image"])
+          ')" \
+            ops/alertmanager/verify-routing.sh
       - name: Verify Grafana 12 to 13 upgrade
         env:
           GRAFANA_PREVIOUS_IMAGE: grafana/grafana:12.1.0@sha256:6ac590e7cabc2fbe8d7b8fc1ce9c9f0582177b334e0df9c927ebd9670469440f
