@@ -277,6 +277,21 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 차기 release 완료 조건에는 Release API의 `immutable: true`와 자동 release attestation 확인을
   포함했다. GHCR image attestation과 GitHub Release 불변성은 계속 별도 증적으로 판정한다.
 
+### GHCR 보존 정책과 월별 감사
+
+- 공개 registry를 직접 조회하니 API·대시보드 package 모두 `v0.1.0`과 release digest에 연결된
+  `sha256-<digest>` attestation tag 하나씩만 가지고 있었다. 두 SemVer 집합과 digest 연결은
+  일치했다.
+- 정식 SemVer image, digest와 SLSA provenance·CycloneDX SBOM OCI attestation을 기간 제한 없이
+  보존하기로 했다. `latest`나 개발 tag를 게시하지 않으므로 개수·나이 기반 자동 삭제는 rollback
+  과 공급망 증적을 잃는 위험에 비해 이익이 작다고 판단했다.
+- `3285ba4`: 공개 pull token으로 두 package의 tag 집합과 각 release manifest digest를 읽고,
+  SemVer 대응·예상 밖 tag·attestation 누락과 고아 tag를 판정하는 감사기와 단위 테스트 6개를
+  추가했다. 월별 workflow는 `contents: read`만 가지며 삭제 API를 호출하지 않는다.
+- registry tag API에 나타나지 않는 untagged version은 분기별 Packages UI·REST inventory로
+  보완한다. 실패한 부분 게시를 발견해도 30일 격리, 참조 검사와 version ID 기록 없이 삭제하지
+  않으며 GitHub의 삭제 후 30일 복구 경계를 운영 절차에 포함했다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를

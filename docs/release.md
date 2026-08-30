@@ -23,6 +23,8 @@ GitHub Release 불변성은 2026-08-30 repository 설정에서 활성화했고 A
 - `latest` tag는 만들지 않는다. 배포와 검증에는 version tag보다 immutable digest를 사용한다.
 - 같은 version tag를 다른 commit에 다시 사용하지 않는다. 수정은 patch version을 올려 새
   release로 만든다.
+- 게시한 SemVer image, digest와 OCI attestation은 [GHCR 보존 정책](ghcr-retention.md)에 따라
+  기간 제한 없이 유지한다.
 
 ## 자동 검증과 게시 순서
 
@@ -111,3 +113,5 @@ gh attestation verify "oci://$image_ref" \
 - 게시 후 결함은 기존 tag를 덮어쓰지 않고 새 patch release로 복구한다.
 - 운영 배포 rollback은 이전에 검증된 digest로 되돌린다. tag 이름만으로 rollback 대상을
   선택하지 않는다.
+- 실패한 부분 게시 artifact도 자동 삭제하지 않는다. 참조 여부와 30일 격리를 확인한 뒤 정확한
+  package version ID만 수동 정리한다.
