@@ -290,3 +290,18 @@
   한다.
 - 근거: [GitHub immutable releases](https://docs.github.com/code-security/concepts/supply-chain-security/immutable-releases),
   [preventing release changes](https://docs.github.com/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes).
+
+## D-029. 1인 저장소도 PR과 7개 check를 관리자까지 강제
+
+- 결정: `main` 변경은 PR을 통과해야 하며 CI 5개와 CodeQL 2개 context를 GitHub Actions app에
+  고정해 필수화한다. 최신 `main` 재검증, conversation 해결과 선형 이력을 요구하고 관리자
+  우회, force push와 삭제를 막는다. 승인 인원은 0명으로 둔다.
+- 이유: 직접 push는 review와 gate가 완료되기 전에 기준 branch를 바꿀 수 있다. 반면 현재
+  저장소는 단일 maintainer이므로 1명 승인을 요구하면 자신의 PR을 스스로 승인할 수 없어
+  정상 변경도 불가능하다.
+- 대안: 관리자 우회 허용, 승인 1명 강제, status check만 요구하고 PR은 선택, ruleset 사용.
+- 결과: 모든 `main` 변경은 자동 검증 가능한 PR 이력으로 남는다. job 이름 변경은 protection
+  context와 함께 단계적으로 이전해야 하며, 사람 승인이 필요한 조직 규모가 되면 승인 수를
+  별도로 높여야 한다.
+- 근거: [GitHub protected branches](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches),
+  [branch protection REST API](https://docs.github.com/rest/branches/branch-protection#update-branch-protection).
