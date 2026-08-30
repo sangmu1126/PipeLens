@@ -25,6 +25,9 @@
 
 최근 검증 실행:
 
+- [`Compose image 무결성 PR #20`](https://github.com/sangmu1126/PipeLens/pull/20)
+- [Compose image 병합 후 CI run 33292468235](https://github.com/sangmu1126/PipeLens/actions/runs/33292468235)
+- [Compose image 병합 후 CodeQL run 33292468225](https://github.com/sangmu1126/PipeLens/actions/runs/33292468225)
 - [`main` 보호 검증 PR #18](https://github.com/sangmu1126/PipeLens/pull/18)
 - [보호 PR merge 후 CI run 33288653155](https://github.com/sangmu1126/PipeLens/actions/runs/33288653155)
 - [보호 PR merge 후 CodeQL run 33288653056](https://github.com/sangmu1126/PipeLens/actions/runs/33288653056)

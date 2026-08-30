@@ -323,4 +323,4 @@
   경계로 남는다.
 - 근거: [Docker image digests](https://docs.docker.com/dhi/explore/security-concepts/digests/),
   [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference).
-- 관련: `23b4363`, `83ed5a0`.
+- 관련: `776fa1c`, `1b1b4ba`.
