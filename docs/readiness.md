@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `0ee59e2`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `3285ba4`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -16,6 +16,7 @@
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
+| GHCR 보존 정책 | 통과 | 정식 release·attestation 영구 보존, 월별 tag/digest 읽기 전용 감사 |
 | Compose service image | 통과 | 4개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
@@ -307,7 +308,8 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 ### P1 — 릴리스와 공급망
 
-1. GHCR package retention 정책 확정
+완료. 정식 SemVer image와 attestation은 영구 보존하며 실패한 부분 게시만 30일 격리와 참조
+검사 뒤 수동 정리한다.
 
 ### P1 — 운영 신뢰성
 
@@ -335,7 +337,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false); repository 불변성은 미래 release 대상으로 활성화
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
-- GHCR retention: 미확정
+- GHCR retention: 정식 release·attestation 영구 보존, 월별 자동 감사
 - branch protection: PR과 7개 GitHub Actions check 필수, 관리자 적용
 - repository rulesets: 0
 - open CodeQL alerts: 0
@@ -354,6 +356,7 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [x] fixable HIGH/CRITICAL container vulnerability scan
 - [x] CI build image CycloneDX SBOM
 - [x] release image SBOM·provenance
+- [x] GHCR release·attestation 보존 정책과 자동 감사
 - [ ] secret manager와 rotation
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [ ] production 규모 PostgreSQL backup/restore drill

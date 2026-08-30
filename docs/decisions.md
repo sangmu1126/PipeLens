@@ -415,3 +415,21 @@
 - 관련: [PR #38](https://github.com/sangmu1126/PipeLens/pull/38),
   [대체한 PR #21](https://github.com/sangmu1126/PipeLens/pull/21), `70e788d`, `0ee59e2`,
   [업그레이드 절차](grafana-13-upgrade.md).
+
+## D-035. 정식 GHCR image와 attestation은 영구 보존하고 삭제를 자동화하지 않음
+
+- 결정: API·대시보드의 모든 SemVer release image, manifest digest와 연결된 SLSA
+  provenance·CycloneDX SBOM attestation을 기간 제한 없이 보존한다. 월별 읽기 전용 감사는 두
+  package의 release tag 집합, tag 형식과 digest-attestation 연결을 검증하되 삭제 권한을 갖지
+  않는다. 실패한 부분 게시만 30일 격리와 참조 검사를 거쳐 version ID 단위로 수동 정리한다.
+- 이유: 이전 image는 rollback 입력이며 attestation은 그 digest의 provenance와 inventory를
+  증명한다. 나이 또는 개수만 기준으로 자동 삭제하면 immutable release가 참조하는 artifact와
+  OCI attestation을 분리할 수 있다. 현재 release workflow는 `latest`나 개발 tag를 만들지 않아
+  정식 release를 회전 삭제해서 얻는 이익도 작다.
+- 대안: 최근 N개만 보존, 일정 기간 뒤 모든 untagged version 자동 삭제, 감사 없이 무기한 보존.
+- 결과: 현재 `v0.1.0`과 두 package의 digest attestation tag가 자동 감사 기준선을 통과한다.
+  registry tag API가 노출하지 않는 untagged version은 분기별 Packages UI·REST inventory로
+  보완한다. 정책 변경 전에는 외부 archive와 rollback 보존 기간을 먼저 결정해야 한다.
+- 근거: [GitHub package 삭제와 복원](https://docs.github.com/packages/learn-github-packages/deleting-and-restoring-a-package),
+  [Packages REST API](https://docs.github.com/rest/packages/packages).
+- 관련: `3285ba4`, [GHCR 보존 정책](ghcr-retention.md).

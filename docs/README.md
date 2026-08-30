@@ -1,7 +1,7 @@
 # PipeLens 개발 문서
 
 이 디렉터리는 `README.md`의 사용자용 설명을 보완하는 개발·운영 기록이다. 문서의 기준
-시점은 **2026-08-30**, 기준 브랜치는 `main`이다.
+시점은 **2026-08-31**, 기준 브랜치는 `main`이다.
 
 ## 문서 구성
 
@@ -12,6 +12,7 @@
 - [검증 및 운영 준비 현황](readiness.md): 테스트·CI·보안 현황, 검증되지 않은 부분과 남은 작업
 - [컨테이너 릴리스](release.md): version tag, GHCR image, SBOM·provenance 게시와 검증 절차
   - [v0.1.0 릴리스 증적](releases/v0.1.0.md)
+- [GHCR 보존 정책](ghcr-retention.md): 정식 image·attestation 영구 보존과 월별 감사
 - [PostgreSQL 18 업그레이드](postgres-18-upgrade.md): 17 backup, 18 복원, 검증과 rollback 경계
 - [Grafana 13 업그레이드](grafana-13-upgrade.md): volume backup, unified storage migration과 rollback
 - [저장소 보호와 변경 절차](repository-governance.md): `main` PR·필수 check와 운영 규칙
@@ -26,5 +27,5 @@
 
 ## 현재 한 줄 상태
 
-MVP 요구 기능과 자동화된 로컬·CI 검증은 구현됐다. 실제 GitHub App 설치를 통한 종단 간
-인수 테스트, `main` 보호 규칙, 이미지 릴리스와 운영 배포는 아직 남아 있다.
+MVP 요구 기능, 자동화된 로컬·CI 검증, `main` 보호와 서명 image release·보존 정책은 구현됐다.
+실제 GitHub App 설치를 통한 종단 간 인수 테스트와 production HTTPS 배포는 아직 남아 있다.
