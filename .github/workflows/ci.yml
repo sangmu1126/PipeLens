@@ -25,15 +25,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -97,11 +88,37 @@ jobs:
           assert not unpinned, f"Compose images must be pinned by digest: {unpinned}"
           '
           python -m json.tool ops/grafana/dashboards/pipelens-overview.json >/dev/null
+      - name: Start Compose Redis service
+        run: |
+          redis_image="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["redis"]["image"])
+          ')"
+          redis_container="pipelens-redis-integration"
+          docker pull "$redis_image"
+          docker run --detach --name "$redis_container" --publish 6379:6379 "$redis_image"
+          for attempt in {1..10}; do
+            if test "$(docker exec "$redis_container" redis-cli ping 2>/dev/null)" = "PONG"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$redis_container"
+          exit 1
       - name: Test PostgreSQL and Redis integration
         run: pytest -q tests/integration
         env:
           PIPELENS_TEST_DATABASE_URL: postgresql+psycopg://pipelens:pipelens@localhost:5432/pipelens_test
           PIPELENS_TEST_REDIS_URL: redis://localhost:6379/0
+      - name: Stop Compose Redis service
+        if: always()
+        run: |
+          redis_container="pipelens-redis-integration"
+          if docker container inspect "$redis_container" >/dev/null 2>&1; then
+            docker rm --force "$redis_container"
+          fi
       - run: pipelens-evaluate --minimum-accuracy 0.8
 
   python-compatibility:
