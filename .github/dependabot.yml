@@ -84,6 +84,9 @@ updates:
       timezone: Asia/Seoul
     open-pull-requests-limit: 4
     ignore:
+      - dependency-name: postgres
+        update-types:
+          - version-update:semver-major
       - dependency-name: prom/prometheus
         update-types:
           - version-update:semver-major
