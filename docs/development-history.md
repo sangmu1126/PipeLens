@@ -225,6 +225,9 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   branch 삭제를 막았다. 단일 maintainer 교착을 피하기 위해 승인 인원만 0명으로 유지했다.
 - 설정 직후 직접 `main` 문서 push를 계속하지 않고 `docs/main-protection` branch로 전환해
   [PR #18](https://github.com/sangmu1126/PipeLens/pull/18)에서 첫 보호된 변경 흐름을 시작했다.
+- PR #18은 check 대기 중 `BLOCKED`, 7개 필수 context 성공 뒤 `CLEAN`으로 전환됐고
+  `c1e5bc7`로 squash merge됐다. merge된 `main`의 전체 CI `33288653155`와 CodeQL
+  `33288653056`도 성공했으며 API 재조회에서 protection 설정이 그대로 유지됨을 확인했다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기

@@ -25,6 +25,8 @@
 최근 검증 실행:
 
 - [`main` 보호 검증 PR #18](https://github.com/sangmu1126/PipeLens/pull/18)
+- [보호 PR merge 후 CI run 33288653155](https://github.com/sangmu1126/PipeLens/actions/runs/33288653155)
+- [보호 PR merge 후 CodeQL run 33288653056](https://github.com/sangmu1126/PipeLens/actions/runs/33288653056)
 - [CI run 33252323077](https://github.com/sangmu1126/PipeLens/actions/runs/33252323077)
 - [CodeQL run 33252323079](https://github.com/sangmu1126/PipeLens/actions/runs/33252323079)
 - [Nginx 1.31 PR CI run 33263438479](https://github.com/sangmu1126/PipeLens/actions/runs/33263438479)
