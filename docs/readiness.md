@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `5b179bf`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-30**, 기능 기준 commit `791cabb`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -20,7 +20,7 @@
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
-| PostgreSQL runtime | 검증 중 | 18.6 전용 volume, 17→18 dump/restore CI drill 추가; PR gate 판정 전 |
+| PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
 | GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
@@ -29,6 +29,11 @@
 
 최근 검증 실행:
 
+- [`PostgreSQL 18 PR #36`](https://github.com/sangmu1126/PipeLens/pull/36)
+- [PostgreSQL 18 PR CI run 33302816133](https://github.com/sangmu1126/PipeLens/actions/runs/33302816133)
+- [PostgreSQL 18 PR CodeQL run 33302816136](https://github.com/sangmu1126/PipeLens/actions/runs/33302816136)
+- [PostgreSQL 18 병합 후 CI run 33302884926](https://github.com/sangmu1126/PipeLens/actions/runs/33302884926)
+- [PostgreSQL 18 병합 후 CodeQL run 33302884947](https://github.com/sangmu1126/PipeLens/actions/runs/33302884947)
 - [`Redis 8.2 Extended PR #34`](https://github.com/sangmu1126/PipeLens/pull/34)
 - [Redis 8.2 PR CI run 33300129032](https://github.com/sangmu1126/PipeLens/actions/runs/33300129032)
 - [Redis 8.2 PR CodeQL run 33300129030](https://github.com/sangmu1126/PipeLens/actions/runs/33300129030)
@@ -208,6 +213,11 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
   pull·기동해 redis-py 8.1 RESP3 queue 통합 테스트를 수행하도록 만들고, patch·digest만 자동
   추적하게 했다. 역할별 `fd286c2`, `9bc43ee`, `9cfdfda`를 rebase merge했으며 새 경계 적용 후
   #23은 자동으로 닫혔다.
+- [#36](https://github.com/sangmu1126/PipeLens/pull/36)은 PostgreSQL 18 한 줄 변경 제안 #24를
+  직접 병합하지 않고 새 volume·복원 경계를 먼저 추가했다. PostgreSQL 17 migration과 표본
+  데이터를 18.6으로 dump/restore하고 Alembic 일치와 실제 lifecycle integration을 검증했다.
+  역할별 `3a13cff`, `791cabb`, `2a5ff15`를 rebase merge했으며 새 major 제외 정책 적용 후
+  #24는 자동으로 닫혔다.
 
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
@@ -309,7 +319,7 @@ immutability는 아직 꺼져 있다.
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 2 (#21 Grafana 13, #24 PostgreSQL 18)
+- open pull requests: 1 (#21 Grafana 13)
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false)
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
