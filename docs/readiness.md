@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `0c675a4`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `d49e9f7`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -33,6 +33,11 @@
 
 최근 검증 실행:
 
+- [`Alertmanager routing 안정화 PR #48`](https://github.com/sangmu1126/PipeLens/pull/48)
+- [Alertmanager routing 안정화 PR CI run 33327036671](https://github.com/sangmu1126/PipeLens/actions/runs/33327036671)
+- [Alertmanager routing 안정화 PR CodeQL run 33327036669](https://github.com/sangmu1126/PipeLens/actions/runs/33327036669)
+- [Alertmanager routing 병합 후 CI run 33327158576](https://github.com/sangmu1126/PipeLens/actions/runs/33327158576)
+- [Alertmanager routing 병합 후 CodeQL run 33327158575](https://github.com/sangmu1126/PipeLens/actions/runs/33327158575)
 - [`Alertmanager routing PR #45`](https://github.com/sangmu1126/PipeLens/pull/45)
 - [Alertmanager routing PR CI run 33326106111](https://github.com/sangmu1126/PipeLens/actions/runs/33326106111)
 - [Alertmanager routing PR CodeQL run 33326106102](https://github.com/sangmu1126/PipeLens/actions/runs/33326106102)

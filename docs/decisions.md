@@ -473,5 +473,6 @@
   [Prometheus alerting configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/),
   [Alertmanager high availability](https://prometheus.io/docs/alerting/latest/high_availability/),
   [Alertmanager 0.33.1](https://github.com/prometheus/alertmanager/releases/tag/v0.33.1).
-- 관련: `0c675a4`, [PR #45](https://github.com/sangmu1126/PipeLens/pull/45),
+- 관련: `9b1c25d`, 안정화 `d49e9f7`, [PR #45](https://github.com/sangmu1126/PipeLens/pull/45),
+  [PR #48](https://github.com/sangmu1126/PipeLens/pull/48),
   [Alertmanager 절차](alertmanager.md).
