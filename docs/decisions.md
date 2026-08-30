@@ -453,3 +453,22 @@
   복구해 최대 2.071초 안에 모두 완료했다.
 - 관련: `800e531`, [PR #43](https://github.com/sangmu1126/PipeLens/pull/43),
   [Worker replica drill](worker-replica-drill.md).
+
+## D-037. Alert routing은 실제 webhook까지 검증하되 기본 receiver는 무전송
+
+- 결정: Prometheus가 다섯 rule을 Alertmanager 0.33.1에 전달하게 하고, Alertmanager는 UTF-8
+  strict mode에서 grouping·inhibition·silence를 담당한다. 기본 `local-observer` receiver에는
+  외부 integration을 두지 않는다. CI는 합성 firing rule을 별도 webhook receiver까지 전달해
+  payload와 양쪽 API 상태를 검증한다.
+- 이유: config 문법과 readiness만으로는 Prometheus discovery, alert 전송, route matcher와
+  notification POST가 이어지는지 알 수 없다. 반면 repository에 실제 호출 URL이나 token을 넣으면
+  secret 유출과 개발 환경의 오호출 위험이 생긴다.
+- 대안: Alertmanager 없이 Grafana만 관측, config 정적 검사만 수행, 개발 Compose에서 실제 Slack
+  또는 PagerDuty channel을 기본 receiver로 사용.
+- 결과: 외부 secret 없이 전체 routing 경로를 반복 검증하면서 실제 채널 연결은 production
+  secret manager와 staging 호출 증적이 필요한 별도 완료 조건으로 남는다. 0.x minor는 breaking
+  가능성이 있어 0.33 patch만 자동 추적한다.
+- 근거: [Alertmanager configuration](https://prometheus.io/docs/alerting/latest/configuration/),
+  [Prometheus alerting configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/),
+  [Alertmanager 0.33.1](https://github.com/prometheus/alertmanager/releases/tag/v0.33.1).
+- 관련: `811e0bf`, [Alertmanager 절차](alertmanager.md).

@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `800e531`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `811e0bf`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -17,8 +17,9 @@
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
 | GHCR 보존 정책 | 통과 | 정식 release·attestation 영구 보존, 월별 tag/digest 읽기 전용 감사 |
-| Compose service image | 통과 | 4개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
+| Compose service image | 통과 | 5개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
+| Alertmanager routing | 구현 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI drill |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | Worker replica drill | 통과 | 4 replica·200 job, orphan 1개 2.060초 복구, 최대 완료 2.071초 |
@@ -245,7 +246,7 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
 
-Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana는 amd64·arm64를 포함한
+Compose에서만 참조하는 PostgreSQL, Redis, Prometheus, Alertmanager와 Grafana는 amd64·arm64를 포함한
 manifest-list digest로 고정했고, digest 누락을 CI에서 차단한다. 별도 Compose Dependabot이
 주간 업데이트 경로를 담당한다. Prometheus는 2027-07-31까지 지원되는 3.13 LTS, Redis는
 2030-09-01까지 지원되는 8.2 Extended의 patch만 자동 추적한다. PostgreSQL은 18.6으로
@@ -324,7 +325,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 ### P1 — 운영 신뢰성
 
 1. production 규모의 PostgreSQL backup 보관·복원 시간과 Grafana 12→13 volume restore drill
-2. Alertmanager와 실제 호출 채널 연결
+2. Alertmanager의 실제 호출 채널과 production secret 연결
 3. secret manager, key rotation과 incident response runbook
 4. production resource limit·provider latency를 포함한 worker soak/load와 SLO 검증
 
@@ -373,6 +374,7 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
 - [ ] production Grafana volume backup/restore drill
 - [ ] production 조건의 worker replica soak/load test
-- [ ] Alertmanager 연결
+- [x] Alertmanager routing과 로컬 webhook 통합 검증
+- [ ] Alertmanager 실제 호출 채널 연결
 - [ ] 외부 fork 공격 입력 검증
 - [ ] 부하 상태에서 시작 60초·완료 120초 SLO 검증
