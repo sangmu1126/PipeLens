@@ -324,3 +324,24 @@
 - 근거: [Docker image digests](https://docs.docker.com/dhi/explore/security-concepts/digests/),
   [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference).
 - 관련: `776fa1c`, `1b1b4ba`.
+
+## D-031. Prometheus는 최신 minor보다 지원 중인 LTS line을 추적
+
+- 결정: Prometheus 3.5.0에서 3.13.2 LTS로 전환하고, Compose Dependabot은 3.13 line의
+  patch와 digest만 자동 제안하도록 major·minor 업데이트를 제외한다. CI는 Compose의 고정
+  image 참조를 단일 원본으로 읽어 `promtool` 설정·규칙 검사와 실제 server readiness를
+  수행한다.
+- 이유: 공식 지원 표에서 3.5의 지원 종료일은 2026-07-31이고 3.13은 2027-07-31까지
+  bug·security fix를 받는다. 최신 3.14는 일반 6주 minor release지만 3.13 LTS는 기능 변경을
+  제한하면서 1년간 유지된다. 3.13.2에는 `golang.org/x/text`, gRPC 보안 수정과 disk-full
+  상황의 query tracker 충돌 방지가 포함된다.
+- 대안: Dependabot PR #22의 3.14.0을 그대로 병합, 3.5 최신 patch만 적용, 모든 minor를 계속
+  자동 제안.
+- 결과: runtime과 검증 도구가 같은 immutable image를 사용하며 patch는 자동화하되 다음 LTS
+  전환은 release note와 설정 호환성을 다시 검토한다. 현재 설정은 변경된 experimental duration
+  expression, remote write, service discovery와 query API option을 사용하지 않는다.
+- 근거: [Prometheus long-term support](https://prometheus.io/docs/introduction/release-cycle/),
+  [Prometheus 3.13.0](https://github.com/prometheus/prometheus/releases/tag/v3.13.0),
+  [Prometheus 3.13.2](https://github.com/prometheus/prometheus/releases/tag/v3.13.2).
+- 관련: [PR #29](https://github.com/sangmu1126/PipeLens/pull/29),
+  [대체한 PR #22](https://github.com/sangmu1126/PipeLens/pull/22).

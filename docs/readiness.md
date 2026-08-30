@@ -17,6 +17,7 @@
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
 | Compose service image | 통과 | 4개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
+| Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
@@ -25,6 +26,9 @@
 
 최근 검증 실행:
 
+- [`Prometheus 3.13 LTS PR #29`](https://github.com/sangmu1126/PipeLens/pull/29)
+- [Prometheus 3.13 LTS CI run 33293111339](https://github.com/sangmu1126/PipeLens/actions/runs/33293111339)
+- [Prometheus 3.13 LTS CodeQL run 33293111348](https://github.com/sangmu1126/PipeLens/actions/runs/33293111348)
 - [`Compose image 무결성 PR #20`](https://github.com/sangmu1126/PipeLens/pull/20)
 - [Compose image 병합 후 CI run 33292468235](https://github.com/sangmu1126/PipeLens/actions/runs/33292468235)
 - [Compose image 병합 후 CodeQL run 33292468225](https://github.com/sangmu1126/PipeLens/actions/runs/33292468225)
@@ -63,7 +67,8 @@
 2. editable dev dependency 설치
 3. `ruff check .`
 4. 전체 `pytest -q`
-5. 공식 `promtool`로 Prometheus 설정 검증
+5. Compose에 고정한 Prometheus image의 공식 `promtool`로 설정과 규칙 5개를 검사하고 실제
+   server readiness 검증
 6. `docker compose config --quiet`와 Grafana dashboard JSON 검증
 7. 실제 PostgreSQL 17·Redis 7 service에 대한 integration test
 8. `pipelens-evaluate --minimum-accuracy 0.8`
@@ -162,8 +167,9 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana는 amd64·arm64를 포함한
 manifest-list digest로 고정했고, digest 누락을 CI에서 차단한다. 별도 Compose Dependabot이
-주간 업데이트 경로를 담당한다. GHCR release image의 장기 SBOM과 provenance 자동화는
-`v0.1.0`에서 실행·검증됐다. GitHub Release 자체의 immutability는 아직 꺼져 있다.
+주간 업데이트 경로를 담당한다. Prometheus는 2027-07-31까지 지원되는 3.13 LTS의 patch만
+자동 추적한다. GHCR release image의 장기 SBOM과 provenance 자동화는 `v0.1.0`에서
+실행·검증됐다. GitHub Release 자체의 immutability는 아직 꺼져 있다.
 
 ## 3. 보안 통제 현황
 
