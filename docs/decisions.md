@@ -393,3 +393,24 @@
 - 관련: [PR #36](https://github.com/sangmu1126/PipeLens/pull/36),
   [대체한 PR #24](https://github.com/sangmu1126/PipeLens/pull/24), `3a13cff`, `791cabb`,
   [업그레이드 절차](postgres-18-upgrade.md).
+
+## D-034. Grafana major 전환은 같은 volume의 storage migration으로 검증
+
+- 결정: Grafana 12.1에서 13.2로 전환하고 CI가 같은 임시 `grafana-data` volume을 두 image에
+  순서대로 연결한다. 12에서 생성한 비관리 dashboard 보존, 기존 file provisioning dashboard,
+  Prometheus datasource UID와 익명 Viewer 접근을 13에서 확인한다. Dependabot은 지원 중인
+  13.x minor·patch를 계속 제안하되 다음 major는 수동 검토한다.
+- 이유: 기존 CI는 dashboard JSON 문법만 확인해 Grafana가 provisioning을 읽거나 persistent
+  SQLite를 migration할 수 있는지 검증하지 않았다. Grafana 13은 folder와 dashboard를 unified
+  storage로 옮기므로 기동 성공만으로 데이터 보존과 downgrade 안전성을 보장할 수 없다.
+- 대안: Dependabot PR #21을 그대로 병합, 빈 Grafana 13 기동만 smoke test, Grafana 12 유지,
+  major와 minor를 모두 자동 제외.
+- 결과: 현재 dashboard와 datasource가 실제 Grafana 13.2에서 익명 Viewer에게 제공되고 12의
+  database dashboard가 migration 뒤 유지되는지를 매 PR에서 검증한다. 13에서 12로 되돌릴 때는
+  stale legacy table을 읽지 않도록 upgrade 전 backup을 복원해야 한다. CI의 작은 합성 volume은
+  production backup·restore와 browser rendering 증적을 대신하지 않는다.
+- 근거: [Grafana 13.0 upgrade guide](https://grafana.com/docs/grafana/latest/upgrade-guide/upgrade-v13.0/),
+  [Grafana upgrade strategy](https://grafana.com/docs/grafana/latest/upgrade-guide/when-to-upgrade/),
+  [Grafana provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/).
+- 관련: `c969451`, `d09cd1c`, [업그레이드 절차](grafana-13-upgrade.md),
+  [대체하는 PR #21](https://github.com/sangmu1126/PipeLens/pull/21).

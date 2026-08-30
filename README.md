@@ -12,6 +12,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [검증 및 운영 준비 현황](docs/readiness.md)
 - [컨테이너 릴리스 정책과 절차](docs/release.md)
 - [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)
+- [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)
 - [저장소 보호와 변경 절차](docs/repository-governance.md)
 
 현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.
@@ -90,6 +91,9 @@ docker compose up --build
 Prometheus는 `http://localhost:9090`, Grafana 운영 대시보드는 `http://localhost:3001`에서
 확인할 수 있습니다. Compose의 Grafana는 로컬 관측용 익명 Viewer로 실행되므로
 외부에 공개하는 배포에서는 반드시 인증을 별도로 구성해야 합니다.
+기존 Grafana 12 volume을 보유한 환경은 13을 기동하기 전에
+[Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)에 따라 정지 상태 backup을 만들어야
+합니다.
 Prometheus는 API·Worker를 각각 수집하고 서비스 중단, 분석 시작·완료 SLO 위반,
 큐 backlog 규칙을 로드합니다. Compose 구성에는 알림 전송용 Alertmanager가 포함되지
 않으므로 운영 배포에서는 조직의 알림 채널을 별도로 연결해야 합니다.
