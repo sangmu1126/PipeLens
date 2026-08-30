@@ -318,6 +318,22 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   `33323532906`은 같은 분배에서 orphan을 2.060초에 복구하고 최대 2.071초에 완료했으며 CodeQL
   `33323532969`도 성공했다.
 
+### Alertmanager routing과 webhook 통합 검증
+
+- 기존 Prometheus에는 다섯 alert rule이 있었지만 Alertmanager endpoint가 없었다. rule 문법과
+  Prometheus readiness만 확인해 alert가 notification receiver까지 전달되는지는 검증하지 못했다.
+- 공식 최신 stable 0.33.1 image의 multi-platform digest와 amd64·arm64를 확인했다. 신규 설치
+  권고에 맞춰 UTF-8 strict mode를 사용하고 0.x minor는 자동 업데이트하지 않도록 경계를 뒀다.
+- `811e0bf`: Compose에 digest-pinned Alertmanager, persistent volume과 readiness를 추가하고
+  Prometheus가 `alertmanager:9093`으로 rule을 전송하게 했다. 기본 receiver는 외부 integration이
+  없어 개발 실행이 실제 호출을 만들지 않는다.
+- CI drill은 격리 network에서 `vector(1)` critical alert를 firing하고 Prometheus→Alertmanager→
+  일회성 webhook receiver의 JSON POST를 확인한다. Prometheus API의 firing, Alertmanager API의
+  active 상태와 payload label·annotation까지 검증한 뒤 container, network와 payload를 정리한다.
+- 실제 PagerDuty·incident.io·Slack 등 조직 채널은 token을 repository에 저장하지 않고
+  production secret manager로 주입해야 한다. staging firing/resolved 호출과 acknowledgment
+  증적 전에는 외부 채널 연결을 완료로 기록하지 않는다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를

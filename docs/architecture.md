@@ -226,8 +226,10 @@ React 대시보드는 다음을 제공한다.
 - `/metrics`: webhook, 분석 결과·시간, queue wait·복구·깊이, SLO, 오류 범주, trust level,
   redaction, chunk, HTTP retry, LLM token·비용, feedback 지표를 노출한다.
 
-Prometheus 규칙은 API/worker 중단, 분석 시작·완료 SLO 위반과 queue backlog를 감지한다.
-Grafana dashboard는 같은 지표를 시각화한다. Compose에는 Alertmanager가 포함되지 않는다.
+Prometheus 규칙은 API/worker 중단, 분석 시작·완료 SLO 위반과 queue backlog를 감지해
+Alertmanager에 전달한다. Alertmanager는 group, deduplication, inhibition과 silence 경계를
+담당하고 Grafana dashboard는 같은 지표를 시각화한다. 기본 receiver는 외부 호출을 보내지 않으며
+[routing drill](alertmanager.md)이 Prometheus→Alertmanager→webhook 전체 경로를 검증한다.
 
 ## 10. 배포 경계
 
@@ -237,7 +239,7 @@ Compose는 개발과 통합 검증을 위한 단일 호스트 구성이다. 운�
 - HTTPS 종료와 HSTS
 - secret manager 또는 동등한 비밀 주입 수단
 - PostgreSQL·Grafana 데이터 백업과 복구 절차
-- Alertmanager와 실제 알림 채널
+- Alertmanager의 실제 알림 채널과 secret 주입
 - `immutable: true`인 차기 GitHub Release 발행 확인
 - production resource limit·provider latency를 포함한 worker soak/load test
 - 외부에서 접근 가능한 GitHub OAuth callback, App setup URL과 webhook URL

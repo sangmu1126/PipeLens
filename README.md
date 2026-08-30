@@ -88,15 +88,17 @@ docker compose up --build
 ```
 
 대시보드는 `http://localhost:3000`, API 문서는 `http://localhost:8000/docs`,
-Prometheus는 `http://localhost:9090`, Grafana 운영 대시보드는 `http://localhost:3001`에서
-확인할 수 있습니다. Compose의 Grafana는 로컬 관측용 익명 Viewer로 실행되므로
+Prometheus는 `http://localhost:9090`, Alertmanager는 `http://localhost:9093`, Grafana 운영
+대시보드는 `http://localhost:3001`에서 확인할 수 있습니다. Compose의 Grafana는 로컬 관측용
+익명 Viewer로 실행되므로
 외부에 공개하는 배포에서는 반드시 인증을 별도로 구성해야 합니다.
 기존 Grafana 12 volume을 보유한 환경은 13을 기동하기 전에
 [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)에 따라 정지 상태 backup을 만들어야
 합니다.
 Prometheus는 API·Worker를 각각 수집하고 서비스 중단, 분석 시작·완료 SLO 위반,
-큐 backlog 규칙을 로드합니다. Compose 구성에는 알림 전송용 Alertmanager가 포함되지
-않으므로 운영 배포에서는 조직의 알림 채널을 별도로 연결해야 합니다.
+큐 backlog 규칙을 Alertmanager로 전달합니다. 기본 receiver는 외부 호출을 보내지 않으므로
+운영 배포에서는 [Alertmanager 절차](docs/alertmanager.md)에 따라 secret manager로 조직의 알림
+채널을 연결해야 합니다.
 
 PostgreSQL·Redis 통합 테스트는 외부 서비스 URL을 명시했을 때만 실행됩니다. 마이그레이션
 실수를 방지하기 위해 데이터베이스 이름은 반드시 `_test`로 끝나야 합니다.
