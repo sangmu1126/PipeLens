@@ -344,4 +344,4 @@
   [Prometheus 3.13.0](https://github.com/prometheus/prometheus/releases/tag/v3.13.0),
   [Prometheus 3.13.2](https://github.com/prometheus/prometheus/releases/tag/v3.13.2).
 - 관련: [PR #29](https://github.com/sangmu1126/PipeLens/pull/29),
-  [대체한 PR #22](https://github.com/sangmu1126/PipeLens/pull/22).
+  [대체한 PR #22](https://github.com/sangmu1126/PipeLens/pull/22), `5a034d5`, `72038fa`.

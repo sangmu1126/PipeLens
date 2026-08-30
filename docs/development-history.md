@@ -268,6 +268,10 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   확인했다. 같은 PR의 CodeQL run `33293111348`과 나머지 필수 gate도 모두 성공했다.
 - Dependabot은 Prometheus의 major·minor를 제외하고 3.13의 patch와 digest만 제안한다. 다음
   LTS line 전환은 공식 지원 기간과 release note, 실제 config·readiness 검증 뒤 수동으로 연다.
+- 이 구현은 `5a034d5`(LTS image·readiness gate), `72038fa`(LTS update 경계),
+  `6aeb4ad`(판단·검증 문서)의 세 commit으로 [PR #29](https://github.com/sangmu1126/PipeLens/pull/29)에
+  rebase merge됐다. 병합 후 `main` CI `33293260308`과 CodeQL `33293260317`도 성공했으며,
+  새 ignore 정책이 적용되자 대체된 3.14 제안 PR #22는 자동으로 닫혔다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
