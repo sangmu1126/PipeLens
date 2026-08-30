@@ -449,6 +449,7 @@
 - 결과: CI가 replica별 처리량, 최대 시작·완료 latency, 복구 latency와 recovery metric을
   machine-readable JSON으로 남긴다. 합성 pipeline과 in-process replica이므로 container resource
   limit, network partition, PostgreSQL pool과 provider latency를 포함한 production soak test는
-  별도로 남는다. 첫 CI에서 200개를 49/50/50/51로 분산 처리했고 orphan 1개를 2.096초에
-  복구해 최대 2.107초 안에 모두 완료했다.
-- 관련: `4290fd3`, [Worker replica drill](worker-replica-drill.md).
+  별도로 남는다. 병합 후 CI에서 200개를 49/50/50/51로 분산 처리했고 orphan 1개를 2.060초에
+  복구해 최대 2.071초 안에 모두 완료했다.
+- 관련: `800e531`, [PR #43](https://github.com/sangmu1126/PipeLens/pull/43),
+  [Worker replica drill](worker-replica-drill.md).
