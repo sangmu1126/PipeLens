@@ -342,6 +342,10 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   상태를 검증했으며 CodeQL `33325903025`를 포함한 필수 gate 7개가 모두 성공했다. 이후 drill에
   Compose가 선언한 `amtool config show` healthcheck 명령 검증도 추가했다. 최종 CI
   `33326106111`과 CodeQL `33326106102`가 이 보강을 포함해 다시 성공했다.
+- rebase merge 후 `main` CI `33326887437`은 Alertmanager가 기본 HA gossip settle에 10초를
+  사용한 뒤 30초 절대 제한 안에 webhook을 보내지 못해 실패했다. 단일 replica에서 기본
+  clustering을 유지할 이유가 없으므로 공식 권고대로 `--cluster.listen-address=`를 적용하고,
+  receiver 제한을 60초로 늘려 느린 runner에서도 전체 경로 자체를 판정하도록 교정했다.
 
 ### `main` 변경 통제
 
