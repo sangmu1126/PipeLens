@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `811e0bf`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `0c675a4`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -19,7 +19,7 @@
 | GHCR 보존 정책 | 통과 | 정식 release·attestation 영구 보존, 월별 tag/digest 읽기 전용 감사 |
 | Compose service image | 통과 | 5개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
-| Alertmanager routing | 구현 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI drill |
+| Alertmanager routing | 통과 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI drill |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | Worker replica drill | 통과 | 4 replica·200 job, orphan 1개 2.060초 복구, 최대 완료 2.071초 |
@@ -33,6 +33,9 @@
 
 최근 검증 실행:
 
+- [`Alertmanager routing PR #45`](https://github.com/sangmu1126/PipeLens/pull/45)
+- [Alertmanager routing PR CI run 33326106111](https://github.com/sangmu1126/PipeLens/actions/runs/33326106111)
+- [Alertmanager routing PR CodeQL run 33326106102](https://github.com/sangmu1126/PipeLens/actions/runs/33326106102)
 - [`Worker replica drill PR #43`](https://github.com/sangmu1126/PipeLens/pull/43)
 - [Worker replica drill PR CI run 33323312380](https://github.com/sangmu1126/PipeLens/actions/runs/33323312380)
 - [Worker replica drill PR CodeQL run 33323312384](https://github.com/sangmu1126/PipeLens/actions/runs/33323312384)

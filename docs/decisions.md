@@ -471,4 +471,5 @@
 - 근거: [Alertmanager configuration](https://prometheus.io/docs/alerting/latest/configuration/),
   [Prometheus alerting configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/),
   [Alertmanager 0.33.1](https://github.com/prometheus/alertmanager/releases/tag/v0.33.1).
-- 관련: `811e0bf`, [Alertmanager 절차](alertmanager.md).
+- 관련: `0c675a4`, [PR #45](https://github.com/sangmu1126/PipeLens/pull/45),
+  [Alertmanager 절차](alertmanager.md).
