@@ -202,6 +202,21 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - `f5e059d`: 공식 attestation parser가 요구하는 CycloneDX serial number를 일반 CI와 release
   양쪽에서 사전 검증하도록 보강했다. 기존 CI artifact에도 실제 UUID가 있음을 확인했다.
 
+### 첫 서명 릴리스
+
+- annotated `v0.1.0` tag를 녹색 CI·CodeQL을 통과한 `320f6ae`에 고정했다.
+- release run `33273157722`에서 tag/version/main ancestry와 API·대시보드의 취약점, SBOM,
+  non-root, readiness/HTTP smoke gate가 모두 성공했다.
+- API digest `sha256:112003409a48ce010538136489d85ee590ca964970253bc67700882624042c14`와
+  대시보드 digest `sha256:3a05962e01285ed71fc7a9b0ead8ea90a9c63c706a072677258694d43f616296`를
+  GHCR에 게시했다. 빈 Docker 인증 설정에서도 두 manifest를 조회했다.
+- 각 digest의 SLSA provenance와 CycloneDX SBOM을 GitHub API와 GHCR OCI referrer 양쪽에서
+  repository·signer workflow·source tag를 제한해 검증했다. 서명된 SBOM은 API 125개,
+  대시보드 71개 component를 포함한다.
+- 모든 검증 뒤 [PipeLens v0.1.0](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)을
+  게시했다. release immutability를 미리 활성화하지 않아 API상 `immutable: false`이며 다음
+  release 전에 별도 설정이 필요하다.
+
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
 위해 내려졌다.
@@ -235,7 +250,6 @@ Nginx는 별도 PR로 분리했다.
 - 실제 OpenAI 호출의 품질·token·비용 결과
 - production HTTPS 환경의 OAuth callback과 webhook 수신
 - 장시간·고동시성 부하에서 60초/120초 SLO 달성률
-- 첫 version tag, GitHub Release와 registry 이미지
 
 이 항목은 완료로 간주하지 않으며 [검증 및 운영 준비 현황](readiness.md)에서 후속 작업으로
 관리한다.

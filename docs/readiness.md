@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `f5e059d`.
+기준 시점: **2026-08-30**, 기능 기준 commit `f5e059d`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -15,10 +15,11 @@
 | 대시보드 컨테이너 기동 | 통과 | CI에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
-| GHCR release 자동화 | 구현·미실행 | tag/version 검증, 사전 scan·smoke, digest provenance·SBOM attestation |
+| GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
+| GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
-| production 배포 | 미완료 | Compose는 있으나 release·registry·TLS·backup 절차 없음 |
+| production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
 | `main` 보호 | 미설정 | branch protection 404, repository ruleset 빈 목록 |
 
 최근 검증 실행:
@@ -44,6 +45,8 @@
 - [컨테이너 SBOM CodeQL run 33270531626](https://github.com/sangmu1126/PipeLens/actions/runs/33270531626)
 - [릴리스 자동화 기준 CI run 33272932733](https://github.com/sangmu1126/PipeLens/actions/runs/33272932733)
 - [릴리스 자동화 기준 CodeQL run 33272932727](https://github.com/sangmu1126/PipeLens/actions/runs/33272932727)
+- [v0.1.0 release run 33273157722](https://github.com/sangmu1126/PipeLens/actions/runs/33273157722)
+- [PipeLens v0.1.0](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)
 
 ## 2. 자동 검증 상세
 
@@ -150,7 +153,7 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 
 Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update와 immutable
 digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장기 SBOM과 provenance
-자동화는 구현됐지만 첫 tag 실행으로 검증되지 않았다.
+자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Release 자체의 immutability는 아직 꺼져 있다.
 
 ## 3. 보안 통제 현황
 
@@ -171,12 +174,13 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 - Docker build context allowlist
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL 취약점 gate
 - 실제 빌드 이미지의 CycloneDX SBOM 생성·검증·단기 artifact 보관
+- v0.1.0 GHCR digest의 SLSA provenance·CycloneDX SBOM 이중 경로 검증
 - CodeQL과 pip·npm·Actions·Dockerfile dependency 자동 업데이트
 
 ### 미구현 또는 외부 설정 필요
 
 - `main` branch protection/ruleset과 필수 status check
-- 첫 tag의 GHCR image, provenance/attestation과 장기 SBOM 외부 검증
+- 다음 release 전 GitHub release immutability 활성화
 - immutable base image digest 정책
 - production secret manager와 key rotation 절차
 - TLS reverse proxy의 HSTS
@@ -215,10 +219,9 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 
 ### P1 — 릴리스와 공급망
 
-1. 첫 `v0.1.0` tag와 GitHub Release를 만들고 실제 workflow 증적 기록
-2. 두 GHCR digest의 provenance·CycloneDX attestation을 소비자 명령으로 검증
-3. GitHub immutable release와 GHCR package visibility·retention 정책 확정
-4. Compose 전용 image 업데이트 자동화와 immutable digest 정책 결정
+1. 다음 release 전에 GitHub release immutability 활성화
+2. GHCR package retention 정책 확정
+3. Compose 전용 image 업데이트 자동화와 immutable digest 정책 결정
 
 ### P1 — 운영 신뢰성
 
@@ -243,7 +246,10 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 - default branch: `main`
 - open issues: 0
 - open pull requests: 0
-- releases: 0
+- version tags: 1 (`v0.1.0`)
+- releases: 1 (`v0.1.0`, immutable false)
+- GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
+- GHCR retention: 미확정
 - branch protection: 없음
 - repository rulesets: 0
 - open CodeQL alerts: 0
@@ -257,10 +263,10 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [ ] GitHub App 실제 설치와 E2E 증적
 - [ ] production HTTPS와 HSTS
 - [ ] `main` 필수 review/status check
-- [ ] immutable release image
+- [ ] immutable GitHub Release와 digest-pinned production 배포
 - [x] fixable HIGH/CRITICAL container vulnerability scan
 - [x] CI build image CycloneDX SBOM
-- [ ] release image SBOM·provenance
+- [x] release image SBOM·provenance
 - [ ] secret manager와 rotation
 - [ ] PostgreSQL backup/restore drill
 - [ ] Alertmanager 연결

@@ -2,9 +2,14 @@
 
 ## 현재 상태
 
-tag 기반 GHCR 게시와 attestation workflow는 구현됐지만 실제 version tag는 아직 만들지
-않았다. 따라서 아래 절차는 코드와 GitHub의 workflow 등록까지 검증됐으며, 첫 `v0.1.0`
-실행 결과는 아직 운영 증적으로 간주하지 않는다.
+첫 [`v0.1.0` release](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)가 게시됐다.
+API·대시보드 GHCR image와 각 digest의 SLSA provenance·CycloneDX SBOM attestation을 GitHub
+API와 GHCR OCI registry 양쪽에서 검증했다. 정확한 digest와 검증 결과는
+[v0.1.0 릴리스 증적](releases/v0.1.0.md)에 기록한다.
+
+GitHub Release 자체는 immutable 설정을 켜기 전에 발행돼 `immutable: false`다. image digest와
+attestation 검증 결과를 GitHub Release의 불변성으로 오해하지 않는다. 공식 정책상 설정은
+미래 release에만 적용되므로 다음 release 전에 repository 설정을 변경해야 한다.
 
 ## 릴리스 단위
 
@@ -34,7 +39,7 @@ tag 기반 GHCR 게시와 attestation workflow는 구현됐지만 실제 version
 checkout, registry login, Trivy와 attestation Action은 모두 검증한 release commit SHA로
 고정한다. 저장소가 개인 소유이므로 organization 전용 artifact storage record는 만들지 않는다.
 
-## 첫 릴리스 전 확인
+## 후속 릴리스 전 확인
 
 1. version 변경을 별도 commit으로 반영하고 Python·npm manifest와 lockfile을 동기화한다.
 2. 해당 commit의 CI와 CodeQL이 모두 성공했는지 확인한다.
@@ -43,9 +48,9 @@ checkout, registry login, Trivy와 attestation Action은 모두 검증한 releas
 5. 두 GHCR package의 digest, provenance와 SBOM attestation을 아래 방식으로 검증한다.
 6. 검증된 tag로 GitHub Release를 만들고 변경 사항과 두 image digest를 release note에 기록한다.
 
-GitHub Release는 자동으로 만들지 않는다. 첫 실행 전까지는 package visibility, release note와
-immutable release 설정을 사람이 확인해야 하며, tag push만으로 제품 배포가 완료됐다고 보지
-않는다.
+GitHub Release는 자동으로 만들지 않는다. package visibility, release note와 immutable
+release 설정을 사람이 확인해야 하며, tag push만으로 제품 배포가 완료됐다고 보지 않는다.
+release immutability가 활성화되면 draft에 필요한 asset과 note를 모두 준비한 뒤 publish한다.
 
 ## 소비자 검증
 

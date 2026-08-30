@@ -35,6 +35,11 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - 외부 Fork 실행 판별과 비신뢰 입력의 LLM·Commit Check 격리
 - PR에는 멱등 코멘트, PR이 없는 실행에는 Commit Check로 진단 결과 게시
 
+첫 [`v0.1.0` 릴리스](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)는 API와
+대시보드 GHCR image를 제공한다. 각 image는 취약점·기동 검사를 통과했고 SLSA provenance와
+CycloneDX SBOM attestation이 digest에 연결돼 있다. 운영에서는 version tag보다
+[기록된 immutable digest](docs/releases/v0.1.0.md)를 사용한다.
+
 ## 로컬 실행
 
 Python 3.12 이상 3.15 미만이 필요합니다. CI는 지원 범위의 하한인 3.12에서 전체 통합

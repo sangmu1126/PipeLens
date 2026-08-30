@@ -234,5 +234,5 @@ Compose는 개발과 통합 검증을 위한 단일 호스트 구성이다. 운�
 - secret manager 또는 동등한 비밀 주입 수단
 - PostgreSQL·Grafana 데이터 백업과 복구 절차
 - Alertmanager와 실제 알림 채널
-- 첫 version tag 실행과 GHCR digest·attestation 외부 검증
+- GitHub release immutability와 GHCR retention 정책
 - 외부에서 접근 가능한 GitHub OAuth callback, App setup URL과 webhook URL

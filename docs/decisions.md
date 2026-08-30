@@ -272,6 +272,21 @@
   provenance 또는 SBOM 중 하나만 attestation.
 - 결과: release는 재사용하지 않는 version tag와 immutable digest를 기준으로 소비한다. `latest`는
   만들지 않으며 Action은 commit SHA로 고정한다. matrix의 부분 게시 가능성은 실패 job 재실행으로
-  복구하고 두 image와 attestation이 모두 확인되기 전에는 GitHub Release를 만들지 않는다. 실제
-  첫 tag 실행과 외부 검증은 아직 남아 있다.
+  복구하고 두 image와 attestation이 모두 확인되기 전에는 GitHub Release를 만들지 않는다.
+  `v0.1.0`에서 두 image와 네 attestation의 GitHub API·OCI registry 검증을 완료했다.
 - 관련: `d7e600c`, `ed83890`, `f5e059d`.
+
+## D-028. Image attestation과 GitHub Release 불변성을 별도로 판정
+
+- 결정: digest·Sigstore attestation 검증 성공만으로 GitHub Release를 immutable이라고 표시하지
+  않는다. `v0.1.0`은 Release API의 `immutable: false`를 그대로 기록하고, 다음 release 전에
+  repository의 release immutability를 활성화한다.
+- 이유: image provenance는 특정 registry digest의 출처를 증명하지만 GitHub Release의 tag와
+  asset 변경을 막지 않는다. GitHub 공식 정책상 immutability 활성화는 미래 release에만 적용돼
+  이미 발행한 release를 소급 보호하지 않는다.
+- 대안: attestation을 release lock으로 간주, 기존 release 삭제·재생성, 한계를 기록하지 않음.
+- 결과: `v0.1.0` tag를 임의로 이동하지 않는 프로젝트 정책은 유지하지만 GitHub가 강제하는
+  tag·asset lock은 없다. 다음 release는 설정을 먼저 켜고 draft asset을 완성한 뒤 publish해야
+  한다.
+- 근거: [GitHub immutable releases](https://docs.github.com/code-security/concepts/supply-chain-security/immutable-releases),
+  [preventing release changes](https://docs.github.com/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes).

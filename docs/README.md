@@ -11,6 +11,7 @@
 - [의사결정 기록](decisions.md): 중요한 설계 선택, 선택 이유, 포기한 대안과 결과
 - [검증 및 운영 준비 현황](readiness.md): 테스트·CI·보안 현황, 검증되지 않은 부분과 남은 작업
 - [컨테이너 릴리스](release.md): version tag, GHCR image, SBOM·provenance 게시와 검증 절차
+  - [v0.1.0 릴리스 증적](releases/v0.1.0.md)
 
 ## 기록 원칙
 
