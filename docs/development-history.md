@@ -182,6 +182,18 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   2.0에서 2.0.52로 올렸다. 로컬 SQLite 포함 106개 테스트와 GitHub Actions의 실제
   PostgreSQL 17 migration·analysis lifecycle integration, 전체 CI·CodeQL 통과 뒤 squash
   merge했다.
+- `73e4641`: SQLAlchemy의 PostgreSQL dialect가 사용하는 `psycopg[binary]` 최소 버전을
+  3.2에서 3.3.4로 올렸다. [공식 설치 지원 범위](https://www.psycopg.org/psycopg3/docs/basic/install.html)가
+  Python 3.10–3.14와 PostgreSQL 10–18이므로 PipeLens의 Python 3.12–3.14·PostgreSQL 17을
+  포함한다. [3.3 release note](https://www.psycopg.org/psycopg3/docs/news.html)의 adapter startup
+  race, 장기 uptime 환경의 spurious connection timeout, quoted enum adaptation과
+  `executemany()` status message 수정을 검토했으며 PipeLens는 새 template-string query API를
+  사용하지 않는다.
+- 로컬은 psycopg와 psycopg-binary 3.3.4, binary implementation과 bundled libpq 18을 확인하고
+  전체 106개 테스트를 통과했다. 최신 `main`으로 rebase한 PR #26의 CI `33294950950`은
+  CPython 3.12용 binary wheel을 설치해 전체 106개 테스트와 실제 PostgreSQL 17·Redis 통합
+  2개를 통과했고 Python 3.14 compatibility, API image readiness와 CodeQL도 성공했다. 병합 후
+  `main` CI `33295005385`와 CodeQL `33295005394`도 다시 성공했다.
 - `ec7105c`: API·대시보드 이미지를 빌드한 직후 fixable HIGH/CRITICAL OS·language package
   취약점을 차단하는 Trivy gate를 추가했다. Action은 v0.36.0의 검증된 commit SHA로 고정했다.
   첫 실행은 대시보드 Alpine과 API Debian의 OpenSSL `CVE-2026-14456`, API image에 남은
