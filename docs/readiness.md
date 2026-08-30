@@ -29,6 +29,8 @@
 - [`Prometheus 3.13 LTS PR #29`](https://github.com/sangmu1126/PipeLens/pull/29)
 - [Prometheus 3.13 LTS CI run 33293111339](https://github.com/sangmu1126/PipeLens/actions/runs/33293111339)
 - [Prometheus 3.13 LTS CodeQL run 33293111348](https://github.com/sangmu1126/PipeLens/actions/runs/33293111348)
+- [Prometheus LTS 병합 후 CI run 33293260308](https://github.com/sangmu1126/PipeLens/actions/runs/33293260308)
+- [Prometheus LTS 병합 후 CodeQL run 33293260317](https://github.com/sangmu1126/PipeLens/actions/runs/33293260317)
 - [`Compose image 무결성 PR #20`](https://github.com/sangmu1126/PipeLens/pull/20)
 - [Compose image 병합 후 CI run 33292468235](https://github.com/sangmu1126/PipeLens/actions/runs/33292468235)
 - [Compose image 병합 후 CodeQL run 33292468225](https://github.com/sangmu1126/PipeLens/actions/runs/33292468225)
