@@ -319,8 +319,8 @@
 - 대안: mutable tag 유지, platform별 digest 분리, tag 없이 digest만 사용, 수동 업데이트.
 - 결과: Compose 실행 입력은 여러 architecture에서 하나의 불변 참조로 재현된다. 새 image를
   digest 없이 추가하면 backend CI가 실패하며, tag 또는 digest 변경은 Dependabot PR에서 전체
-  gate를 거친다. Dockerfile base image와 GitHub Actions service container는 별도 업데이트
-  경계로 남는다.
+  gate를 거친다. Redis와 Prometheus runtime 검증은 Compose 참조를 직접 사용한다. Dockerfile
+  base image와 PostgreSQL GitHub Actions service container는 별도 업데이트 경계로 남는다.
 - 근거: [Docker image digests](https://docs.docker.com/dhi/explore/security-concepts/digests/),
   [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference).
 - 관련: `776fa1c`, `1b1b4ba`.
@@ -345,3 +345,29 @@
   [Prometheus 3.13.2](https://github.com/prometheus/prometheus/releases/tag/v3.13.2).
 - 관련: [PR #29](https://github.com/sangmu1126/PipeLens/pull/29),
   [대체한 PR #22](https://github.com/sangmu1126/PipeLens/pull/22), `5a034d5`, `72038fa`.
+
+## D-032. Redis server는 floating major보다 Extended support line을 추적
+
+- 결정: Redis 7.4에서 8.2 Extended line으로 전환하고, Compose Dependabot은 8.2의 patch와
+  digest만 자동 제안하도록 major·minor 업데이트를 제외한다. backend CI는 별도 mutable
+  service image를 사용하지 않고 Compose가 해석한 digest 참조를 직접 pull·기동해 queue
+  integration test를 수행한다.
+- 이유: Dependabot PR #23의 `redis:8-alpine`은 조회 시점에 8.10.1 Standard를 가리키며 이후
+  minor도 자동으로 바뀐다. 공식 지원 표에서 8.2는 2030-09-01까지 Extended 지원되지만 8.10은
+  EOL이 확정되지 않았다. 8.2.9는 `EVAL` ACL key 검사, 악성 RDB와 blocked-client 처리의
+  memory-safety 보안 수정을 포함하고 현재 Lua queue script와 직접 관련된다.
+- 대안: PR #23의 floating `8-alpine` 병합, Redis 7.4 Extended 유지, CI service의 mutable
+  `redis:7-alpine`만 8로 변경.
+- 결과: Compose runtime과 CI integration이 같은 multi-platform digest를 사용한다. Redis
+  8.2.9의 linux/amd64·linux/arm64 manifest, healthcheck와 redis-py 8.1 RESP3 기반 queue의
+  enqueue·blocking dequeue·lease·orphan recovery를 검증한다. 다음 Extended line 전환은 지원
+  기간, release note와 실제 데이터 upgrade/restore drill을 다시 검토한다.
+- 라이선스: 기존 Redis 7.4는 RSALv2/SSPLv1 dual-license였고 Redis 8은 여기에 OSI 승인
+  AGPLv3 선택지를 추가한 tri-license다. 공식 image를 수정 없이 내부 service로 사용하며 Redis
+  자체를 managed service로 제공하지 않는다. 배포 형태가 바뀌면 별도 법률 검토가 필요하다.
+- 근거: [Redis version management](https://redis.io/docs/latest/operate/oss_and_stack/install/version-mgmt/),
+  [Redis 8 upgrade guide](https://redis.io/docs/latest/operate/oss_and_stack/install/upgrade/),
+  [Redis licenses](https://redis.io/legal/licenses/),
+  [Redis 8.2.9](https://github.com/redis/redis/releases/tag/8.2.9).
+- 관련: [PR #34](https://github.com/sangmu1126/PipeLens/pull/34),
+  [대체하는 PR #23](https://github.com/sangmu1126/PipeLens/pull/23), `6384e90`, `2e350bd`.
