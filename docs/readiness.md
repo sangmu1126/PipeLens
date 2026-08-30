@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `3285ba4`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `e4551ef`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -31,6 +31,10 @@
 
 최근 검증 실행:
 
+- [`GHCR 보존 정책 PR #41`](https://github.com/sangmu1126/PipeLens/pull/41)
+- [GHCR 보존 정책 PR CI run 33322207726](https://github.com/sangmu1126/PipeLens/actions/runs/33322207726)
+- [GHCR 보존 정책 PR CodeQL run 33322207722](https://github.com/sangmu1126/PipeLens/actions/runs/33322207722)
+- [병합 후 수동 GHCR 감사 run 33322294819](https://github.com/sangmu1126/PipeLens/actions/runs/33322294819)
 - [`Grafana 13 PR #38`](https://github.com/sangmu1126/PipeLens/pull/38)
 - [Grafana 13 PR CI run 33303557311](https://github.com/sangmu1126/PipeLens/actions/runs/33303557311)
 - [Grafana 13 PR CodeQL run 33303557289](https://github.com/sangmu1126/PipeLens/actions/runs/33303557289)

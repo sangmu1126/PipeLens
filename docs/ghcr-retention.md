@@ -62,3 +62,6 @@ version을 게시하기 전에 즉시 복원하고 감사 workflow를 다시 실
 
 두 package의 SemVer 집합, digest 형식과 attestation 연결이 모두 통과했다. tag API로 볼 수 없는
 untagged package version의 존재 여부는 위 분기별 수동 inventory 범위다.
+
+병합 뒤 `main`의 [수동 감사 run 33322294819](https://github.com/sangmu1126/PipeLens/actions/runs/33322294819)도
+같은 inventory를 GitHub-hosted runner에서 읽어 성공했다.

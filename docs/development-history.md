@@ -285,12 +285,16 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 정식 SemVer image, digest와 SLSA provenance·CycloneDX SBOM OCI attestation을 기간 제한 없이
   보존하기로 했다. `latest`나 개발 tag를 게시하지 않으므로 개수·나이 기반 자동 삭제는 rollback
   과 공급망 증적을 잃는 위험에 비해 이익이 작다고 판단했다.
-- `3285ba4`: 공개 pull token으로 두 package의 tag 집합과 각 release manifest digest를 읽고,
+- `e4551ef`: 공개 pull token으로 두 package의 tag 집합과 각 release manifest digest를 읽고,
   SemVer 대응·예상 밖 tag·attestation 누락과 고아 tag를 판정하는 감사기와 단위 테스트 6개를
   추가했다. 월별 workflow는 `contents: read`만 가지며 삭제 API를 호출하지 않는다.
 - registry tag API에 나타나지 않는 untagged version은 분기별 Packages UI·REST inventory로
   보완한다. 실패한 부분 게시를 발견해도 30일 격리, 참조 검사와 version ID 기록 없이 삭제하지
   않으며 GitHub의 삭제 후 30일 복구 경계를 운영 절차에 포함했다.
+- [PR #41](https://github.com/sangmu1126/PipeLens/pull/41)의 CI `33322207726`과 CodeQL
+  `33322207722`가 통과한 뒤 구현 `e4551ef`와 문서 `eb9724f`를 rebase merge했다. 병합된
+  `main`에서 수동 감사 `33322294819`를 실행해 두 package의 `v0.1.0`과 digest attestation
+  연결이 GitHub-hosted runner에서도 통과함을 확인했다.
 
 ### `main` 변경 통제
 
