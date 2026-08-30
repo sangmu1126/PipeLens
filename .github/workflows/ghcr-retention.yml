@@ -1,0 +1,27 @@
+name: GHCR retention audit
+
+on:
+  schedule:
+    - cron: "17 3 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ghcr-retention-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Audit retained release images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.14"
+      - name: Audit public GHCR inventories
+        env:
+          GHCR_NAMESPACE: ${{ github.repository_owner }}
+        run: python -m ops.ghcr.audit_retention --namespace "$GHCR_NAMESPACE"
