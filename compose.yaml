@@ -98,6 +98,8 @@ services:
       - ./ops/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus-data:/prometheus
     depends_on:
+      alertmanager:
+        condition: service_healthy
       api:
         condition: service_healthy
       worker:
@@ -108,6 +110,24 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  alertmanager:
+    image: prom/alertmanager:v0.33.1@sha256:9e082985f56f4c8c9f724e18f2288c6708f472e56a5286b8863d080434ea065d
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --enable-feature=utf8-strict-mode
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    healthcheck:
+      test: ["CMD", "amtool", "--alertmanager.url=http://localhost:9093", "config", "show"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   grafana:
     image: grafana/grafana:13.2.0@sha256:3fd54ae1214669f8355f065ec9f6445d5279a3d77095ab048ca045685272429b
@@ -129,4 +149,5 @@ services:
 volumes:
   postgres18-data:
   prometheus-data:
+  alertmanager-data:
   grafana-data:
