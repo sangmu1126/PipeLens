@@ -74,6 +74,19 @@ jobs:
           assert not unpinned, f"Compose images must be pinned by digest: {unpinned}"
           '
           python -m json.tool ops/grafana/dashboards/pipelens-overview.json >/dev/null
+      - name: Verify Grafana 12 to 13 upgrade
+        env:
+          GRAFANA_PREVIOUS_IMAGE: grafana/grafana:12.1.0@sha256:6ac590e7cabc2fbe8d7b8fc1ce9c9f0582177b334e0df9c927ebd9670469440f
+          GRAFANA_PREVIOUS_VERSION: 12.1.0
+          GRAFANA_CURRENT_VERSION: 13.2.0
+        run: |
+          GRAFANA_CURRENT_IMAGE="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["grafana"]["image"])
+          ')" \
+            ops/grafana/verify-major-upgrade.sh
       - name: Verify PostgreSQL 17 to 18 upgrade
         env:
           POSTGRES_PREVIOUS_IMAGE: postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
