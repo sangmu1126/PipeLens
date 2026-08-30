@@ -350,6 +350,25 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 세 역할별 commit은 [PR #34](https://github.com/sangmu1126/PipeLens/pull/34)에 rebase merge됐고
   새 8.2 update 경계가 적용되자 floating 8.10 제안 PR #23은 자동으로 닫혔다.
 
+### PostgreSQL 18 전환과 복원 경계
+
+- Dependabot PR #24는 Compose image 한 줄만 PostgreSQL 17에서 18로 변경했다. 기존 CI의
+  mutable `postgres:17-alpine` service는 제안된 image, PostgreSQL 18의 새 volume layout과
+  major data migration을 검증하지 못했으므로 그대로 병합하지 않았다.
+- 원격 manifest를 확인해 `postgres:18-alpine` digest
+  `sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2`가 PostgreSQL
+  18.6 Alpine이며 linux/amd64와 linux/arm64를 포함함을 확인했다. 공식 정책상 18은
+  2030-11-14까지 지원되며 major 전환에는 dump/reload 또는 `pg_upgrade`가 필요하다.
+- `22fc381`: GitHub Actions의 별도 PostgreSQL 17 service를 제거하고 Compose digest를 실제
+  integration 단일 원본으로 사용한다. 새 script는 고정된 17 source에 migration·표본 데이터를
+  만들고 18 target으로 custom-format dump를 복원한 뒤 데이터와 `alembic check`를 검증한다.
+- `5b179bf`: Compose를 PostgreSQL 18.6 multi-platform digest로 전환하고 공식 image 18의
+  새 volume target `/var/lib/postgresql`을 적용했다. 기존 `postgres-data`와 다른
+  `postgres18-data`를 선언해 17 data를 보존하며 Dependabot은 다음 major를 자동 제안하지 않는다.
+- 운영 절차는 쓰기 중단, database·globals backup, 새 volume 복원, Alembic과 대표 데이터
+  검증 및 rollback 한계를 [PostgreSQL 18 업그레이드](postgres-18-upgrade.md)에 기록했다.
+  로컬 Docker daemon이 실행 중이지 않아 container drill은 PR의 GitHub runner에서 판정한다.
+
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
 위해 내려졌다.

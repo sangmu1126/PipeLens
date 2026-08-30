@@ -371,3 +371,24 @@
   [Redis 8.2.9](https://github.com/redis/redis/releases/tag/8.2.9).
 - 관련: [PR #34](https://github.com/sangmu1126/PipeLens/pull/34),
   [대체한 PR #23](https://github.com/sangmu1126/PipeLens/pull/23), `fd286c2`, `9bc43ee`.
+
+## D-033. PostgreSQL major 전환은 새 volume과 논리 복원으로 검증
+
+- 결정: PostgreSQL 17에서 18.6으로 전환하되 기존 `postgres-data`를 직접 재사용하지 않고
+  18 전용 `postgres18-data`를 `/var/lib/postgresql`에 연결한다. CI는 Compose의 고정 18
+  image를 실제 integration에 사용하고, 별도 17·18 volume 사이의 `pg_dump`/`pg_restore`,
+  표본 데이터와 `alembic check`를 매번 검증한다. Dependabot은 18의 patch·digest만 자동
+  제안하고 다음 major는 수동 검토한다.
+- 이유: PostgreSQL major data directory는 직접 호환되지 않으며 Docker Official Image도 18부터
+  `PGDATA`와 volume target을 바꿨다. 같은 named volume을 새 target에 연결하면 17 data를
+  보존한 채 별도 18 cluster가 초기화돼 빈 database를 정상 전환으로 오인할 수 있다.
+- 대안: Dependabot PR #24를 그대로 병합, 같은 volume 이름과 기존 `/var/lib/postgresql/data`
+  mount 유지, CI에서 빈 PostgreSQL 18에 migration만 적용, `pg_upgrade`만 지원.
+- 결과: upgrade revision을 처음 기동해도 기존 17 volume은 보존된다. 운영자는 쓰기를 멈추고
+  database backup을 새 18 volume에 복원한 뒤 서비스를 열어야 한다. CI drill은 현재 schema와
+  합성 데이터만 다루므로 production 규모의 backup 내구성·복원 시간·rollback 훈련은 별도다.
+- 근거: [PostgreSQL 18 release notes](https://www.postgresql.org/docs/18/release-18.html),
+  [PostgreSQL versioning policy](https://www.postgresql.org/support/versioning/),
+  [Docker Official Image: postgres](https://hub.docker.com/_/postgres).
+- 관련: `22fc381`, `5b179bf`, [업그레이드 절차](postgres-18-upgrade.md),
+  [대체하는 PR #24](https://github.com/sangmu1126/PipeLens/pull/24).
