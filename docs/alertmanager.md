@@ -9,9 +9,9 @@ prom/alertmanager:v0.33.1@sha256:9e082985f56f4c8c9f724e18f2288c6708f472e56a5286b
 ```
 
 조회한 manifest는 linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le와 linux/s390x를
-포함한다. 신규 설치이므로 Alertmanager는 `utf8-strict-mode`로 시작한다. Compose Dependabot은
-0.33.x patch와 digest만 자동 제안하고, 0.x minor 전환은 release note와 config 호환성을 수동
-검토한다.
+포함한다. 신규 설치이므로 Alertmanager는 `utf8-strict-mode`로 시작한다. 개발 Compose는
+단일 replica이므로 `--cluster.listen-address=`로 HA gossip을 끈다. Compose Dependabot은 0.33.x
+patch와 digest만 자동 제안하고, 0.x minor 전환은 release note와 config 호환성을 수동 검토한다.
 
 Prometheus는 `alertmanager:9093`으로 다섯 alert rule을 전달한다. 기본 route는 `alertname`과
 `severity`로 group화하며 최초 30초, 같은 group은 5분 간격, 반복 알림은 4시간 간격으로 둔다.
@@ -35,7 +35,7 @@ alert, group과 silence를 확인할 수 있지만 운영 호출을 완료한 �
    검증한다.
 7. Prometheus API의 firing 상태와 Alertmanager API의 active 상태를 각각 확인한다.
 
-receiver는 최대 1 MiB JSON 하나만 받고 30초 뒤 종료한다. 모든 container, network와 임시
+receiver는 최대 1 MiB JSON 하나만 받고 60초 뒤 종료한다. 모든 container, network와 임시
 payload는 성공·실패와 관계없이 정리한다. webhook URL과 테스트 alert는 CI fixture에만 있으며
 기본 Compose config에는 포함되지 않는다.
 
@@ -82,6 +82,8 @@ Compose 실행 뒤에는 `http://localhost:9093/-/ready`와 Alertmanager UI를 �
 5. 수신 시각, Alertmanager group, 외부 incident ID와 담당자 acknowledgment 시간을 증적으로
    남긴다.
 6. 자격 증명 교체와 receiver 장애 때의 retry·fallback 경로를 훈련한다.
+7. replica를 둘 이상 운영한다면 각 Alertmanager를 load balancer 뒤에 숨기지 않고 Prometheus가
+   모든 replica로 보내도록 구성한 뒤 TCP·UDP gossip과 deduplication을 검증한다.
 
 실제 채널 증적 전에는 “Alertmanager routing 구현·로컬 webhook 검증”만 완료 상태다. 외부
 호출 채널 연결은 production secret manager와 함께 남은 작업으로 유지한다.

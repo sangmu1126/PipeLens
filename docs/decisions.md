@@ -467,9 +467,11 @@
   또는 PagerDuty channel을 기본 receiver로 사용.
 - 결과: 외부 secret 없이 전체 routing 경로를 반복 검증하면서 실제 채널 연결은 production
   secret manager와 staging 호출 증적이 필요한 별도 완료 조건으로 남는다. 0.x minor는 breaking
-  가능성이 있어 0.33 patch만 자동 추적한다.
+  가능성이 있어 0.33 patch만 자동 추적한다. 개발 Compose는 단일 replica이므로 HA gossip을
+  끄며, production 다중 replica는 별도의 peer·network·deduplication 설계가 필요하다.
 - 근거: [Alertmanager configuration](https://prometheus.io/docs/alerting/latest/configuration/),
   [Prometheus alerting configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/),
+  [Alertmanager high availability](https://prometheus.io/docs/alerting/latest/high_availability/),
   [Alertmanager 0.33.1](https://github.com/prometheus/alertmanager/releases/tag/v0.33.1).
 - 관련: `0c675a4`, [PR #45](https://github.com/sangmu1126/PipeLens/pull/45),
   [Alertmanager 절차](alertmanager.md).
