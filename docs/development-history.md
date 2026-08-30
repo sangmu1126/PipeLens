@@ -229,6 +229,21 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   `c1e5bc7`로 squash merge됐다. merge된 `main`의 전체 CI `33288653155`와 CodeQL
   `33288653056`도 성공했으며 API 재조회에서 protection 설정이 그대로 유지됨을 확인했다.
 
+### Compose image 공급망
+
+- `23b4363`: Compose에서 직접 실행하는 PostgreSQL 17, Redis 7, Prometheus 3.5.0과 Grafana
+  12.1.0을 조회 시점의 multi-platform manifest-list digest로 고정했다. 네 digest 모두
+  linux/amd64와 linux/arm64 manifest를 포함함을 `docker buildx imagetools inspect`로
+  확인했다. CI는 Compose가 해석한 모든 명시적 image가 `tag@sha256:<64 hex>` 형식인지
+  검사하므로 이후 외부 image가 mutable tag로 추가되는 것을 차단한다.
+- `83ed5a0`: Dockerfile을 읽는 기존 `docker` 설정과 별도로 공식 지원 생태계인
+  `docker-compose`를 Dependabot에 등록했다. 매주 월요일 10:15(Asia/Seoul)에 최대 4개 PR을
+  열어 digest 재게시나 service version 변경을 전체 CI·CodeQL 검토 흐름으로 보낸다.
+- tag는 호환성 계열과 review 가독성을 위해 유지하고 digest가 실제 실행 content를 고정한다.
+  단일 platform digest 대신 manifest-list digest를 사용해 arm64 개발 환경과 amd64 CI가 같은
+  선언에서 각 platform image를 선택하도록 했다. Dependabot은 이미 digest가 있는 참조의
+  tag·digest 업데이트를 처리하며, CI 정책은 digest가 제거된 제안을 거부한다.
+
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기
 위해 내려졌다.

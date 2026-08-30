@@ -16,6 +16,7 @@
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
+| Compose service image | 통과 | 4개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
@@ -115,10 +116,12 @@ Python과 `javascript-typescript`를 독립 matrix job으로 분석한다. workf
 
 ### Dependency 유지보수
 
-Dependabot이 pip, npm, GitHub Actions와 API·대시보드 Dockerfile의 base image 업데이트를
-매주 월요일 순차 실행한다. 대시보드의 Node·Nginx 변경은 한 PR로 묶어 동일한 image build와
-smoke test를 함께 거치게 한다. Docker 설정을 처음 반영한 2026-08-29 검사에서 Docker 2개와
-Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
+Dependabot이 pip, npm, GitHub Actions, API·대시보드 Dockerfile의 base image와 Compose
+service image 업데이트를 매주 월요일 순차 실행한다. 대시보드의 Node·Nginx 변경은 한 PR로
+묶어 동일한 image build와 smoke test를 함께 거치게 한다. Compose는 별도 `docker-compose`
+생태계로 PostgreSQL, Redis, Prometheus와 Grafana의 tag·digest 변경을 제안한다. Docker 설정을
+처음 반영한 2026-08-29 검사에서 Docker 2개와 Python dependency 5개, 총 7개의 후속 PR이
+생성됐다.
 
 의존성 PR은 자동 생성과 현재 CI가 성공했다는 이유만으로 바로 merge하지 않았다.
 
@@ -154,9 +157,10 @@ Python dependency 5개, 총 7개의 후속 PR이 생성됐다.
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
 
-Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana image update와 immutable
-digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장기 SBOM과 provenance
-자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Release 자체의 immutability는 아직 꺼져 있다.
+Compose에서만 참조하는 PostgreSQL, Redis, Prometheus와 Grafana는 amd64·arm64를 포함한
+manifest-list digest로 고정했고, digest 누락을 CI에서 차단한다. 별도 Compose Dependabot이
+주간 업데이트 경로를 담당한다. GHCR release image의 장기 SBOM과 provenance 자동화는
+`v0.1.0`에서 실행·검증됐다. GitHub Release 자체의 immutability는 아직 꺼져 있다.
 
 ## 3. 보안 통제 현황
 
@@ -178,12 +182,13 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL 취약점 gate
 - 실제 빌드 이미지의 CycloneDX SBOM 생성·검증·단기 artifact 보관
 - v0.1.0 GHCR digest의 SLSA provenance·CycloneDX SBOM 이중 경로 검증
+- Compose service image의 multi-platform digest 고정과 주간 Dependabot 업데이트
 - CodeQL과 pip·npm·Actions·Dockerfile dependency 자동 업데이트
 
 ### 미구현 또는 외부 설정 필요
 
 - 다음 release 전 GitHub release immutability 활성화
-- immutable base image digest 정책
+- API·대시보드 Dockerfile base image digest 정책
 - production secret manager와 key rotation 절차
 - TLS reverse proxy의 HSTS
 - GitHub 조직 정책에 따른 secret scanning/push protection 확인
@@ -222,7 +227,6 @@ digest 고정은 아직 남은 공급망 작업이다. GHCR release image의 장
 
 1. 다음 release 전에 GitHub release immutability 활성화
 2. GHCR package retention 정책 확정
-3. Compose 전용 image 업데이트 자동화와 immutable digest 정책 결정
 
 ### P1 — 운영 신뢰성
 
