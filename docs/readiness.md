@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `791cabb`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-30**, 기능 기준 commit `d09cd1c`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -21,6 +21,7 @@
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
+| Grafana runtime | 검증 중 | 13.2, 12→13 persistent-volume·provisioning CI drill 추가; PR gate 판정 전 |
 | GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
@@ -99,10 +100,12 @@
 5. Compose에 고정한 Prometheus image의 공식 `promtool`로 설정과 규칙 5개를 검사하고 실제
    server readiness 검증
 6. `docker compose config --quiet`와 Grafana dashboard JSON 검증
-7. PostgreSQL 17 source에 migration·표본 데이터를 만든 뒤 Compose PostgreSQL 18 target으로
+7. Grafana 12.1에서 만든 비관리 dashboard와 같은 volume을 Compose Grafana 13.2로 승격해
+   데이터 보존, file provisioning, Prometheus UID datasource와 익명 Viewer API 검증
+8. PostgreSQL 17 source에 migration·표본 데이터를 만든 뒤 Compose PostgreSQL 18 target으로
    dump/restore하고 데이터와 `alembic check` 검증
-8. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
-9. `pipelens-evaluate --minimum-accuracy 0.8`
+9. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
+10. `pipelens-evaluate --minimum-accuracy 0.8`
 
 별도 compatibility job은 Python 3.14에서 integration directory를 제외한 106개 테스트와
 10개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
@@ -299,7 +302,7 @@ immutability는 아직 꺼져 있다.
 
 ### P1 — 운영 신뢰성
 
-1. production 규모의 PostgreSQL backup 보관·복원 시간과 Grafana volume restore drill
+1. production 규모의 PostgreSQL backup 보관·복원 시간과 Grafana 12→13 volume restore drill
 2. Alertmanager와 실제 호출 채널 연결
 3. secret manager, key rotation과 incident response runbook
 4. worker replica 부하·장애 복구와 SLO 검증
@@ -344,6 +347,8 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [ ] secret manager와 rotation
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [ ] production 규모 PostgreSQL backup/restore drill
+- [ ] Grafana 12→13 합성 persistent-volume migration CI drill
+- [ ] production Grafana volume backup/restore drill
 - [ ] Alertmanager 연결
 - [ ] 외부 fork 공격 입력 검증
 - [ ] 부하 상태에서 시작 60초·완료 120초 SLO 검증
