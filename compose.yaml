@@ -116,6 +116,7 @@ services:
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
       - --storage.path=/alertmanager
+      - --cluster.listen-address=
       - --enable-feature=utf8-strict-mode
     ports:
       - "9093:9093"

@@ -58,6 +58,7 @@ docker run --detach --rm \
   "$ALERTMANAGER_IMAGE" \
   --config.file=/etc/alertmanager/alertmanager.yml \
   --storage.path=/alertmanager \
+  --cluster.listen-address= \
   --enable-feature=utf8-strict-mode >/dev/null
 
 for attempt in {1..15}; do
@@ -83,11 +84,11 @@ docker run --detach --rm \
   --config.file=/etc/prometheus/prometheus.yml \
   --storage.tsdb.path=/prometheus >/dev/null
 
-for attempt in {1..30}; do
+for attempt in {1..60}; do
   if [[ -s "$payload_path" ]]; then
     break
   fi
-  if [[ "$attempt" == 30 ]]; then
+  if [[ "$attempt" == 60 ]]; then
     docker logs "$prometheus_container"
     docker logs "$alertmanager_container"
     wait "$receiver_pid" || true
