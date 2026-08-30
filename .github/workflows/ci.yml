@@ -11,20 +11,6 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: pipelens_test
-          POSTGRES_USER: pipelens
-          POSTGRES_PASSWORD: pipelens
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U pipelens -d pipelens_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -88,6 +74,44 @@ jobs:
           assert not unpinned, f"Compose images must be pinned by digest: {unpinned}"
           '
           python -m json.tool ops/grafana/dashboards/pipelens-overview.json >/dev/null
+      - name: Verify PostgreSQL 17 to 18 upgrade
+        env:
+          POSTGRES_PREVIOUS_IMAGE: postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
+        run: |
+          POSTGRES_CURRENT_IMAGE="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["postgres"]["image"])
+          ')" \
+            ops/postgres/verify-major-upgrade.sh
+      - name: Start Compose PostgreSQL service
+        run: |
+          postgres_image="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["postgres"]["image"])
+          ')"
+          postgres_container="pipelens-postgres-integration"
+          postgres_volume="pipelens-postgres-integration-data"
+          docker pull "$postgres_image"
+          docker volume create "$postgres_volume"
+          docker run --detach --name "$postgres_container" --publish 5432:5432 \
+            --env POSTGRES_DB=pipelens_test \
+            --env POSTGRES_USER=pipelens \
+            --env POSTGRES_PASSWORD=pipelens \
+            --mount "type=volume,source=$postgres_volume,target=/var/lib/postgresql" \
+            "$postgres_image"
+          for attempt in {1..30}; do
+            if docker exec "$postgres_container" \
+              pg_isready -U pipelens -d pipelens_test >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$postgres_container"
+          exit 1
       - name: Start Compose Redis service
         run: |
           redis_image="$(docker compose config --format json | python -c '
@@ -118,6 +142,17 @@ jobs:
           redis_container="pipelens-redis-integration"
           if docker container inspect "$redis_container" >/dev/null 2>&1; then
             docker rm --force "$redis_container"
+          fi
+      - name: Stop Compose PostgreSQL service
+        if: always()
+        run: |
+          postgres_container="pipelens-postgres-integration"
+          postgres_volume="pipelens-postgres-integration-data"
+          if docker container inspect "$postgres_container" >/dev/null 2>&1; then
+            docker rm --force "$postgres_container"
+          fi
+          if docker volume inspect "$postgres_volume" >/dev/null 2>&1; then
+            docker volume rm "$postgres_volume"
           fi
       - run: pipelens-evaluate --minimum-accuracy 0.8
 
