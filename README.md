@@ -11,6 +11,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [주요 의사결정 기록](docs/decisions.md)
 - [검증 및 운영 준비 현황](docs/readiness.md)
 - [컨테이너 릴리스 정책과 절차](docs/release.md)
+- [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)
 - [저장소 보호와 변경 절차](docs/repository-governance.md)
 
 현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.
@@ -103,7 +104,9 @@ pytest -q tests/integration
 ```
 
 Compose는 PostgreSQL health check 이후 `alembic upgrade head`를 실행하고 API와 worker를
-시작합니다. 로컬 SQLite schema를 명시적으로 갱신하려면 다음 명령을 사용합니다.
+시작합니다. 기존 PostgreSQL 17 volume을 보유한 환경은 18을 기동하기 전에 반드시
+[PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)에 따라 dump/restore해야 합니다.
+로컬 SQLite schema를 명시적으로 갱신하려면 다음 명령을 사용합니다.
 
 ```bash
 alembic upgrade head
