@@ -64,13 +64,13 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
+    image: postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
     environment:
       POSTGRES_DB: pipelens
       POSTGRES_USER: pipelens
       POSTGRES_PASSWORD: pipelens
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres18-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pipelens -d pipelens"]
       interval: 5s
@@ -127,6 +127,6 @@ services:
         condition: service_healthy
 
 volumes:
-  postgres-data:
+  postgres18-data:
   prometheus-data:
   grafana-data:
