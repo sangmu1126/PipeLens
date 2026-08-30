@@ -13,6 +13,7 @@
 - [컨테이너 릴리스](release.md): version tag, GHCR image, SBOM·provenance 게시와 검증 절차
   - [v0.1.0 릴리스 증적](releases/v0.1.0.md)
 - [GHCR 보존 정책](ghcr-retention.md): 정식 image·attestation 영구 보존과 월별 감사
+- [Worker replica drill](worker-replica-drill.md): Redis 부하, lease 장애 복구와 SLO 검증
 - [PostgreSQL 18 업그레이드](postgres-18-upgrade.md): 17 backup, 18 복원, 검증과 rollback 경계
 - [Grafana 13 업그레이드](grafana-13-upgrade.md): volume backup, unified storage migration과 rollback
 - [저장소 보호와 변경 절차](repository-governance.md): `main` PR·필수 check와 운영 규칙

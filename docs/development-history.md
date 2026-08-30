@@ -296,6 +296,21 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   `main`에서 수동 감사 `33322294819`를 실행해 두 package의 `v0.1.0`과 digest attestation
   연결이 GitHub-hosted runner에서도 통과함을 확인했다.
 
+### Worker replica 부하와 lease 장애 복구
+
+- 기존 검증은 Redis job 하나의 lease key를 직접 지우고 다른 queue가 복구하는 수준이었다.
+  여러 worker가 backlog를 나눠 처리할 때의 processing list 경쟁, 실제 TTL 만료, 중복 처리와
+  사용자 SLO는 함께 측정하지 않았다.
+- `4290fd3`: 합성 요청 200개 중 하나를 `abandoned` worker가 claim한 뒤 ack하지 않고, 독립 Redis
+  connection·processing list·lease를 가진 replica 4개가 나머지와 회수된 job을 처리하는 CI
+  drill을 추가했다. lease 2초와 heartbeat 0.5초를 실제 시간으로 사용한다.
+- 모든 run의 시작·완료가 정확히 한 번인지, replica가 모두 작업에 참여했는지, recovery metric이
+  1인지, pending·dedupe가 비었는지 검증한다. 최대 시작 60초·완료 120초와 orphan lease+5초를
+  상한으로 적용하고 결과를 JSON으로 남긴다.
+- 합성 pipeline은 job당 10ms만 사용하고 container resource limit, 실제 GitHub·LLM,
+  PostgreSQL pool과 network partition은 다루지 않는다. 이 경계는 production soak/load 후속
+  작업으로 유지한다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를

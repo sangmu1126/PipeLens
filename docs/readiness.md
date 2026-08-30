@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `e4551ef`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 기능 기준 commit `4290fd3`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -21,6 +21,7 @@
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
+| Worker replica drill | 구현 | Redis replica 4개·job 200개, 실제 lease 만료·정확한 1회 처리·SLO CI gate |
 | PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
 | Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
@@ -320,7 +321,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 1. production 규모의 PostgreSQL backup 보관·복원 시간과 Grafana 12→13 volume restore drill
 2. Alertmanager와 실제 호출 채널 연결
 3. secret manager, key rotation과 incident response runbook
-4. worker replica 부하·장애 복구와 SLO 검증
+4. production resource limit·provider latency를 포함한 worker soak/load와 SLO 검증
 
 ### P2 — 품질 확장
 
@@ -366,6 +367,7 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [ ] production 규모 PostgreSQL backup/restore drill
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
 - [ ] production Grafana volume backup/restore drill
+- [ ] production 조건의 worker replica soak/load test
 - [ ] Alertmanager 연결
 - [ ] 외부 fork 공격 입력 검증
 - [ ] 부하 상태에서 시작 60초·완료 120초 SLO 검증
