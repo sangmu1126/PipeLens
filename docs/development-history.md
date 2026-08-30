@@ -391,17 +391,27 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   자동 migration하며 단순 downgrade 시 이전 Grafana가 stale table을 읽는다는 점을 확인했다.
   13.0.0 Git Sync migration 결함은 PipeLens가 해당 feature flag를 쓰지 않고 13.2.0으로 직접
   전환하므로 영향이 없다. 외부 plugin, Image Renderer와 숫자형 datasource API도 사용하지 않는다.
-- `c969451`: 고정 Grafana 12.1에 file provisioning을 적용하고 비관리 probe dashboard를 만든
+- `70e788d`: 고정 Grafana 12.1에 file provisioning을 적용하고 비관리 probe dashboard를 만든
   뒤 같은 임시 volume을 Compose의 현재 image로 승격한다. 13에서 health/version, probe 보존,
   PipeLens dashboard 8개 panel, Prometheus UID datasource와 anonymous API를 검증하고 항상
   임시 container·volume을 정리한다.
-- `d09cd1c`: Compose를 Grafana 13.2.0 multi-platform manifest-list digest
+- `0ee59e2`: Compose를 Grafana 13.2.0 multi-platform manifest-list digest
   `sha256:3fd54ae1214669f8355f065ec9f6445d5279a3d77095ab048ca045685272429b`로 전환했다.
   원격 manifest에서 linux/amd64와 linux/arm64를 확인했고 다음 Grafana major만 Dependabot에서
   제외해 full-support 13.x의 minor·patch 제안은 유지한다.
 - 정지 상태 volume backup, 전환 확인과 backup 기반 rollback 경계를
   [Grafana 13 업그레이드](grafana-13-upgrade.md)에 기록했다. 로컬 Docker daemon이 실행 중이지
   않아 실제 container migration은 PR의 GitHub runner에서 판정한다.
+- [PR #38](https://github.com/sangmu1126/PipeLens/pull/38)의 CI `33303557311`은 정확한 12.1과
+  13.2 digest를 pull하고 같은 SQLite volume을 순차 기동했다. health 응답의 두 version,
+  12에서 만든 비관리 probe의 13 보존, file-provisioned PipeLens dashboard 8개 panel,
+  Prometheus datasource UID·URL과 인증 없는 Viewer API 조회를 모두 통과했다. 전체 106개
+  테스트, PostgreSQL·Redis integration 2개, Python 3.14와 image build도 성공했고 CodeQL
+  `33303557289`가 통과했다.
+- 세 역할별 commit `70e788d`, `0ee59e2`, `7a39980`은 rebase 방식으로 병합했다. `main` CI
+  `33303638041`과 CodeQL `33303637927`이 Grafana migration을 포함한 전체 gate를 다시
+  통과했고, Grafana image만 바꾸던 Dependabot PR #21은 새 major 제외 정책 적용 뒤 자동으로
+  닫혔다. 이로써 첫 Compose image Dependabot 검토 사이클의 open PR은 0개가 됐다.
 
 이 결정은 Node 26과 Nginx 1.31을 함께 올리던 Dependabot PR #11을 그대로 merge하지 않고,
 Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17로 다시 생성하도록 만들기

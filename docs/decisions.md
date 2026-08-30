@@ -412,5 +412,6 @@
 - 근거: [Grafana 13.0 upgrade guide](https://grafana.com/docs/grafana/latest/upgrade-guide/upgrade-v13.0/),
   [Grafana upgrade strategy](https://grafana.com/docs/grafana/latest/upgrade-guide/when-to-upgrade/),
   [Grafana provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/).
-- 관련: `c969451`, `d09cd1c`, [업그레이드 절차](grafana-13-upgrade.md),
-  [대체하는 PR #21](https://github.com/sangmu1126/PipeLens/pull/21).
+- 관련: [PR #38](https://github.com/sangmu1126/PipeLens/pull/38),
+  [대체한 PR #21](https://github.com/sangmu1126/PipeLens/pull/21), `70e788d`, `0ee59e2`,
+  [업그레이드 절차](grafana-13-upgrade.md).
