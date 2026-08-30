@@ -194,6 +194,22 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   CPython 3.12용 binary wheel을 설치해 전체 106개 테스트와 실제 PostgreSQL 17·Redis 통합
   2개를 통과했고 Python 3.14 compatibility, API image readiness와 CodeQL도 성공했다. 병합 후
   `main` CI `33295005385`와 CodeQL `33295005394`도 다시 성공했다.
+- `3b0b203`: ASGI server `uvicorn[standard]`의 최소 버전을 0.30에서 0.52.4로 올렸다.
+  [공식 release notes](https://www.uvicorn.org/release-notes/)에서 0.32의 Python 3.13 지원,
+  0.38의 Python 3.14 지원과 0.40의 Python 3.9 지원 종료를 확인했다. PipeLens 지원 범위는
+  Python 3.12 이상 3.15 미만이므로 하한 종료의 영향이 없고 3.14 지원은 현재 API runtime과
+  일치한다.
+- 0.30 이후 제거된 WatchGod reload와 `Config.setup_event_loop`, deprecated `ServerState`,
+  worker 재시작·TLS option은 사용하지 않는다. Dockerfile은 `pipelens.main:app`, host와 port만
+  전달하며 reload·다중 worker·직접 TLS를 활성화하지 않는다. 0.50부터 기본 WebSocket 구현이
+  `websockets-sansio`로 바뀌었지만 현재 WebSocket route가 없고, 0.52의 experimental `zttp`
+  HTTP 구현도 명시적으로 선택하지 않아 기존 `auto` HTTP 경로를 유지한다.
+- 로컬과 CI가 실제로 해석한 조합은 Uvicorn 0.52.4, httptools 0.8.0, websockets 17.1이다.
+  최신 `main`으로 rebase한 [PR #25](https://github.com/sangmu1126/PipeLens/pull/25)의 CI
+  `33295968358`은 Python 3.12 전체 106개 테스트, PostgreSQL 17·Redis 통합 2개, Python
+  3.14 compatibility, API image 취약점 0건과 실제 `/readyz` 기동을 통과했다. CodeQL
+  `33295968363`도 성공했고 병합 후 `main` CI `33296035915`와 CodeQL `33296035880`에서 같은
+  커밋을 다시 검증했다.
 - `ec7105c`: API·대시보드 이미지를 빌드한 직후 fixable HIGH/CRITICAL OS·language package
   취약점을 차단하는 Trivy gate를 추가했다. Action은 v0.36.0의 검증된 commit SHA로 고정했다.
   첫 실행은 대시보드 Alpine과 API Debian의 OpenSSL `CVE-2026-14456`, API image에 남은
