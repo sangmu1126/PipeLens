@@ -26,6 +26,10 @@
 
 최근 검증 실행:
 
+- [`psycopg 3.3.4 PR #26`](https://github.com/sangmu1126/PipeLens/pull/26)
+- [psycopg 3.3.4 PR CI run 33294950950](https://github.com/sangmu1126/PipeLens/actions/runs/33294950950)
+- [psycopg 병합 후 CI run 33295005385](https://github.com/sangmu1126/PipeLens/actions/runs/33295005385)
+- [psycopg 병합 후 CodeQL run 33295005394](https://github.com/sangmu1126/PipeLens/actions/runs/33295005394)
 - [`Prometheus 3.13 LTS PR #29`](https://github.com/sangmu1126/PipeLens/pull/29)
 - [Prometheus 3.13 LTS CI run 33293111339](https://github.com/sangmu1126/PipeLens/actions/runs/33293111339)
 - [Prometheus 3.13 LTS CodeQL run 33293111348](https://github.com/sangmu1126/PipeLens/actions/runs/33293111348)
@@ -163,6 +167,10 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
   2.0.52로 갱신했다. 로컬 SQLite 포함 전체 106개 테스트와 실제 PostgreSQL 17에서 Alembic
   `upgrade/check`, analysis lifecycle 및 Redis integration을 통과하고 `b8c5cf2`로 squash
   merge했다.
+- [#26](https://github.com/sangmu1126/PipeLens/pull/26)은 PostgreSQL driver의 최소 버전을
+  psycopg 3.2에서 3.3.4로 갱신했다. Python 3.12·3.14 binary wheel, API image build·기동,
+  PostgreSQL 17 migration·analysis lifecycle과 Redis integration을 최신 `main`에서 통과해
+  `73e4641`로 squash merge했다.
 
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
