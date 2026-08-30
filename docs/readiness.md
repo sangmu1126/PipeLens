@@ -22,7 +22,7 @@
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
 | Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
-| GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
+| GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
@@ -240,8 +240,9 @@ manifest-list digest로 고정했고, digest 누락을 CI에서 차단한다. �
 2030-09-01까지 지원되는 8.2 Extended의 patch만 자동 추적한다. PostgreSQL은 18.6으로
 전환하면서 17→18 논리 복원 drill과 전용 volume 경계를 추가했고 다음 major는 자동 제안하지
 않는다. GHCR release image의 장기
-SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Release 자체의
-immutability는 아직 꺼져 있다.
+SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Release 불변성은
+2026-08-30 repository 설정에서 활성화했으며, 소급 적용되지 않는 `v0.1.0`은 계속
+`immutable: false`다.
 
 ## 3. 보안 통제 현황
 
@@ -263,12 +264,12 @@ immutability는 아직 꺼져 있다.
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL 취약점 gate
 - 실제 빌드 이미지의 CycloneDX SBOM 생성·검증·단기 artifact 보관
 - v0.1.0 GHCR digest의 SLSA provenance·CycloneDX SBOM 이중 경로 검증
+- 미래 GitHub Release의 tag·asset 변경을 막는 repository 불변성 설정
 - Compose service image의 multi-platform digest 고정과 주간 Dependabot 업데이트
 - CodeQL과 pip·npm·Actions·Dockerfile dependency 자동 업데이트
 
 ### 미구현 또는 외부 설정 필요
 
-- 다음 release 전 GitHub release immutability 활성화
 - API·대시보드 Dockerfile base image digest 정책
 - production secret manager와 key rotation 절차
 - TLS reverse proxy의 HSTS
@@ -306,8 +307,7 @@ immutability는 아직 꺼져 있다.
 
 ### P1 — 릴리스와 공급망
 
-1. 다음 release 전에 GitHub release immutability 활성화
-2. GHCR package retention 정책 확정
+1. GHCR package retention 정책 확정
 
 ### P1 — 운영 신뢰성
 
@@ -333,7 +333,7 @@ immutability는 아직 꺼져 있다.
 - open issues: 0
 - open pull requests: 0
 - version tags: 1 (`v0.1.0`)
-- releases: 1 (`v0.1.0`, immutable false)
+- releases: 1 (`v0.1.0`, immutable false); repository 불변성은 미래 release 대상으로 활성화
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
 - GHCR retention: 미확정
 - branch protection: PR과 7개 GitHub Actions check 필수, 관리자 적용
@@ -349,7 +349,8 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [ ] GitHub App 실제 설치와 E2E 증적
 - [ ] production HTTPS와 HSTS
 - [x] `main` PR·필수 status check
-- [ ] immutable GitHub Release와 digest-pinned production 배포
+- [x] 미래 GitHub Release의 repository 불변성 설정
+- [ ] `immutable: true`인 차기 GitHub Release와 digest-pinned production 배포
 - [x] fixable HIGH/CRITICAL container vulnerability scan
 - [x] CI build image CycloneDX SBOM
 - [x] release image SBOM·provenance

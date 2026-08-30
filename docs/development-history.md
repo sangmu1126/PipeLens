@@ -264,7 +264,18 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   대시보드 71개 component를 포함한다.
 - 모든 검증 뒤 [PipeLens v0.1.0](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)을
   게시했다. release immutability를 미리 활성화하지 않아 API상 `immutable: false`이며 다음
-  release 전에 별도 설정이 필요하다.
+  release에는 소급 적용할 수 없다.
+
+### GitHub Release 불변성 활성화
+
+- 2026-08-30 repository 설정 API를 먼저 조회해 release immutability가 `enabled: false`임을
+  확인했다. 기존 `v0.1.0`도 `draft: false`, `immutable: false`였다.
+- 공식 문서의 미래 release만 보호한다는 적용 범위를 확인한 뒤 repository 설정 API로 불변성을
+  활성화했다. 재조회 결과는 `enabled: true`, `enforced_by_owner: false`였다.
+- 기존 release를 삭제하거나 다시 만들지 않았다. `v0.1.0`은 계속 `immutable: false`로 기록하고,
+  차기 release부터 note와 asset을 draft에서 완성한 뒤 한 번만 publish하도록 운영 절차를 바꿨다.
+- 차기 release 완료 조건에는 Release API의 `immutable: true`와 자동 release attestation 확인을
+  포함했다. GHCR image attestation과 GitHub Release 불변성은 계속 별도 증적으로 판정한다.
 
 ### `main` 변경 통제
 

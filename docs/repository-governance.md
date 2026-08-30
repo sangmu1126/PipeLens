@@ -41,9 +41,9 @@
 ## 보호 범위 밖의 항목
 
 branch protection은 version tag와 GitHub Release asset을 잠그지 않는다. Release workflow는
-tag의 `main` ancestry와 version 일치를 별도로 검사하지만, 다음 release 전에 GitHub release
-immutability 설정도 활성화해야 한다. `v0.1.0`은 해당 설정 전에 게시돼 immutable release가
-아니다.
+tag의 `main` ancestry와 version 일치를 별도로 검사한다. GitHub release immutability 설정은
+2026-08-30 활성화했으며 미래 release부터 tag와 asset을 보호한다. `v0.1.0`은 해당 설정 전에
+게시돼 immutable release가 아니다.
 
 repository ruleset은 아직 사용하지 않는다. 현재 요구는 단일 `main` branch protection으로
 충족하며, tag pattern 보호나 여러 branch의 공통 정책이 필요할 때 ruleset으로 이전한다.
