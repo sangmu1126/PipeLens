@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-30**, 기능 기준 commit `3b0b203`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-30**, 기능 기준 commit `7258f5c`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -19,6 +19,7 @@
 | Compose service image | 통과 | 4개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
+| Redis client runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 7.4.11 queue 통합 검증 |
 | GitHub Release 불변성 | 미설정 | v0.1.0 Release API `immutable: false`; 설정은 미래 release부터 적용 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
@@ -27,6 +28,11 @@
 
 최근 검증 실행:
 
+- [`redis-py 8.1.0 PR #27`](https://github.com/sangmu1126/PipeLens/pull/27)
+- [redis-py 8.1.0 PR CI run 33299569088](https://github.com/sangmu1126/PipeLens/actions/runs/33299569088)
+- [redis-py 8.1.0 PR CodeQL run 33299569060](https://github.com/sangmu1126/PipeLens/actions/runs/33299569060)
+- [redis-py 병합 후 CI run 33299653576](https://github.com/sangmu1126/PipeLens/actions/runs/33299653576)
+- [redis-py 병합 후 CodeQL run 33299653632](https://github.com/sangmu1126/PipeLens/actions/runs/33299653632)
 - [`Uvicorn 0.52.4 PR #25`](https://github.com/sangmu1126/PipeLens/pull/25)
 - [Uvicorn 0.52.4 PR CI run 33295968358](https://github.com/sangmu1126/PipeLens/actions/runs/33295968358)
 - [Uvicorn 0.52.4 PR CodeQL run 33295968363](https://github.com/sangmu1126/PipeLens/actions/runs/33295968363)
@@ -183,6 +189,12 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
   `zttp`를 사용하지 않음을 확인했다. Uvicorn 0.52.4, httptools 0.8.0, websockets 17.1로
   Python 3.12·3.14, 전체 테스트, CodeQL과 실제 API `/readyz` 기동을 통과해 `3b0b203`으로
   squash merge했다.
+- [#27](https://github.com/sangmu1126/PipeLens/pull/27)은 비동기 queue client의 최소 버전을
+  redis-py 5.2에서 8.1.0으로 갱신했다. 6·7 major의 cluster·Sentinel·TLS 변경은 현재 경로와
+  무관함을 확인하고, 8.0의 RESP3·timeout·pool·retry 기본값은 실제 queue command 기준으로
+  검토했다. Redis 7.4.11에서 enqueue·blocking dequeue·heartbeat·orphan recovery·acknowledge를
+  수행하는 통합 테스트, Python 3.12·3.14 전체 테스트, API image·CodeQL을 통과해 `7258f5c`로
+  squash merge했다. pool·retry의 고동시성 지연은 production 부하 검증 항목으로 유지한다.
 
 초기 #10–#16은 모두 판정됐다. #11의 Node 26은 LTS 전환 전 자동 major update 금지 정책으로
 제외하고 Nginx만 #17로 재생성했다. 최종적으로 #10, #12–#17은 검증 후 merge했다.
@@ -281,7 +293,7 @@ manifest-list digest로 고정했고, digest 누락을 CI에서 차단한다. �
 - visibility: public
 - default branch: `main`
 - open issues: 0
-- open pull requests: 4 (#21 Grafana 13, #23 Redis 8, #24 PostgreSQL 18, #27 redis-py 8)
+- open pull requests: 3 (#21 Grafana 13, #23 Redis 8, #24 PostgreSQL 18)
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false)
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과

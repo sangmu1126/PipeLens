@@ -210,6 +210,27 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   3.14 compatibility, API image 취약점 0건과 실제 `/readyz` 기동을 통과했다. CodeQL
   `33295968363`도 성공했고 병합 후 `main` CI `33296035915`와 CodeQL `33296035880`에서 같은
   커밋을 다시 검증했다.
+- `7258f5c`: 비동기 분석 queue가 사용하는 redis-py 최소 버전을 5.2에서 8.1.0으로 올렸다.
+  [redis-py 6.0 release](https://github.com/redis/redis-py/releases/tag/v6.0.0)의 standalone
+  retry 기본값, SSL hostname 검증, 제거된 `charset`·`errors` 인자와
+  [7.0 release](https://github.com/redis/redis-py/releases/tag/v7.0.0)의 cluster·Sentinel 변경을
+  검토했다. PipeLens는 standalone plain Redis URL과 `decode_responses=True`만 사용하며
+  cluster, Sentinel, TLS client option이나 제거 인자를 사용하지 않는다.
+- [redis-py 8.0 release](https://github.com/redis/redis-py/releases/tag/v8.0.0)부터 기본 wire
+  protocol은 RESP3지만 기존 RESP2-compatible Python response shape가 기본으로 보존된다.
+  PipeLens가 사용하는 `PING`, `EVAL`, `BRPOPLPUSH`, transaction pipeline, `SMEMBERS`, `LLEN`과
+  close 경로를 실제 integration test로 확인해 별도 `protocol=2` 고정 없이 RESP3 기본값을
+  채택했다. socket·connect timeout은 5초, connection pool은 100개, retry는 exponential
+  jitter 10회가 새 기본값이다. worker의 blocking pop timeout은 항상 1초라 socket timeout보다
+  짧지만, 고동시성에서 pool·retry가 만드는 지연은 아직 production 부하 검증 대상이다.
+- Compose digest가 가리키는 server는 Redis 7.4.11이며 redis-py 8.1의 공식 지원 범위인 Redis
+  7.2 이상에 포함된다. [8.1 release](https://github.com/redis/redis-py/releases/tag/v8.1.0)의
+  async maintenance notification과 신규 command는 현재 사용하지 않는다. 최신 `main`으로
+  rebase한 [PR #27](https://github.com/sangmu1126/PipeLens/pull/27)의 CI `33299569088`은
+  redis-py 8.1.0으로 Python 3.12 전체 106개 테스트와 Redis 7.4·PostgreSQL 17 통합 2개,
+  Python 3.14 전체 106개, API image 기동과 redis package 취약점 0건을 확인했다. CodeQL
+  `33299569060`, 병합 후 `main` CI `33299653576`과 CodeQL `33299653632`도 같은 변경을
+  검증했다.
 - `ec7105c`: API·대시보드 이미지를 빌드한 직후 fixable HIGH/CRITICAL OS·language package
   취약점을 차단하는 Trivy gate를 추가했다. Action은 v0.36.0의 검증된 commit SHA로 고정했다.
   첫 실행은 대시보드 Alpine과 API Debian의 OpenSSL `CVE-2026-14456`, API image에 남은
