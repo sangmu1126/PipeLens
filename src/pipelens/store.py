@@ -632,6 +632,16 @@ class AnalysisStore:
                 delete(auth_sessions).where(auth_sessions.c.session_hash == session_hash)
             )
 
+    def update_auth_session_token(
+        self, session_hash: str, encrypted_access_token: str
+    ) -> None:
+        with self.engine.begin() as connection:
+            connection.execute(
+                update(auth_sessions)
+                .where(auth_sessions.c.session_hash == session_hash)
+                .values(encrypted_access_token=encrypted_access_token)
+            )
+
     def installations_for_user(self, github_user_id: int) -> list[GitHubInstallation]:
         with self.engine.connect() as connection:
             rows = (

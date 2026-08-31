@@ -57,3 +57,12 @@ def test_production_accepts_explicit_security_settings() -> None:
     settings = Settings(**_production_settings())
 
     assert settings.environment == "production"
+
+
+def test_token_encryption_key_ring_deduplicates_and_ignores_empty_values() -> None:
+    settings = Settings(
+        token_encryption_key="primary",
+        token_encryption_fallback_keys=" fallback, primary, ,older ",
+    )
+
+    assert settings.token_encryption_key_ring == ["primary", "fallback", "older"]

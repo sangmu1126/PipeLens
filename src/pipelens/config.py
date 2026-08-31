@@ -1,3 +1,5 @@
+import base64
+import hashlib
 from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlparse
@@ -20,6 +22,7 @@ class Settings(BaseSettings):
     auth_required: bool = True
     session_secret: str = "development-session-secret"
     token_encryption_key: str | None = None
+    token_encryption_fallback_keys: str = ""
     session_cookie_secure: bool = False
     session_ttl_days: int = 7
     database_path: str = "./pipelens.db"
@@ -51,6 +54,19 @@ class Settings(BaseSettings):
     @property
     def resolved_database_url(self) -> str:
         return self.database_url or f"sqlite:///{self.database_path}"
+
+    @property
+    def token_encryption_key_ring(self) -> list[str]:
+        primary = self.token_encryption_key or base64.urlsafe_b64encode(
+            hashlib.sha256(self.session_secret.encode()).digest()
+        ).decode()
+        keys = [primary]
+        keys.extend(
+            key.strip()
+            for key in self.token_encryption_fallback_keys.split(",")
+            if key.strip()
+        )
+        return list(dict.fromkeys(keys))
 
     @model_validator(mode="after")
     def validate_worker_lease(self) -> "Settings":
