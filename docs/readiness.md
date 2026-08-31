@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 commit `ec691bc`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 commit `e445933`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -39,6 +39,8 @@
 - [`OAuth token key rotation PR #53`](https://github.com/sangmu1126/PipeLens/pull/53)
 - [OAuth token key rotation PR CI run 33363411829](https://github.com/sangmu1126/PipeLens/actions/runs/33363411829)
 - [OAuth token key rotation PR CodeQL run 33363411722](https://github.com/sangmu1126/PipeLens/actions/runs/33363411722)
+- [OAuth token key rotation 병합 후 CI run 33363711257](https://github.com/sangmu1126/PipeLens/actions/runs/33363711257)
+- [OAuth token key rotation 병합 후 CodeQL run 33363711311](https://github.com/sangmu1126/PipeLens/actions/runs/33363711311)
 - [`GitHub Actions SHA 고정 PR #51`](https://github.com/sangmu1126/PipeLens/pull/51)
 - [GitHub Actions SHA 고정 PR CI run 33361752707](https://github.com/sangmu1126/PipeLens/actions/runs/33361752707)
 - [GitHub Actions SHA 고정 PR CodeQL run 33361752698](https://github.com/sangmu1126/PipeLens/actions/runs/33361752698)
