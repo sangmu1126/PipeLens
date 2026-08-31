@@ -1,0 +1,6 @@
+2026-09-01T01:13:38Z Run python -m pip install --ignore-requires-python -e '.[dev]'
+Collecting psycopg<4,>=3.3.4 (from psycopg[binary]<4,>=3.3.4->pipelens==0.1.0)
+INFO: pip is looking at multiple versions of psycopg[binary] to determine which version is compatible with other requirements.
+ERROR: Could not find a version that satisfies the requirement psycopg-binary==3.3.4; implementation_name != "pypy" and extra == "binary" (from versions: none)
+ERROR: No matching distribution found for psycopg-binary==3.3.4; implementation_name != "pypy" and extra == "binary"
+Error: Process completed with exit code 1.
