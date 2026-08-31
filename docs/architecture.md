@@ -196,7 +196,8 @@ migration은 다음 순서로 확장됐다.
 
 - 로그인은 GitHub OAuth authorization code flow를 사용한다.
 - OAuth state cookie로 callback 위조를 방지한다.
-- 사용자 access token은 Fernet으로 암호화해 저장한다.
+- 사용자 access token은 Fernet으로 암호화해 저장한다. key ring의 첫 key로 새 token을 암호화하고
+  fallback key로 읽은 기존 token은 인증 시 첫 key로 lazy 재암호화해 rolling rotation을 지원한다.
 - session cookie는 HttpOnly, SameSite=Lax이며 운영에서는 Secure를 강제한다.
 - 분석 목록·상세·피드백은 로그인 사용자가 접근 가능한 GitHub App installation ID로
   제한한다.

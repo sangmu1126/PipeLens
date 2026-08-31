@@ -15,6 +15,7 @@
 - [GHCR 보존 정책](ghcr-retention.md): 정식 image·attestation 영구 보존과 월별 감사
 - [Worker replica drill](worker-replica-drill.md): Redis 부하, lease 장애 복구와 SLO 검증
 - [Alertmanager](alertmanager.md): Prometheus alert routing, webhook 통합 검증과 운영 채널 경계
+- [비밀값과 키 교체](secrets-and-rotation.md): secret inventory, Fernet rolling rotation과 침해 대응
 - [PostgreSQL 18 업그레이드](postgres-18-upgrade.md): 17 backup, 18 복원, 검증과 rollback 경계
 - [Grafana 13 업그레이드](grafana-13-upgrade.md): volume backup, unified storage migration과 rollback
 - [저장소 보호와 변경 절차](repository-governance.md): `main` PR·필수 check와 운영 규칙

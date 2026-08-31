@@ -493,3 +493,24 @@
 - 근거: [GitHub Actions secure use reference](https://docs.github.com/en/actions/reference/security/secure-use),
   [GitHub Actions repository settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository).
 - 관련: `ops/ci/verify_action_pinning.py`.
+
+## D-039. OAuth token 암호화 키는 primary-first key ring으로 교체
+
+- 결정: `PIPELENS_TOKEN_ENCRYPTION_KEY`를 새 암호화에 쓰는 primary로 두고, 쉼표로 구분한
+  `PIPELENS_TOKEN_ENCRYPTION_FALLBACK_KEYS`는 복호화에만 사용한다. fallback으로 읽은 token은
+  인증 시 primary로 즉시 재암호화한다. rolling deployment는 기존 primary+새 fallback을 먼저
+  전체 배포한 뒤 새 primary+기존 fallback으로 전환한다.
+- 이유: 단일 Fernet key를 즉시 바꾸면 DB의 기존 GitHub OAuth token을 해독할 수 없어 모든
+  session이 예고 없이 끊긴다. 반대로 fallback을 영구 유지하면 폐기한 key의 노출 범위가 줄지
+  않는다. 양쪽 key를 먼저 배포하고 session TTL 뒤 이전 key를 제거하면 혼합 version rollout과
+  기존 session을 모두 다룰 수 있다.
+- 대안: 교체 때 모든 session 즉시 폐기, DB의 모든 token을 일괄 offline migration, 이전 key를
+  기한 없이 유지.
+- 결과: 새 로그인은 항상 primary를 사용하며 기존 session은 접근 시 점진적으로 이동한다.
+  이전 key 제거 시 아직 해독할 수 없는 session은 삭제된다. 실제 secret manager 연결과
+  production rotation drill은 별도 외부 완료 조건으로 유지한다.
+- 근거: [cryptography MultiFernet](https://cryptography.io/en/latest/fernet/),
+  [GitHub App private key 관리](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/managing-private-keys-for-github-apps),
+  [GitHub App webhook 사용](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/using-webhooks-with-github-apps),
+  [GitHub App webhook 재전달](https://docs.github.com/en/rest/apps/webhooks).
+- 관련: `src/pipelens/auth.py`, [비밀값과 키 교체](secrets-and-rotation.md).
