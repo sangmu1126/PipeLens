@@ -789,6 +789,9 @@ Nginx는 별도 PR로 분리했다.
   security vulnerability와 구분했다.
 - correction, warning, temporary ban과 permanent ban의 단계적 enforcement 기준을 기여 가이드와
   repository governance에 연결했다.
+- [PR #74](https://github.com/sangmu1126/PipeLens/pull/74)의 CI run `33425763571`에서 행동강령과
+  governance 문서가 backend, Python 3.14, dashboard와 두 container build를 통과했다. CodeQL
+  run `33425763569`의 Python·JavaScript 분석도 성공했다.
 
 ## 현재까지의 검증 방식
 
