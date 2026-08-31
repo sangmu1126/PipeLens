@@ -715,7 +715,7 @@ Nginx는 별도 PR로 분리했다.
   GitHub Actions의 공식 Python version manifest에는 3.15.0 RC1이 제공된다.
 - 정식 지원 범위 `>=3.12,<3.15`와 필수 Python 3.14 compatibility job은 유지했다. 새 Python
   3.15 preview는 setup-python의 prerelease 선택을 사용해 integration 제외 테스트, `pip check`와
-  12개 진단 평가를 실행한다.
+  13개 진단 평가를 실행한다.
 - preview 설치의 `--ignore-requires-python`은 아직 3.15를 제외하는 PipeLens root metadata를
   통과하기 위한 한정된 예외다. job을 advisory로 둬 prerelease의 upstream 변동이 지원 branch의
   병합을 막거나 의도적인 CI 실패 메일을 만들지 않게 했다.
@@ -733,6 +733,16 @@ Nginx는 별도 PR로 분리했다.
 - final 출시 뒤에는 이 예외를 제거하고 PostgreSQL·Redis service integration까지 통과해야
   `<3.16` 지원 선언과 branch protection 승격을 검토한다.
 
+### Python wheel resolution 실패의 평가 fixture 환류
+
+- Python 3.15 preview의 실제 `psycopg-binary==3.3.4` 배포본 부재 로그에서 repository 경로와
+  runner 세부 출력을 제거하고, 실행 단계·최초 resolver 오류·종료 상태만 남겼다.
+- 기존 classifier는 pip의 `Could not find a version that satisfies`를 dependency 설치 실패로
+  이미 좁게 인식한다. 새 범주나 패턴을 추가하지 않고 단위 테스트에서 requirement와 version이
+  최초 근거로 보존되는지만 고정했다.
+- 평가 세트는 요구 범주 합성 fixture 10건과 실제 PipeLens CI 회귀 3건, 총 13건으로 확장됐고
+  로컬 Python 3.14에서 13/13을 통과했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -740,7 +750,7 @@ Nginx는 별도 PR로 분리했다.
 - Ruff 정적 lint
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
-- 12개 진단 fixture의 80% 정확도 gate
+- 13개 진단 fixture의 80% 정확도 gate
 - Vitest 대시보드 사용자 흐름·접근성 테스트
 - Playwright Chromium OAuth·session·dashboard·logout E2E
 - TypeScript와 Vite production build
