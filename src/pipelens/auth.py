@@ -1,11 +1,10 @@
-import base64
 import hashlib
 import hmac
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 
 from pipelens.config import Settings
 from pipelens.github import GitHubClient, GitHubConfigurationError
@@ -29,15 +28,14 @@ class AuthService:
         self.settings = settings
         self.store = store
         self.github = github
-        key = settings.token_encryption_key
-        if key is None:
-            key = base64.urlsafe_b64encode(
-                hashlib.sha256(settings.session_secret.encode()).digest()
-            ).decode()
         try:
-            self.cipher = Fernet(key.encode())
+            ciphers = [Fernet(key.encode()) for key in settings.token_encryption_key_ring]
+            self.primary_cipher = ciphers[0]
+            self.cipher = MultiFernet(ciphers)
         except (ValueError, TypeError) as exc:
-            raise ValueError("PIPELENS_TOKEN_ENCRYPTION_KEY must be a Fernet key") from exc
+            raise ValueError(
+                "PIPELENS_TOKEN_ENCRYPTION_KEY and fallback keys must be Fernet keys"
+            ) from exc
 
     @property
     def callback_url(self) -> str:
@@ -109,9 +107,22 @@ class AuthService:
         if expires_at <= datetime.now(UTC):
             self.store.delete_auth_session(session_hash)
             return None
+        encrypted_access_token = row["encrypted_access_token"].encode()
         try:
-            access_token = self.cipher.decrypt(row["encrypted_access_token"].encode()).decode()
+            access_token_bytes = self.primary_cipher.decrypt(encrypted_access_token)
         except InvalidToken:
+            try:
+                access_token_bytes = self.cipher.decrypt(encrypted_access_token)
+            except InvalidToken:
+                self.store.delete_auth_session(session_hash)
+                return None
+            self.store.update_auth_session_token(
+                session_hash,
+                self.primary_cipher.encrypt(access_token_bytes).decode(),
+            )
+        try:
+            access_token = access_token_bytes.decode()
+        except UnicodeDecodeError:
             self.store.delete_auth_session(session_hash)
             return None
         return AuthenticatedSession(

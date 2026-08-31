@@ -1,12 +1,15 @@
+import hashlib
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import httpx
+from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
 from pipelens.config import Settings
 from pipelens.main import create_app
-from pipelens.models import AnalysisRecord
+from pipelens.models import AnalysisRecord, GitHubUser
 
 
 def _settings(tmp_path: Path) -> Settings:
@@ -122,3 +125,62 @@ def test_analysis_api_requires_login_by_default(tmp_path: Path) -> None:
         response = client.get("/api/analyses")
 
     assert response.status_code == 401
+
+
+def test_authentication_rotates_fallback_encryption_key(tmp_path: Path) -> None:
+    old_key = Fernet.generate_key()
+    new_key = Fernet.generate_key()
+    app = create_app(
+        _settings(tmp_path).model_copy(
+            update={
+                "token_encryption_key": new_key.decode(),
+                "token_encryption_fallback_keys": old_key.decode(),
+            }
+        )
+    )
+    session_token = "session-token"
+    session_hash = hashlib.sha256(session_token.encode()).hexdigest()
+    old_encrypted_token = Fernet(old_key).encrypt(b"github-user-token").decode()
+    with TestClient(app):
+        app.state.store.upsert_github_user(GitHubUser(github_user_id=42, login="octocat"))
+        app.state.store.create_auth_session(
+            session_hash,
+            42,
+            old_encrypted_token,
+            datetime.now(UTC) + timedelta(days=1),
+        )
+
+        session = app.state.auth.authenticate(session_token)
+        stored = app.state.store.get_auth_session(session_hash)
+
+    assert session is not None
+    assert session.access_token == "github-user-token"
+    assert stored is not None
+    rotated_token = stored["encrypted_access_token"]
+    assert rotated_token != old_encrypted_token
+    assert Fernet(new_key).decrypt(rotated_token.encode()) == b"github-user-token"
+
+
+def test_authentication_rejects_token_without_matching_fallback_key(tmp_path: Path) -> None:
+    old_key = Fernet.generate_key()
+    new_key = Fernet.generate_key()
+    app = create_app(
+        _settings(tmp_path).model_copy(
+            update={"token_encryption_key": new_key.decode()}
+        )
+    )
+    session_token = "session-token"
+    session_hash = hashlib.sha256(session_token.encode()).hexdigest()
+    with TestClient(app):
+        app.state.store.upsert_github_user(GitHubUser(github_user_id=42, login="octocat"))
+        app.state.store.create_auth_session(
+            session_hash,
+            42,
+            Fernet(old_key).encrypt(b"github-user-token").decode(),
+            datetime.now(UTC) + timedelta(days=1),
+        )
+
+        session = app.state.auth.authenticate(session_token)
+
+        assert session is None
+        assert app.state.store.get_auth_session(session_hash) is None
