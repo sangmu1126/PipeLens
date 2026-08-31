@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 commit `c7d3a04`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 commit `2bba688`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -40,6 +40,8 @@
 - [`API v1 계약 PR #55`](https://github.com/sangmu1126/PipeLens/pull/55)
 - [API v1 계약 PR CI run 33364795817](https://github.com/sangmu1126/PipeLens/actions/runs/33364795817)
 - [API v1 계약 PR CodeQL run 33364795825](https://github.com/sangmu1126/PipeLens/actions/runs/33364795825)
+- [API v1 계약 병합 후 CI run 33365087414](https://github.com/sangmu1126/PipeLens/actions/runs/33365087414)
+- [API v1 계약 병합 후 CodeQL run 33365087411](https://github.com/sangmu1126/PipeLens/actions/runs/33365087411)
 - [`OAuth token key rotation PR #53`](https://github.com/sangmu1126/PipeLens/pull/53)
 - [OAuth token key rotation PR CI run 33363411829](https://github.com/sangmu1126/PipeLens/actions/runs/33363411829)
 - [OAuth token key rotation PR CodeQL run 33363411722](https://github.com/sangmu1126/PipeLens/actions/runs/33363411722)
