@@ -42,6 +42,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--port", type=int, default=18080)
+    parser.add_argument("--ready-file", type=Path)
+    parser.add_argument("--timeout", type=float, default=180)
     return parser.parse_args()
 
 
@@ -49,13 +51,19 @@ def main() -> int:
     args = parse_args()
     if not 1 <= args.port <= 65535:
         raise SystemExit("port must be between 1 and 65535")
+    if args.timeout <= 0:
+        raise SystemExit("timeout must be greater than zero")
     AlertHandler.output_path = args.output
     server = HTTPServer(("0.0.0.0", args.port), AlertHandler)
-    server.timeout = 60
+    server.timeout = args.timeout
+    if args.ready_file is not None:
+        args.ready_file.touch()
     server.handle_request()
     server.server_close()
     if not args.output.exists():
-        raise SystemExit("no Alertmanager webhook received within 60 seconds")
+        raise SystemExit(
+            f"no Alertmanager webhook received within {args.timeout:g} seconds"
+        )
     return 0
 
 
