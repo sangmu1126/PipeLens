@@ -636,3 +636,17 @@
 - 근거: [PEP 790 Python 3.15 release schedule](https://peps.python.org/pep-0790/),
   [setup-python prerelease 사용법](https://github.com/actions/setup-python/blob/main/docs/advanced-usage.md#using-the-allow-prereleases-input).
 - 관련: `.github/workflows/ci.yml`, `pyproject.toml`, [검증 및 운영 준비 현황](readiness.md).
+
+## D-047. 실제 dependency 실패는 기존 범주의 언어별 근거를 확장
+
+- 결정: Python 3.15 preview에서 관측한 `psycopg-binary` wheel resolution 실패를 익명화된 실제
+  evaluation fixture로 추가하고 기존 `dependency.install` 규칙을 그대로 사용한다.
+- 이유: 기존 dependency fixture는 npm의 `ERESOLVE`만 다뤄 pip resolver의
+  `Could not find a version that satisfies`가 실제 전처리·평가 경로에서도 최초 근거로 보존되는지
+  증명하지 못했다. 반면 classifier에는 이미 이 좁은 pip 문구가 있어 새 규칙이나 범주가 필요 없다.
+- 대안: advisory CI 로그에만 보존, Python 전용 category 추가, 후속 `No matching distribution`만
+  근거로 사용.
+- 결과: 요구 범주 합성 fixture 10건과 실제 PipeLens 회귀 3건, 총 13건을 100% 분류한다. Python
+  dependency 실패는 설치 대상과 version을 포함한 최초 resolver 오류를 근거로 반환한다.
+- 관련: `evaluation/logs/13-python-wheel-resolution.log`, `evaluation/scenarios.json`,
+  `tests/test_classifier.py`.

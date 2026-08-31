@@ -7,9 +7,9 @@
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
-| 고정 진단 평가 | 통과 | 12/12, 100%; 요구 범주 10건과 실제 CI 회귀 2건, CI 최소 기준은 80% |
+| 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
 | 백엔드 테스트 | 통과 | 로컬 130 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 130개와 진단 평가 12/12 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 132개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
@@ -178,8 +178,8 @@
 9. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
 10. `pipelens-evaluate --minimum-accuracy 0.8`
 
-별도 compatibility job은 Python 3.14에서 integration directory를 제외한 130개 테스트와
-12개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
+별도 compatibility job은 Python 3.14에서 integration directory를 제외한 132개 테스트와
+13개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
 3.14는 상한 직전 호환성 검증을 담당한다. 로컬 3.14에서는 일부 dependency가 Python 3.16을
 앞두고 제거될 asyncio API에 대한 deprecation warning을 출력하지만 테스트 결과에는 영향을
 주지 않는다.
@@ -410,8 +410,8 @@ redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 �
 제어된 OAuth provider를 사용하는 실제 Chromium OAuth·dashboard E2E는 완료했다. 실제 GitHub와
 공개 HTTPS 흐름은 위 P0 완료 조건으로 유지한다.
 
-1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가. 첫 2건은 Alertmanager 관측 timeout과
-   Linux bind-mount 권한 실패로 반영 완료
+1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가. Alertmanager 관측 timeout,
+   Linux bind-mount 권한 실패와 Python wheel resolution 실패 3건 반영 완료
 2. Python 3.15용 `psycopg-binary` 배포를 추적하고 final 뒤 dependency metadata·전체 integration을
    확인해 정식 지원과 필수 check 승격 결정
 FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
