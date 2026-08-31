@@ -55,6 +55,7 @@ RULES = (
             r"timed? out|timeout exceeded",
             r"deadline exceeded",
             r"job was cancelled because.*timeout",
+            r"alert state .*not observed",
         ),
     ),
     DetectionRule(
@@ -87,7 +88,7 @@ RULES = (
             r"docker build.*failed",
             r"failed to solve: process",
             r"dockerfile:\d+",
-            r"error response from daemon",
+            r"error response from daemon: (?!no such container)",
         ),
     ),
     DetectionRule(

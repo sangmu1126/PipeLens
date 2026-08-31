@@ -15,6 +15,7 @@ from pipelens.models import ErrorCategory
         ("deploy failed: invalid credentials", ErrorCategory.DEPLOY_AUTH),
         ("required environment variable DATABASE_URL not set", ErrorCategory.MISSING_ENV),
         ("operation timed out", ErrorCategory.TIMEOUT),
+        ("alert state not observed at http://alertmanager/api/v2/alerts", ErrorCategory.TIMEOUT),
         ("fatal: no space left on device", ErrorCategory.RESOURCE),
         ("Invalid workflow file: YAML syntax error", ErrorCategory.WORKFLOW),
     ],
@@ -45,3 +46,14 @@ def test_classification_keeps_first_rule_match_over_downstream_failure() -> None
 
     assert result.category is ErrorCategory.DEPENDENCY
     assert result.first_error.startswith("npm ERR!")
+
+
+def test_cleanup_container_error_does_not_hide_unknown_root_cause() -> None:
+    result = classify_log(
+        'level=error msg="Error loading config" err="permission denied"\n'
+        "Error response from daemon: No such container: probe"
+    )
+
+    assert result.category is ErrorCategory.UNKNOWN
+    assert "permission denied" in result.first_error
+    assert result.matched_rules == []
