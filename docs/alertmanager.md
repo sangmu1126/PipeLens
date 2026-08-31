@@ -60,7 +60,8 @@ Alertmanager가 정상 기동했지만 60초 안에 webhook payload를 받지 �
 파일만 기다려 Prometheus 평가, Alertmanager 수신과 webhook 연결 중 어느 구간이 원인인지
 판별할 수 없었다. receiver bind 완료를 명시적으로 기다리고 두 API 상태를 순서대로 관측한 뒤
 webhook을 확인하도록 보강했다. 로컬 Docker daemon이 없어 이 container 경로의 최종 판정은
-PR #51의 GitHub runner 결과로 남긴다.
+PR #51의 GitHub runner 결과로 남긴다. 보강 후 CI run `33361752707`은 Prometheus firing,
+Alertmanager active와 최종 webhook payload를 순서대로 확인해 전체 경로를 통과했다.
 
 ## 로컬 검증
 

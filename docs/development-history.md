@@ -356,7 +356,8 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   Prometheus readiness와 합성 alert의 firing, Alertmanager의 active 상태를 각각 독립된 제한으로
   순서대로 검사하며, 상태 실패에는 마지막 API 응답과 해당 container log를 남긴다. predicate
   회귀 테스트 4개를 추가했고 로컬 전체 결과는 121 passed, 2 skipped였다. 로컬 Docker daemon은
-  실행 중이지 않아 실제 종단 간 결과는 PR #51 CI에서 판정한다.
+  실행 중이지 않아 실제 종단 간 결과는 PR #51 CI에서 판정했다. run `33361752707`에서
+  Prometheus firing, Alertmanager active와 webhook payload를 순서대로 확인해 통과했다.
 
 ### Ruff 0.16.5와 setup-python 7 유지보수
 
@@ -385,6 +386,11 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 새 `ops/ci/verify_action_pinning.py`는 `.yml`과 `.yaml`의 모든 외부 `uses:`를 검사한다.
   local action과 `docker://`만 예외로 두며 branch, major tag와 semver tag는 파일·행 번호와 함께
   실패시킨다. 정상 SHA·local·container와 두 mutable 형식을 회귀 테스트로 고정했다.
+- 구현 `1e078ac`, 정책 문서 `9aacd55`, Alertmanager 드릴 안정화 `5764bc3`과 진단 기록
+  `88c671b`를 [PR #51](https://github.com/sangmu1126/PipeLens/pull/51)에 분리했다. 최종 CI
+  `33361752707`은 action pinning gate에서 모든 외부 참조가 full SHA임을 확인하고, 보강된
+  Prometheus→Alertmanager→webhook 경로를 포함한 5개 job을 통과했다. CodeQL
+  `33361752698`의 Python·JavaScript/TypeScript 분석도 모두 성공했다.
 
 ### `main` 변경 통제
 
