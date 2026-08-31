@@ -433,10 +433,13 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   로컬 결과는 backend 126 passed, 2 skipped, dashboard 4 passed와 production build 성공이었다.
 - [API versioning 정책](api-versioning.md)은 additive·breaking 변경, enum·behavioral contract,
   v2 병렬 운영, legacy alias의 최소 180일 공지와 Sunset 승인 조건, OpenAPI review 절차를 정의한다.
-- 구현 `3589df1`과 정책 `c7d3a04`를
+- 구현, 정책과 PR 증적을 역할별 commit으로
   [PR #55](https://github.com/sangmu1126/PipeLens/pull/55)에 분리했다. CI `33364795817`은
   OpenAPI drift gate와 backend 126개 테스트, Python 3.14, dashboard, 두 container와 service
   integration을 통과했고 CodeQL `33364795825`의 두 언어 분석도 성공했다.
+- 세 commit은 `490f1f1`, `6f3291a`, `2bba688`로 rebase merge됐다. 병합 후 `main` CI
+  `33365087414`는 OpenAPI contract check와 전체 5개 job을 다시 통과했고 CodeQL
+  `33365087411`의 Python·JavaScript/TypeScript 분석도 성공했다.
 
 ### `main` 변경 통제
 

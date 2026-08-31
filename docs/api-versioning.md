@@ -88,3 +88,6 @@ schema는 같다. PipeLens 대시보드는 이미 `v1`만 사용한다.
   integration 통과
 - [PR #55 CodeQL run `33364795825`](https://github.com/sangmu1126/PipeLens/actions/runs/33364795825):
   Python·JavaScript/TypeScript 분석 통과
+- [병합 후 `main` CI run `33365087414`](https://github.com/sangmu1126/PipeLens/actions/runs/33365087414)와
+  [CodeQL run `33365087411`](https://github.com/sangmu1126/PipeLens/actions/runs/33365087411):
+  rebase된 최종 v1 계약에서 OpenAPI gate, 전체 5개 CI job과 두 언어 분석 통과
