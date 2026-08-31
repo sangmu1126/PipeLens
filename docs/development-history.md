@@ -349,6 +349,14 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 안정화 구현 `d49e9f7`과 문서 `d1d4079`는
   [PR #48](https://github.com/sangmu1126/PipeLens/pull/48)에 rebase merge됐다. 병합 후 `main` CI
   `33327158576`은 라우팅 단계를 포함한 전체 gate를 통과했고 CodeQL `33327158575`도 성공했다.
+- GitHub Actions SHA 고정 PR #51의 첫 CI `33361428377`에서는 두 service가 즉시 준비됐지만
+  webhook payload가 60초 안에 도착하지 않았다. 기존 실패 출력은 container log뿐이라
+  Prometheus 평가, Alertmanager 수신과 host webhook 전달 중 정지 구간을 구분할 수 없었다.
+- `5764bc3`: receiver가 socket을 bind했다는 준비 신호를 기다리고 전체 상한을 180초로 늘렸다.
+  Prometheus readiness와 합성 alert의 firing, Alertmanager의 active 상태를 각각 독립된 제한으로
+  순서대로 검사하며, 상태 실패에는 마지막 API 응답과 해당 container log를 남긴다. predicate
+  회귀 테스트 4개를 추가했고 로컬 전체 결과는 121 passed, 2 skipped였다. 로컬 Docker daemon은
+  실행 중이지 않아 실제 종단 간 결과는 PR #51 CI에서 판정한다.
 
 ### Ruff 0.16.5와 setup-python 7 유지보수
 
