@@ -76,7 +76,9 @@ Alertmanager 대상만 두고 rule은 제외한다. `/api/v1/alertmanagers`의
 Prometheus에 `SIGHUP`을 보내 reload한다. 그 다음에만 firing, active와 webhook을 기다린다.
 Docker Desktop arm64에서 변경 전 기준 실행 1회와 변경 후 연속 5회를 모두 통과했으며, 변경 후
 각 실행은 약 11초 안에 끝났다. 이 순서는 느린 runner에서도 최초 alert가 전달 대상 없이 평가되는
-경쟁을 제거한다.
+경쟁을 제거한다. Linux bind mount 권한을 명시한 뒤 PR #59 CI run `33391726019`의 backend도
+재실행 없이 전체 라우팅 경로를 통과했고 CodeQL run `33391726030`을 포함한 필수 검사 7개가
+모두 성공했다.
 
 ## 로컬 검증
 
