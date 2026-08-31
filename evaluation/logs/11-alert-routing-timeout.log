@@ -1,0 +1,7 @@
+2026-08-31T12:00:01Z Run Verify Prometheus to Alertmanager webhook routing
+Checking /etc/prometheus/prometheus.yml
+SUCCESS: 1 rule files found
+Prometheus is Ready.
+Error: alert state not observed at http://localhost:19093/api/v2/alerts: []
+ts=2026-08-31T12:00:32Z level=info component=dispatcher msg="flushing alerts"
+Error: Process completed with exit code 1.

@@ -8,5 +8,7 @@
   {"case_id":"missing-env","log_file":"logs/07-missing-env.log","expected_category":"missing_environment_variable","expected_evidence":"DATABASE_URL"},
   {"case_id":"job-timeout","log_file":"logs/08-timeout.log","expected_category":"timeout","expected_evidence":"timed out"},
   {"case_id":"runner-disk","log_file":"logs/09-resource.log","expected_category":"resource_exhaustion","expected_evidence":"no space left on device"},
-  {"case_id":"workflow-yaml","log_file":"logs/10-workflow.log","expected_category":"github_actions_workflow_error","expected_evidence":"Invalid workflow file"}
+  {"case_id":"workflow-yaml","log_file":"logs/10-workflow.log","expected_category":"github_actions_workflow_error","expected_evidence":"Invalid workflow file"},
+  {"case_id":"alert-routing-timeout","log_file":"logs/11-alert-routing-timeout.log","expected_category":"timeout","expected_evidence":"alert state not observed"},
+  {"case_id":"bind-mount-permission","log_file":"logs/12-bind-mount-permission.log","expected_category":"unknown","expected_evidence":"permission denied"}
 ]
