@@ -32,6 +32,7 @@
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
+| 공개 보안 접수 | 설정됨 | private vulnerability reporting, Dependabot alerts·security updates, SECURITY policy |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
 | `main` 보호 | 설정됨 | PR, strict CI 5개·CodeQL 2개, conversation·linear history, 관리자 적용 |
@@ -433,6 +434,8 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 - branch protection: PR과 7개 GitHub Actions check 필수, 관리자 적용
 - repository rulesets: 0
 - open CodeQL alerts: 0
+- private vulnerability reporting: enabled
+- Dependabot alerts와 security updates: enabled, security updates paused false
 - repository description: `Evidence-first diagnostics for failed GitHub Actions runs`
 - repository topics: `ci-cd`, `developer-tools`, `devops`, `fastapi`, `github-actions`,
   `observability`, `python`, `react`, `typescript`
@@ -455,6 +458,8 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] release image SBOM·provenance
 - [x] GHCR release·attestation 보존 정책과 자동 감사
 - [x] 외부 GitHub Action full commit SHA 고정과 CI 정책 검사
+- [x] private vulnerability reporting과 Dependabot alerts·security updates
+- [x] SECURITY·기여 가이드와 구조화된 issue/PR template
 - [x] Fernet rolling key rotation 구현과 secret·incident response runbook
 - [ ] [production secret manager 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill

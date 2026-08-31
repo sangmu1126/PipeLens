@@ -668,3 +668,23 @@
 - 관련: [저장소 관리 절차](repository-governance.md),
   [Python 3.15 지원 #71](https://github.com/sangmu1126/PipeLens/issues/71),
   [공개 HTTPS 검증 #62](https://github.com/sangmu1126/PipeLens/issues/62).
+
+## D-049. 취약점은 private advisory로 받고 공개 기여는 구조화된 form으로 제한
+
+- 결정: private vulnerability reporting, Dependabot alerts와 security updates를 활성화한다.
+  `SECURITY.md`는 취약점·secret·private log를 private advisory로 보내고, 공개 bug/feature issue
+  form과 PR template은 재현·증적·마스킹·보안 검토를 명시적으로 요구한다. blank issue는 끈다.
+- 이유: 공개 issue에 원본 CI 로그나 credential이 들어오면 저장소 이력에서 완전히 회수하기
+  어렵다. Dependabot version update 설정만으로는 알려진 취약점 alert와 security PR이 활성화되지
+  않으며, 자유 형식 issue는 PipeLens의 evidence-first 원칙을 접수 단계에서 강제하지 못한다.
+- 대안: 공개 security issue 사용, 이메일 주소 게시, 템플릿 없이 maintainer가 사후 정리,
+  Dependabot version update만 유지.
+- 결과: reporter는 GitHub의 비공개 협업·수정·공개 경로를 사용하고 public intake는 secret 제거와
+  최소 재현을 확인한다. 자동 생성된 security PR도 기존 7개 필수 check와 선형 merge 정책을
+  우회하지 않는다.
+- 근거: [GitHub private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository),
+  [Dependabot alerts](https://docs.github.com/en/code-security/dependabot/dependabot-alerts/configuring-dependabot-alerts),
+  [Dependabot security updates](https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates),
+  [GitHub issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms).
+- 관련: `SECURITY.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/`,
+  `.github/PULL_REQUEST_TEMPLATE.md`, [저장소 관리 절차](repository-governance.md).

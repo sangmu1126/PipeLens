@@ -762,6 +762,20 @@ Nginx는 별도 PR로 분리했다.
   정책 문서와 현재 상태가 backend, Python 3.14, dashboard와 두 container build를 통과했다.
   CodeQL run `33423256608`의 Python·JavaScript 분석도 성공했다.
 
+### 비공개 보안 신고와 evidence-first 기여 접수
+
+- repository API에서 private vulnerability reporting과 Dependabot vulnerability alerts가 꺼져
+  있고, security updates도 disabled인 상태를 확인했다. 세 기능을 활성화한 뒤 private reporting
+  `enabled: true`, vulnerability alerts HTTP 204, automated security fixes `enabled: true`와
+  `paused: false`를 다시 조회했다.
+- `SECURITY.md`는 취약점, 노출 credential, private workflow log와 개인정보를 공개 issue에 올리지
+  않고 private advisory로 신고하도록 한다. 재현 정보도 최소·마스킹된 범위만 요구하고 실제 secret은
+  먼저 폐기·교체하도록 명시했다.
+- bug form은 재현, version, environment, 최초 오류와 공개 안전 확인을 필수화했다. feature form은
+  문제·측정 결과·대안·완료 증적을 분리하고 blank issue를 껐다. PR template과 기여 가이드는 테스트,
+  문서, 보안·개인정보 경계와 분리 커밋을 같은 접수 계약으로 연결한다.
+- README의 평가 설명에 남아 있던 이전 수치도 실제 회귀 3건, 전체 fixture 13건으로 교정했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
