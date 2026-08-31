@@ -68,7 +68,7 @@ function App() {
     if (cursor) params.set("cursor", cursor);
     setLoading(true);
     try {
-      const response = await fetch(`/api/analyses?${params.toString()}`);
+      const response = await fetch(`/api/v1/analyses?${params.toString()}`);
       if (requestId !== requestSequence.current) return;
       if (response.status === 401) {
         setUser(null);
@@ -107,7 +107,7 @@ function App() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        const response = await fetch("/api/me");
+        const response = await fetch("/api/v1/me");
         if (response.status === 401) {
           setUser(null);
           setLoading(false);
@@ -492,7 +492,7 @@ function FeedbackForm({ analysis, onSaved }: { analysis: Analysis; onSaved: (fee
     if (!accuracy) return;
     setState("saving");
     try {
-      const response = await fetch(`/api/analyses/${analysis.run_id}/feedback`, {
+      const response = await fetch(`/api/v1/analyses/${analysis.run_id}/feedback`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accuracy, suggestion_resolved: resolved, comment: comment || null }),

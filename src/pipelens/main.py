@@ -27,6 +27,12 @@ from pipelens.security import InvalidSignatureError, verify_github_signature
 from pipelens.store import AnalysisCursor, AnalysisStore
 from pipelens.worker import AnalysisWorker
 
+API_V1_PREFIX = "/api/v1"
+LEGACY_API_DEPRECATION = "@1788134400"
+DEPRECATION_POLICY_URL = (
+    "https://github.com/sangmu1126/PipeLens/blob/main/docs/api-versioning.md"
+)
+
 
 async def reconcile_queued_analyses(store: AnalysisStore, queue: AnalysisQueue) -> int:
     reconciled = 0
@@ -101,6 +107,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Permissions-Policy"] = "camera=(), geolocation=(), microphone=()"
+        if request.url.path == "/api/me" or request.url.path.startswith("/api/analyses"):
+            response.headers["Deprecation"] = LEGACY_API_DEPRECATION
+            response.headers["Link"] = (
+                f'<{DEPRECATION_POLICY_URL}>; rel="deprecation"; type="text/html"'
+            )
         return response
 
     def get_store(request: Request) -> AnalysisStore:
@@ -215,7 +226,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.delete_cookie("pipelens_session")
         return response
 
-    @app.get("/api/me", response_model=CurrentUser, tags=["auth"])
+    @app.get(
+        "/api/me",
+        response_model=CurrentUser,
+        tags=["legacy"],
+        deprecated=True,
+    )
+    @app.get(f"{API_V1_PREFIX}/me", response_model=CurrentUser, tags=["auth"])
     async def current_user(
         session: Annotated[AuthenticatedSession, Depends(require_session)],
     ) -> CurrentUser:
@@ -321,7 +338,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             status_code=status.HTTP_202_ACCEPTED,
         )
 
-    @app.get("/api/analyses", response_model=list[AnalysisRecord], tags=["analyses"])
+    @app.get(
+        "/api/analyses",
+        response_model=list[AnalysisRecord],
+        tags=["legacy"],
+        deprecated=True,
+    )
+    @app.get(
+        f"{API_V1_PREFIX}/analyses",
+        response_model=list[AnalysisRecord],
+        tags=["analyses"],
+    )
     async def list_analyses(
         response: Response,
         analysis_store: Annotated[AnalysisStore, Depends(get_store)],
@@ -348,7 +375,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
         return page.records
 
-    @app.get("/api/analyses/{run_id}", response_model=AnalysisRecord, tags=["analyses"])
+    @app.get(
+        "/api/analyses/{run_id}",
+        response_model=AnalysisRecord,
+        tags=["legacy"],
+        deprecated=True,
+    )
+    @app.get(
+        f"{API_V1_PREFIX}/analyses/{{run_id}}",
+        response_model=AnalysisRecord,
+        tags=["analyses"],
+    )
     async def get_analysis(
         run_id: int,
         analysis_store: Annotated[AnalysisStore, Depends(get_store)],
@@ -361,6 +398,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.put(
         "/api/analyses/{run_id}/feedback",
+        response_model=FeedbackRecord,
+        tags=["legacy"],
+        deprecated=True,
+    )
+    @app.put(
+        f"{API_V1_PREFIX}/analyses/{{run_id}}/feedback",
         response_model=FeedbackRecord,
         tags=["feedback"],
     )

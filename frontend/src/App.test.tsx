@@ -87,7 +87,7 @@ describe("PipeLens dashboard", () => {
     ];
     const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url === "/api/me") return jsonResponse(currentUser);
+      if (url === "/api/v1/me") return jsonResponse(currentUser);
       return url.includes("cursor=next-page")
         ? jsonResponse(secondPage)
         : jsonResponse(firstPage, "next-page");
@@ -115,7 +115,7 @@ describe("PipeLens dashboard", () => {
     const failed = analysis({ run_id: 12, repository: "acme/web", status: "failed" });
     const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url === "/api/me") return jsonResponse(currentUser);
+      if (url === "/api/v1/me") return jsonResponse(currentUser);
       return url.includes("status=completed")
         ? jsonResponse([completed])
         : jsonResponse([completed, failed]);
@@ -151,7 +151,9 @@ describe("PipeLens dashboard", () => {
       },
     });
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async (input: RequestInfo | URL) =>
-      String(input) === "/api/me" ? jsonResponse(currentUser) : jsonResponse([diagnosed]),
+      String(input) === "/api/v1/me"
+        ? jsonResponse(currentUser)
+        : jsonResponse([diagnosed]),
     ));
 
     const { container } = render(<App />);

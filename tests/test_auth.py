@@ -70,8 +70,8 @@ def test_oauth_login_creates_session_and_syncs_verified_installations(tmp_path: 
             params={"code": "oauth-code", "state": query["state"][0]},
             follow_redirects=False,
         )
-        me = client.get("/api/me")
-        analyses = client.get("/api/analyses")
+        me = client.get("/api/v1/me")
+        analyses = client.get("/api/v1/analyses")
 
     assert callback.status_code == 303
     assert "pipelens_session=" in callback.headers["set-cookie"]
@@ -122,7 +122,7 @@ def test_analysis_api_requires_login_by_default(tmp_path: Path) -> None:
     app = create_app(_settings(tmp_path))
 
     with TestClient(app) as client:
-        response = client.get("/api/analyses")
+        response = client.get("/api/v1/analyses")
 
     assert response.status_code == 401
 
