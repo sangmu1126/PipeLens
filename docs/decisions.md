@@ -476,3 +476,20 @@
 - 관련: `9b1c25d`, 안정화 `d49e9f7`, [PR #45](https://github.com/sangmu1126/PipeLens/pull/45),
   [PR #48](https://github.com/sangmu1126/PipeLens/pull/48),
   [Alertmanager 절차](alertmanager.md).
+
+## D-038. 외부 GitHub Action은 release tag를 확인한 full commit SHA로 실행
+
+- 결정: 모든 `.github/workflows`의 외부 `uses:` 참조를 40자리 commit SHA로 고정하고 사람이
+  읽을 수 있는 release version을 주석으로 남긴다. local action과 `docker://` 참조만 예외로
+  허용하며 backend CI가 모든 YAML workflow를 검사해 mutable tag·branch를 차단한다.
+- 이유: major·version tag는 저장소 관리자나 공격자에 의해 다른 commit으로 이동할 수 있다.
+  workflow는 source, package token과 release 권한을 다루므로 실행 code를 review한 commit과
+  일치시켜야 한다.
+- 대안: GitHub·verified creator action만 tag 허용, release workflow만 SHA 고정, repository
+  설정만으로 pinning을 강제하고 저장소 내부 검사를 두지 않음.
+- 결과: CI, CodeQL, release와 GHCR 감사의 외부 action 참조가 모두 immutable해지고 Dependabot
+  update는 SHA와 version 주석을 함께 검토하는 PR로 유지된다. 저장소 설정의 SHA 강제 정책은
+  관리자 UI/API 권한과 별도로 확인해야 한다.
+- 근거: [GitHub Actions secure use reference](https://docs.github.com/en/actions/reference/security/secure-use),
+  [GitHub Actions repository settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository).
+- 관련: `ops/ci/verify_action_pinning.py`.
