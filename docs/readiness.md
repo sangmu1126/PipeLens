@@ -29,6 +29,7 @@
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
+| API v1 계약 | 구현 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
@@ -375,8 +376,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 1. 실제 브라우저 기반 OAuth·dashboard E2E
 2. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가
 3. Python 3.15 지원 시점과 dependency compatibility 결정
-4. API schema versioning과 upgrade/deprecation 정책
-5. FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환 시점 검토
+4. FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환 시점 검토
 
 ## 6. 현재 GitHub 저장소 관리 상태
 

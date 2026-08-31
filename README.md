@@ -200,10 +200,14 @@ GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하
 - `POST /auth/logout`: 현재 세션 종료
 - `GET /github/install`: GitHub App 설치 화면으로 이동
 - `GET /github/setup`: 설치 완료 후 사용자 접근 권한 재검증
-- `GET /api/me`: 로그인 사용자와 접근 가능한 installation
-- `GET /api/analyses`: 최근 분석 목록
-- `GET /api/analyses/{run_id}`: 분석 상세
-- `PUT /api/analyses/{run_id}/feedback`: 정확도·해결 여부 피드백 저장
+- `GET /api/v1/me`: 로그인 사용자와 접근 가능한 installation
+- `GET /api/v1/analyses`: 최근 분석 목록
+- `GET /api/v1/analyses/{run_id}`: 분석 상세
+- `PUT /api/v1/analyses/{run_id}/feedback`: 정확도·해결 여부 피드백 저장
+
+무버전 `/api/*` 경로는 호환 alias로 유지하지만 deprecated다. 새 consumer는 `/api/v1`을 사용해야
+하며 호환성·폐기 조건과 생성된 OpenAPI 계약은
+[API versioning 정책](docs/api-versioning.md)을 따른다.
 - `GET /healthz`: 프로세스 상태
 - `GET /readyz`: 데이터베이스·분석 큐 readiness 상태
 - `GET /metrics`: Prometheus exposition endpoint
