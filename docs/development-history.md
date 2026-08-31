@@ -411,6 +411,11 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - [비밀값과 키 교체](secrets-and-rotation.md)에 GitHub App, webhook, OAuth, OpenAI, PostgreSQL,
   Redis와 Alertmanager credential inventory, 교체 순서, rollback, 침해 조사와 증적 체크리스트를
   기록했다. 실제 secret manager와 production rotation drill은 외부 완료 조건으로 남긴다.
+- 구현 `11f1f0d`와 운영 문서 `ec691bc`를
+  [PR #53](https://github.com/sangmu1126/PipeLens/pull/53)에 분리했다. CI `33363411829`는
+  Python 3.12의 새 session migration 테스트를 포함한 backend, Python 3.14 compatibility,
+  PostgreSQL·Redis integration, 두 container와 dashboard를 모두 통과했다. CodeQL
+  `33363411722`의 두 언어 분석도 성공했다.
 
 ### `main` 변경 통제
 

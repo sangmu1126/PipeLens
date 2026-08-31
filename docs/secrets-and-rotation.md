@@ -118,3 +118,14 @@ firing/resolved canary 중 해당 경로를 검증한다.
 
 이 체크리스트의 실제 날짜, 환경, secret version과 run ID가 없으면 production rotation 완료로
 표시하지 않는다.
+
+## 자동 검증 증적
+
+- 로컬 Ruff와 전체 테스트: 124 passed, 2 skipped
+- [PR #53 CI run `33363411829`](https://github.com/sangmu1126/PipeLens/actions/runs/33363411829):
+  Python 3.12·3.14, PostgreSQL·Redis integration, container와 관측성 gate 통과
+- [PR #53 CodeQL run `33363411722`](https://github.com/sangmu1126/PipeLens/actions/runs/33363411722):
+  Python·JavaScript/TypeScript 분석 통과
+
+이 증적은 key ring 동작과 기존 token migration 회귀를 검증한다. 실제 secret manager version
+전환, GitHub App credential 폐기와 production session 영향은 위 외부 체크리스트로 남는다.
