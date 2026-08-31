@@ -709,6 +709,19 @@ Nginx는 별도 PR로 분리했다.
 - [PR #68](https://github.com/sangmu1126/PipeLens/pull/68)의 CI run `33398998517`과 CodeQL
   run `33398998843`에서 Python 3.12·3.14 평가와 필수 검사 7개가 모두 성공했다.
 
+### Python 3.15 prerelease의 조기 호환성 관측
+
+- PEP 790의 2026-09-01 상태를 기준으로 Python 3.15 final은 2026-10-01 예정이며,
+  GitHub Actions의 공식 Python version manifest에는 3.15.0 RC1이 제공된다.
+- 정식 지원 범위 `>=3.12,<3.15`와 필수 Python 3.14 compatibility job은 유지했다. 새 Python
+  3.15 preview는 setup-python의 prerelease 선택을 사용해 integration 제외 테스트, `pip check`와
+  12개 진단 평가를 실행한다.
+- preview 설치의 `--ignore-requires-python`은 아직 3.15를 제외하는 PipeLens root metadata를
+  통과하기 위한 한정된 예외다. job을 advisory로 둬 prerelease의 upstream 변동이 지원 branch의
+  병합을 막거나 의도적인 CI 실패 메일을 만들지 않게 했다.
+- final 출시 뒤에는 이 예외를 제거하고 PostgreSQL·Redis service integration까지 통과해야
+  `<3.16` 지원 선언과 branch protection 승격을 검토한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

@@ -615,3 +615,22 @@
   timeout과 bind-mount 권한 근거를 모두 보존하며 현재 12/12를 통과한다. 새 범주는 반복 사례와
   사용자 조치가 충분히 구별될 때 별도 결정으로 추가한다.
 - 관련: `evaluation/scenarios.json`, `src/pipelens/classifier.py`.
+
+## D-046. Python 3.15는 정식 지원 전에 advisory preview로 검증
+
+- 결정: 공식 final 전에는 `requires-python`의 상한 `<3.15`와 필수 Python 3.14 compatibility를
+  유지한다. CI에 `allow-prereleases`를 사용하는 Python 3.15 preview job을 추가해 integration을
+  제외한 백엔드 테스트, dependency consistency와 진단 평가를 실행하되 job은 advisory로 둔다.
+- 이유: Python 3.15 final은 2026-10-01 예정이고 2026-09-01 현재 GitHub-hosted runner의 공식
+  toolcache manifest에는 3.15.0 RC1만 있다. prerelease를 곧바로 지원 범위와 branch protection에
+  넣으면 runtime이나 dependency의 upstream 변경으로 정상 지원 branch를 막을 수 있지만, final
+  이후에 처음 검사하면 대응 시간이 없다.
+- 대안: final까지 아무 검사도 하지 않음, RC를 즉시 정식 지원, RC1 exact version을 고정해 이후
+  RC 변화를 검사하지 않음.
+- 결과: setup-python이 제공하는 최신 3.15 prerelease에서 실제 runtime 회귀를 조기에 관측한다.
+  root package의 선언 범위만 preview 설치에서 우회하므로 이 결과는 사용자 지원 선언이 아니다.
+  final 출시 뒤 dependency metadata와 전체 integration을 확인해 `<3.16` 전환과 필수 check 승격을
+  별도로 결정한다.
+- 근거: [PEP 790 Python 3.15 release schedule](https://peps.python.org/pep-0790/),
+  [setup-python prerelease 사용법](https://github.com/actions/setup-python/blob/main/docs/advanced-usage.md#using-the-allow-prereleases-input).
+- 관련: `.github/workflows/ci.yml`, `pyproject.toml`, [검증 및 운영 준비 현황](readiness.md).
