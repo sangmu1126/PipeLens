@@ -72,8 +72,9 @@ npm --prefix frontend run build
 ## MVP 정확도 평가
 
 `evaluation/scenarios.json`에는 테스트·빌드·의존성·Lint·Docker·배포 인증·환경변수·
-Timeout·리소스·Workflow 오류를 재현하는 10개 고정 로그가 있습니다. 평가 러너는 예상
-범주와 최초 원인 근거를 모두 채점하며 기본 통과 기준은 완료 조건과 같은 80%입니다.
+Timeout·리소스·Workflow 오류의 10개 요구 범주와 실제 PipeLens CI 실패 2건을 재현하는
+12개 고정 로그가 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두 채점하며 기본 통과
+기준은 완료 조건과 같은 80%입니다.
 
 ```bash
 pipelens-evaluate

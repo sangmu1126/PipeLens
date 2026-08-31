@@ -113,6 +113,10 @@ flowchart LR
 `resource_exhaustion`, `github_actions_workflow_error`.
 
 결과에는 confidence, 최초 오류, 관련 job/step과 일치한 규칙을 포함한다.
+관측 제한을 소진한 `alert state not observed`는 timeout으로 분류한다. 반면 선행한 설정
+`permission denied` 뒤 cleanup에서 출력된 `No such container`는 Docker build 원인으로
+덮어쓰지 않고 `unknown`과 최초 권한 근거를 유지한다. 지원 범주 밖의 원인은 가장 가까운 범주로
+억지 매핑하지 않는다.
 
 ### 4.4 correlating
 
