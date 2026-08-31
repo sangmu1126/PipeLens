@@ -412,17 +412,18 @@ redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 �
 
 1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가. Alertmanager 관측 timeout,
    Linux bind-mount 권한 실패와 Python wheel resolution 실패 3건 반영 완료
-2. Python 3.15용 `psycopg-binary` 배포를 추적하고 final 뒤 dependency metadata·전체 integration을
-   확인해 정식 지원과 필수 check 승격 결정
+2. [#71 Python 3.15 GA 승격](https://github.com/sangmu1126/PipeLens/issues/71):
+   `psycopg-binary` 배포를 추적하고 final 뒤 dependency metadata·전체 integration을 확인해
+   정식 지원과 필수 check 승격 결정
 FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
 
-2026-08-31 조회 결과:
+2026-09-01 조회 결과:
 
 - visibility: public
 - default branch: `main`
-- open issues: 6 (`priority:p0` 2개, `priority:p1` 4개)
+- open issues: 7 (`priority:p0` 2개, `priority:p1` 4개, `priority:p2` 1개)
 - open pull requests: 0
 - open milestones: 1 (`v0.2.0 Production readiness`, 0/6 완료)
 - version tags: 1 (`v0.1.0`)
@@ -432,10 +433,15 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 - branch protection: PR과 7개 GitHub Actions check 필수, 관리자 적용
 - repository rulesets: 0
 - open CodeQL alerts: 0
-- repository description과 homepage: 비어 있음
+- repository description: `Evidence-first diagnostics for failed GitHub Actions runs`
+- repository topics: `ci-cd`, `developer-tools`, `devops`, `fastapi`, `github-actions`,
+  `observability`, `python`, `react`, `typescript`
+- repository homepage: 공개 HTTPS 배포 전이므로 의도적으로 비어 있음
 
 P0/P1 항목은 issue #61–#66으로 분리해 milestone에 연결했다. 각 issue는 실제 외부 환경,
 완료 조건과 저장해야 할 증적을 명시하며 repository에서 재현 가능한 합성 검증과 구분한다.
+P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness 완료율과 독립적으로
+추적한다.
 
 ## 7. 운영 전 체크리스트
 

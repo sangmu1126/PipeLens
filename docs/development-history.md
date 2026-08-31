@@ -747,6 +747,18 @@ Nginx는 별도 PR로 분리했다.
   dashboard와 두 container build도 성공했고 CodeQL run `33420485072`의 두 언어 분석도
   통과했다.
 
+### 공개 repository metadata와 P2 compatibility 추적
+
+- 비어 있던 GitHub description을 package metadata와 같은 문구로 설정하고 제품 목적과 실제
+  stack을 나타내는 topics 9개를 추가했다. repository URL을 homepage로 반복하지 않았으며 실제
+  공개 HTTPS endpoint가 없는 상태를 숨기지 않도록 #62 완료 전까지 빈 값으로 유지한다.
+- `priority:p2`와 `area:compatibility` label을 만들고
+  [Python 3.15 GA 승격 #71](https://github.com/sangmu1126/PipeLens/issues/71)을 생성했다. final
+  runtime, `psycopg-binary`, 전체 service integration, 지원 metadata와 branch protection 승격을
+  acceptance criteria로 고정했다.
+- Python 3.15는 production readiness를 막는 P0/P1이 아니므로 #71을 v0.2.0 milestone에 넣지
+  않았다. 이로써 외부 운영 완료율과 향후 runtime 품질 확장을 분리했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

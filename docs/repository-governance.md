@@ -51,6 +51,22 @@ issue는 목적, 측정 가능한 acceptance criteria, 보안 검증과 제외 �
 증적을 확인한 뒤 닫는다. 현재 범위는 issue
 [#61](https://github.com/sangmu1126/PipeLens/issues/61)–[#66](https://github.com/sangmu1126/PipeLens/issues/66)이다.
 
+production readiness를 막지 않는 품질 확장은 `priority:p2`로 분리한다. runtime과 dependency
+지원 범위는 `area:compatibility`로 표시하며 milestone 완료율에는 포함하지 않는다. 첫 대상은
+[Python 3.15 GA 승격 #71](https://github.com/sangmu1126/PipeLens/issues/71)이다.
+
+## 공개 저장소 메타데이터
+
+GitHub description은 package metadata와 같은
+`Evidence-first diagnostics for failed GitHub Actions runs`를 사용한다. topics는 제품 목적과 실제
+구현 기술을 나타내는 `github-actions`, `ci-cd`, `developer-tools`, `observability`, `devops`,
+`fastapi`, `react`, `python`, `typescript`로 제한한다.
+
+homepage는 README나 repository URL을 중복 입력하지 않는다. 공개 HTTPS 배포가 없으면 비워 두고,
+[#62](https://github.com/sangmu1126/PipeLens/issues/62)의 production endpoint가 검증된 뒤 실제
+사용자 진입 URL로 설정한다. description, topics와 homepage 변경도 적용 뒤 API로 실제 값을 다시
+조회하고 개발 기록에 남긴다.
+
 ## 보호 범위 밖의 항목
 
 branch protection은 version tag와 GitHub Release asset을 잠그지 않는다. Release workflow는
