@@ -514,3 +514,21 @@
   [GitHub App webhook 사용](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/using-webhooks-with-github-apps),
   [GitHub App webhook 재전달](https://docs.github.com/en/rest/apps/webhooks).
 - 관련: `src/pipelens/auth.py`, [비밀값과 키 교체](secrets-and-rotation.md).
+
+## D-040. Public JSON API는 URI major version과 committed OpenAPI 계약을 사용
+
+- 결정: dashboard resource API의 정식 base path를 `/api/v1`로 두고 무버전 `/api/*`는 deprecated
+  alias로 유지한다. legacy operation은 OpenAPI `deprecated`와 RFC 9745 `Deprecation`·
+  `deprecation` link header로 알린다. runtime OpenAPI는 `docs/openapi.json`에 고정하고 CI가
+  application schema와 byte 단위로 비교한다.
+- 이유: 무버전 path는 breaking 변경을 병렬 도입하거나 consumer migration 기간을 표현할 수
+  없다. runtime schema만 제공하면 dependency·model 변경으로 생긴 계약 차이가 review 없이
+  병합될 수 있다. 반면 모든 변경에 새 version을 만들면 additive evolution 비용이 지나치다.
+- 대안: media type/header versioning, application SemVer만 사용, OpenAPI snapshot 없이 endpoint
+  테스트만 유지, 기존 `/api`를 즉시 제거.
+- 결과: additive 변경은 v1 안에서 가능하고 breaking 변경은 v2 병렬 경로를 요구한다. legacy
+  consumer는 그대로 동작하면서 runtime과 schema에서 migration 신호를 받는다. 제거 날짜가
+  승인되기 전에는 `Sunset`을 보내지 않으며 최소 180일 공지와 사용량 확인 뒤 결정한다.
+- 근거: [RFC 9745 Deprecation header](https://www.rfc-editor.org/rfc/rfc9745.html),
+  [OpenAPI 3.1 operation deprecated](https://spec.openapis.org/oas/v3.1.0.html).
+- 관련: `ops/ci/export_openapi.py`, [API versioning 정책](api-versioning.md).

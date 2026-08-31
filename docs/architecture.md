@@ -206,7 +206,9 @@ migration은 다음 순서로 확장됐다.
 
 ## 8. API와 대시보드
 
-주요 endpoint는 root `README.md`의 API 목록을 기준으로 한다. 목록 API는 category, status,
+public JSON resource API는 `/api/v1` major path를 사용하며 생성된 OpenAPI 계약을 CI에서
+검증한다. 이전 `/api/*` alias는 deprecation header와 OpenAPI 표시를 포함한 migration 경계로만
+유지한다. 주요 endpoint는 root `README.md`의 API 목록을 기준으로 한다. 목록 API는 category, status,
 repository 필터와 `(created_at, run_id)` 기반 opaque cursor pagination을 지원한다. offset
 대신 cursor를 사용해 새 분석이 들어오는 동안 페이지 중복·누락 가능성을 줄였다.
 

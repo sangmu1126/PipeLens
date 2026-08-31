@@ -420,6 +420,20 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   `33363711257`은 전체 5개 job과 token migration 회귀를 다시 통과했고 CodeQL
   `33363711311`의 Python·JavaScript/TypeScript 분석도 성공했다.
 
+### API v1 계약과 deprecation 경계
+
+- dashboard JSON API는 `/api/*` 무버전 경로만 사용해 breaking 변경을 병렬 도입하거나 consumer
+  migration 기간을 표현할 수 없었다. FastAPI runtime OpenAPI도 repository에서 review하거나
+  drift를 차단하지 않았다.
+- `3589df1`: `/api/v1`에 me, analyses 목록·상세와 feedback endpoint를 정식 제공하고 dashboard와
+  backend 테스트를 모두 v1으로 전환했다. 기존 path는 같은 handler를 호출하는 deprecated alias로
+  유지하며 OpenAPI `deprecated: true`, RFC 9745 `Deprecation` timestamp와 정책 link를 반환한다.
+- 생성 script가 정렬된 `docs/openapi.json`을 만들고 backend CI가 runtime schema와 byte 단위로
+  비교한다. v1·legacy operation 표시와 runtime deprecation header를 별도 회귀 테스트로 고정했다.
+  로컬 결과는 backend 126 passed, 2 skipped, dashboard 4 passed와 production build 성공이었다.
+- [API versioning 정책](api-versioning.md)은 additive·breaking 변경, enum·behavioral contract,
+  v2 병렬 운영, legacy alias의 최소 180일 공지와 Sunset 승인 조건, OpenAPI review 절차를 정의한다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를
