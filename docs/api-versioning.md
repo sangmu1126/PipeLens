@@ -79,3 +79,12 @@ schema는 같다. PipeLens 대시보드는 이미 `v1`만 사용한다.
 
 생성 파일만 갱신해 CI를 통과시키는 것은 호환성 승인으로 간주하지 않는다. OpenAPI가 표현하지
 못하는 ordering, authorization과 멱등성도 테스트와 문서 diff에서 함께 검토한다.
+
+## 자동 검증 증적
+
+- 로컬: backend 126 passed, 2 skipped, dashboard 4 passed와 production build
+- [PR #55 CI run `33364795817`](https://github.com/sangmu1126/PipeLens/actions/runs/33364795817):
+  committed OpenAPI와 runtime schema 일치, Python 3.12·3.14, dashboard, container와 service
+  integration 통과
+- [PR #55 CodeQL run `33364795825`](https://github.com/sangmu1126/PipeLens/actions/runs/33364795825):
+  Python·JavaScript/TypeScript 분석 통과

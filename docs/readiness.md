@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 commit `e445933`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 commit `c7d3a04`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -29,7 +29,7 @@
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
-| API v1 계약 | 구현 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate |
+| API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
@@ -37,6 +37,9 @@
 
 최근 검증 실행:
 
+- [`API v1 계약 PR #55`](https://github.com/sangmu1126/PipeLens/pull/55)
+- [API v1 계약 PR CI run 33364795817](https://github.com/sangmu1126/PipeLens/actions/runs/33364795817)
+- [API v1 계약 PR CodeQL run 33364795825](https://github.com/sangmu1126/PipeLens/actions/runs/33364795825)
 - [`OAuth token key rotation PR #53`](https://github.com/sangmu1126/PipeLens/pull/53)
 - [OAuth token key rotation PR CI run 33363411829](https://github.com/sangmu1126/PipeLens/actions/runs/33363411829)
 - [OAuth token key rotation PR CodeQL run 33363411722](https://github.com/sangmu1126/PipeLens/actions/runs/33363411722)
