@@ -10,6 +10,10 @@ from pipelens.models import ErrorCategory
         ("pytest: 1 failed, 9 passed", ErrorCategory.TEST),
         ("error: compilation failed", ErrorCategory.BUILD),
         ("npm ERR! ERESOLVE unable to resolve dependency tree", ErrorCategory.DEPENDENCY),
+        (
+            "ERROR: Could not find a version that satisfies the requirement psycopg-binary",
+            ErrorCategory.DEPENDENCY,
+        ),
         ("ruff check failed with lint errors", ErrorCategory.LINT),
         ("docker build failed: Dockerfile:12", ErrorCategory.DOCKER),
         ("deploy failed: invalid credentials", ErrorCategory.DEPLOY_AUTH),
@@ -57,3 +61,15 @@ def test_cleanup_container_error_does_not_hide_unknown_root_cause() -> None:
     assert result.category is ErrorCategory.UNKNOWN
     assert "permission denied" in result.first_error
     assert result.matched_rules == []
+
+
+def test_python_wheel_resolution_keeps_actionable_requirement() -> None:
+    result = classify_log(
+        "ERROR: Could not find a version that satisfies the requirement "
+        'psycopg-binary==3.3.4 (from versions: none)\n'
+        "ERROR: No matching distribution found for psycopg-binary==3.3.4"
+    )
+
+    assert result.category is ErrorCategory.DEPENDENCY
+    assert "psycopg-binary==3.3.4" in result.first_error
+    assert result.matched_rules == ["dependency.install"]
