@@ -11,20 +11,20 @@
 | 백엔드 테스트 | 통과 | 로컬 126 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
 | Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 126개와 진단 평가 10/10 |
 | 대시보드 테스트 | 통과 | Vitest 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
-| API·대시보드 이미지 | 통과 | 실제 Docker build, 최종 non-root USER 검사 |
-| 대시보드 컨테이너 기동 | 통과 | CI에서 Nginx 기동 후 내부 8080 HTTP smoke test |
+| API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
+| 대시보드 컨테이너 기동 | 통과 | CI·로컬에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
 | GHCR 보존 정책 | 통과 | 정식 release·attestation 영구 보존, 월별 tag/digest 읽기 전용 감사 |
 | Compose service image | 통과 | 5개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
-| Alertmanager routing | 통과 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI drill |
+| Alertmanager routing | 통과 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI·로컬 drill |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
-| Worker replica drill | 통과 | 4 replica·200 job, orphan 1개 2.060초 복구, 최대 완료 2.071초 |
-| PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
-| Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
+| Worker replica drill | 통과 | CI와 로컬 4 replica·200 job, orphan 1개 복구와 60초/120초 SLO 검증 |
+| PostgreSQL runtime | 통과 | CI amd64·로컬 arm64에서 18.6, 17→18 dump/restore·Alembic·integration 검증 |
+| Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2, 12→13 volume·provisioning·Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
@@ -37,6 +37,8 @@
 
 최근 검증 실행:
 
+- [2026-08-31 Docker Desktop arm64 통합 검증](local-docker-validation.md): PostgreSQL·Grafana
+  major upgrade, Alertmanager routing, PostgreSQL·Redis integration, worker drill과 두 image smoke
 - [`브라우저 OAuth E2E PR #57`](https://github.com/sangmu1126/PipeLens/pull/57)
 - [브라우저 OAuth E2E PR CI run 33385076481](https://github.com/sangmu1126/PipeLens/actions/runs/33385076481)
 - [브라우저 OAuth E2E PR CodeQL run 33385076451](https://github.com/sangmu1126/PipeLens/actions/runs/33385076451)

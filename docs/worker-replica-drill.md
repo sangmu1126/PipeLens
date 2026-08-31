@@ -73,3 +73,19 @@ GitHub-hosted runner에서 다음 결과로 통과했다.
 
 60초 시작·120초 완료 SLO와 lease 2초+grace 5초 상한을 모두 만족했고 정확한 1회 처리와 최종
 queue drain도 통과했다.
+
+## 로컬 arm64 재검증
+
+2026-08-31 Docker Desktop 29.6.2에서 Compose의 Redis 8.2 digest를 실행하고 임의 loopback
+port로 같은 200-job/4-replica 시나리오를 통과했다.
+
+| 항목 | 결과 |
+| --- | ---: |
+| replica별 처리 | 49 / 50 / 50 / 51 |
+| 복구 job | 1 |
+| 최대 시작 latency | 2.117초 |
+| orphan recovery latency | 2.117초 |
+| 최대 완료 latency | 2.128초 |
+
+실행별 Redis keyspace와 고유 container를 사용했고 종료 뒤 container와 volume이 남지 않음을
+확인했다. 상세 환경은 [Docker Desktop 로컬 통합 검증](local-docker-validation.md)에 기록했다.

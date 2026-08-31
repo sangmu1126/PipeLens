@@ -463,6 +463,28 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   production build를 비롯한 전체 5개 job을 통과했다. CodeQL `33385076451`의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### Docker Desktop arm64 로컬 재검증
+
+- `main` `7e1c5b1`에서 Docker Desktop 29.6.2의 8 CPU·약 8GB arm64 engine을 확인했다.
+  기존 문서의 “로컬 Docker daemon 미실행”은 당시 개발 시점의 사실로 유지하고, 새 검증을
+  별도 후속 증적으로 추가했다.
+- PostgreSQL 17→18은 migration 9개, 표본 custom-format dump/restore와 `alembic check`를
+  통과했다. Grafana 12.1→13.2는 같은 volume의 probe dashboard, provisioned dashboard 8개
+  panel, Prometheus datasource와 익명 Viewer API를 보존했다.
+- Prometheus 3.13.2→Alertmanager 0.33.1→local webhook 경로가 config·rule, firing·active 상태와
+  payload 전달을 통과했다. PostgreSQL 18과 Redis 8.2 실제 service integration 2개도 성공했다.
+- worker 4 replica는 200 job을 49/50/50/51로 처리하고 orphan 1개를 2.117초에 복구했다.
+  최대 완료는 2.128초였으며 정확히 한 번 처리와 최종 queue drain을 만족했다.
+- current source로 만든 `pipelens-api:local-7e1c5b1`과
+  `pipelens-dashboard:local-7e1c5b1` arm64 image는 각각 `pipelens`, `nginx` 사용자와 API
+  readiness·dashboard 내부 8080 응답을 통과했다.
+- PostgreSQL·Grafana script의 첫 로컬 실행은 system PATH에 `python`·`alembic`이 없어
+  실패했으나 전용 임시 resource는 정리됐다. `.venv/bin`을 PATH 앞에 둔 재실행이 성공했다.
+  통합 service는 고정 port·이름을 피하고 `mktemp` 이름과 Docker 임의 loopback port를 사용해
+  기존 로컬 데이터와 격리했다. 종료 뒤 임시 container·volume이 없음을 확인했다.
+- 환경, image ID, 실행 결과와 production 경계는
+  [Docker Desktop 로컬 통합 검증](local-docker-validation.md)에 기록했다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를
