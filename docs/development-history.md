@@ -719,6 +719,13 @@ Nginx는 별도 PR로 분리했다.
 - preview 설치의 `--ignore-requires-python`은 아직 3.15를 제외하는 PipeLens root metadata를
   통과하기 위한 한정된 예외다. job을 advisory로 둬 prerelease의 upstream 변동이 지원 branch의
   병합을 막거나 의도적인 CI 실패 메일을 만들지 않게 했다.
+- PR #69의 첫 preview job `99556485852`는 CPython 3.15.0 RC1 설치와 root metadata 생성을
+  통과했지만 `psycopg-binary==3.3.4`에 CPython 3.15 배포본이 없어 dependency resolution에서
+  중단됐다. 순수 `psycopg`으로 대체해 결과를 통과시키지 않고 지원 준비가 되지 않은 최초 근거로
+  보존했다.
+- job-level `continue-on-error`도 개별 check에는 failure를 표시하므로, 각 preview 단계의 outcome을
+  수집해 warning과 Step Summary로 보고하는 구조로 교정했다. 따라서 호환성 공백은 보이지만 전체
+  CI 실패나 실패 메일을 의도적으로 만들지는 않는다.
 - final 출시 뒤에는 이 예외를 제거하고 PostgreSQL·Redis service integration까지 통과해야
   `<3.16` 지원 선언과 branch protection 승격을 검토한다.
 
