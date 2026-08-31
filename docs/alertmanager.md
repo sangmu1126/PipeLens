@@ -28,9 +28,9 @@ alert, group과 silence를 확인할 수 있지만 운영 호출을 완료한 �
 1. `amtool`로 기본·CI Alertmanager config를 검증한다.
 2. `promtool`로 합성 Prometheus config와 rule을 검증한다.
 3. Alertmanager를 UTF-8 strict mode로 기동한다.
-4. Prometheus의 `vector(1)` rule로 `PipeLensAlertRoutingProbe` critical alert를 firing한다.
-5. Prometheus readiness와 API의 firing 상태를 확인한다.
-6. Alertmanager API에서 같은 alert가 active가 될 때까지 확인한다.
+4. Prometheus를 alert rule 없이 기동하고 `/api/v1/alertmanagers`에서 대상이 active인지 확인한다.
+5. 검증된 합성 rule config로 교체하고 `SIGHUP`으로 reload한다.
+6. Prometheus API의 firing과 Alertmanager API의 active 상태를 순서대로 확인한다.
 7. Alertmanager가 group화한 webhook JSON을 로컬 일회성 receiver에 POST하면 version, receiver,
    firing status, alert name, severity, environment와 summary를 검증한다.
 
@@ -63,6 +63,20 @@ webhook을 확인하도록 보강했다. 로컬 Docker daemon이 없어 이 cont
 PR #51의 GitHub runner 결과로 남긴다. 보강 후 CI run `33361752707`은 Prometheus firing,
 Alertmanager active와 최종 webhook payload를 순서대로 확인해 전체 경로를 통과했다. rebase merge
 후 `main` CI run `33362037504`에서도 같은 단계가 다시 성공했다.
+
+이후 CI run `33365266972`와 `33388547313`은 Prometheus의 firing 상태를 확인한 뒤에도
+Alertmanager API가 30초 동안 빈 목록을 반환해 최초 실행이 실패했고, 같은 revision의 재실행은
+성공했다. Prometheus readiness는 notifier discovery 완료를 보장하지 않으며 notifier discovery와
+rule evaluation은 독립적으로 실행된다. 항상 firing하는 rule이 discovery보다 먼저 평가되면
+드릴이 최초 전송 타이밍에 의존하게 된다.
+
+2026-08-31에는 timeout만 늘리지 않고 실행 순서를 결정적으로 바꿨다. bootstrap config에는
+Alertmanager 대상만 두고 rule은 제외한다. `/api/v1/alertmanagers`의
+`activeAlertmanagers`가 채워진 뒤 검증된 rule config를 원자적인 실행 단계에서 배치하고
+Prometheus에 `SIGHUP`을 보내 reload한다. 그 다음에만 firing, active와 webhook을 기다린다.
+Docker Desktop arm64에서 변경 전 기준 실행 1회와 변경 후 연속 5회를 모두 통과했으며, 변경 후
+각 실행은 약 11초 안에 끝났다. 이 순서는 느린 runner에서도 최초 alert가 전달 대상 없이 평가되는
+경쟁을 제거한다.
 
 ## 로컬 검증
 

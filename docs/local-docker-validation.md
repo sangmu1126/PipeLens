@@ -38,6 +38,7 @@ arm64 variant와 개발자 로컬 실행 경로를 추가로 검증한 결과다
 - Alertmanager 0.33.1과 Prometheus 3.13.2의 Compose 고정 digest 사용
 - 두 config와 Prometheus rule을 공식 검사기로 통과
 - Prometheus firing → Alertmanager active → local webhook payload 전달 통과
+- notifier discovery와 최초 rule 평가의 경쟁을 제거한 bootstrap/reload 경로를 연속 5회 통과
 
 ### PostgreSQL·Redis와 worker
 
