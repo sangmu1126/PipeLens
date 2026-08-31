@@ -37,6 +37,9 @@
 
 최근 검증 실행:
 
+- [`브라우저 OAuth E2E PR #57`](https://github.com/sangmu1126/PipeLens/pull/57)
+- [브라우저 OAuth E2E PR CI run 33385076481](https://github.com/sangmu1126/PipeLens/actions/runs/33385076481)
+- [브라우저 OAuth E2E PR CodeQL run 33385076451](https://github.com/sangmu1126/PipeLens/actions/runs/33385076451)
 - [`API v1 계약 PR #55`](https://github.com/sangmu1126/PipeLens/pull/55)
 - [API v1 계약 PR CI run 33364795817](https://github.com/sangmu1126/PipeLens/actions/runs/33364795817)
 - [API v1 계약 PR CodeQL run 33364795825](https://github.com/sangmu1126/PipeLens/actions/runs/33364795825)
