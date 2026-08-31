@@ -726,6 +726,10 @@ Nginx는 별도 PR로 분리했다.
 - job-level `continue-on-error`도 개별 check에는 failure를 표시하므로, 각 preview 단계의 outcome을
   수집해 warning과 Step Summary로 보고하는 구조로 교정했다. 따라서 호환성 공백은 보이지만 전체
   CI 실패나 실패 메일을 의도적으로 만들지는 않는다.
+- 교정 후 [PR #69](https://github.com/sangmu1126/PipeLens/pull/69)의 CI run `33413394096`에서
+  preview job `99558179867`은 경고를 남기고 check는 성공했다. backend, Python 3.14, dashboard와
+  두 container build도 모두 통과했고 CodeQL run `33413394085`의 Python·JavaScript 분석도
+  성공했다.
 - final 출시 뒤에는 이 예외를 제거하고 PostgreSQL·Redis service integration까지 통과해야
   `<3.16` 지원 선언과 branch protection 승격을 검토한다.
 
