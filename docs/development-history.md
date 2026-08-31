@@ -441,6 +441,24 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   `33365087414`는 OpenAPI contract check와 전체 5개 job을 다시 통과했고 CodeQL
   `33365087411`의 Python·JavaScript/TypeScript 분석도 성공했다.
 
+### 실제 Chromium OAuth·대시보드 흐름
+
+- 기존 Vitest 4개는 로그인 전 화면, 목록 pagination·filter와 axe 접근성을 JSDOM에서
+  검증했지만 top-level OAuth redirect, browser cookie jar, Vite proxy와 callback navigation은
+  실행하지 않았다.
+- `430cdb7`: Playwright 1.62.1과 Chromium E2E를 추가했다. Vite와 실제 FastAPI application을
+  함께 띄우고 제어된 OAuth provider가 authorization code, user와 installation 응답만 제공한다.
+  브라우저는 로그인 전 화면, 서명 state·callback URL, HttpOnly·SameSite=Lax session,
+  인증된 대시보드와 logout 뒤 cookie 삭제를 연속 검증한다.
+- 최초 시도에서 로컬 system Python에 uvicorn이 없어 project `.venv`와 CI `PYTHON` 경계를
+  분리했다. 이후 GitHub URL route glob이 실제 로그인 페이지로 빠지는 비결정성을 확인해,
+  외부 network interception 대신 같은 test server의 OAuth 승인 화면으로 대체했다. Vitest가
+  Playwright spec을 함께 수집한 문제는 기본 exclude를 보존하면서 `e2e/**`를 분리해 해결했다.
+- 로컬 검증은 Chromium E2E 1 passed, Vitest 4 passed, backend 126 passed·2 skipped, Ruff,
+  committed OpenAPI 일치와 Vite production build를 통과했다. 실제 GitHub 자격증명, 공개 HTTPS와
+  Secure cookie는 자동화 완료로 표시하지 않고 P0 인수 테스트로 유지한다.
+- 재현 명령, CI 단계, mock 범위와 유지보수 규칙은 [브라우저 E2E](browser-e2e.md)에 기록했다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를
@@ -605,6 +623,7 @@ Nginx는 별도 PR로 분리했다.
 - PostgreSQL과 Redis 실제 service 통합 테스트
 - 10개 진단 fixture의 80% 정확도 gate
 - Vitest 대시보드 사용자 흐름·접근성 테스트
+- Playwright Chromium OAuth·session·dashboard·logout E2E
 - TypeScript와 Vite production build
 - Prometheus config·규칙과 실제 server readiness, Compose config 검증
 - API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
