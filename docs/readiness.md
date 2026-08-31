@@ -184,6 +184,12 @@
 앞두고 제거될 asyncio API에 대한 deprecation warning을 출력하지만 테스트 결과에는 영향을
 주지 않는다.
 
+Python 3.15는 2026-10-01 final 예정이므로 아직 지원 범위에 포함하지 않는다. advisory preview
+job은 setup-python이 제공하는 최신 prerelease에서 root package의 Python 범위만 설치 시 우회하고
+동일한 비통합 테스트, `pip check`와 평가를 실행한다. 이 job은 prerelease·dependency 변화를 조기
+관측하기 위한 것이며 branch protection의 필수 check가 아니다. final 뒤 전체 service integration과
+dependency metadata를 확인한 다음 `<3.16` 지원 선언과 필수 check 승격을 결정한다.
+
 FastAPI/Starlette 테스트 클라이언트는 dev extra의 `httpx2` 2.12.0을 사용한다. production의
 GitHub·OpenAI·retry client는 기존 `httpx` 0.28.1을 계속 사용하고 production image는 dev extra를
 설치하지 않으므로 두 전송 계층의 역할과 배포 의존성은 분리된다.
@@ -404,7 +410,8 @@ redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 �
 
 1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가. 첫 2건은 Alertmanager 관측 timeout과
    Linux bind-mount 권한 실패로 반영 완료
-2. Python 3.15 지원 시점과 dependency compatibility 결정
+2. Python 3.15 advisory CI 결과를 추적하고 final 뒤 dependency metadata·전체 integration을
+   확인해 정식 지원과 필수 check 승격 결정
 FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
