@@ -82,6 +82,10 @@ print(json.load(sys.stdin)["services"]["prometheus"]["image"])
 
 Compose 실행 뒤에는 `http://localhost:9093/-/ready`와 Alertmanager UI를 확인한다.
 
+2026-08-31에는 Docker Desktop 29.6.2 arm64에서 Compose의 Alertmanager 0.33.1과 Prometheus
+3.13.2 digest로 config·rule, firing·active 상태와 최종 webhook payload를 로컬에서도 통과했다.
+상세 환경과 정리 상태는 [Docker Desktop 로컬 통합 검증](local-docker-validation.md)에 남겼다.
+
 ## Production 채널 연결
 
 운영 배포는 `ops/alertmanager/alertmanager.yml`을 그대로 사용하지 않고 환경별 config를 안전하게

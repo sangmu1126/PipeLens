@@ -90,6 +90,10 @@ Grafana 13 기동 뒤에는 이전 이미지만 지정하는 downgrade를 하지
 backup 내구성, 복원 시간, 실제 browser rendering과 13 이후 변경분 병합은 별도 운영 drill이
 필요하다.
 
+2026-08-31 Docker Desktop 29.6.2 arm64에서도 같은 12.1·13.2 digest와 임시 volume으로
+probe 보존, dashboard·datasource와 익명 API 검증을 통과했다. 상세 결과는
+[Docker Desktop 로컬 통합 검증](local-docker-validation.md)에 기록했다.
+
 ## 근거
 
 - [Grafana 13.0 upgrade guide](https://grafana.com/docs/grafana/latest/upgrade-guide/upgrade-v13.0/)

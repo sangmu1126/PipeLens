@@ -95,6 +95,10 @@ cluster에 복원하는 복구 계획을 선택한다. rollback 완료를 확인
 실제 데이터 크기의 복원 시간, 외부 backup 내구성, role·extension 차이와 cutover 중 쓰기
 차단은 production restore drill에서 별도로 검증해야 한다.
 
+2026-08-31 Docker Desktop 29.6.2 arm64에서도 같은 17·18 digest, migration 9개, 표본
+dump/restore와 `alembic check`를 통과했다. 상세 결과는
+[Docker Desktop 로컬 통합 검증](local-docker-validation.md)에 기록했다.
+
 ## 근거
 
 - [PostgreSQL 18 release notes](https://www.postgresql.org/docs/18/release-18.html)
