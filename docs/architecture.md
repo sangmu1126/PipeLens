@@ -222,6 +222,11 @@ React 대시보드는 다음을 제공한다.
 - 정확도와 제안 해결 여부 피드백
 - keyboard·label·live region 중심의 접근성 semantics
 
+Vitest는 컴포넌트 사용자 흐름과 정적 접근성을 검증한다. 별도 Playwright Chromium E2E는
+제어된 OAuth provider를 거쳐 FastAPI state 검증, callback, HttpOnly session cookie,
+Vite proxy, 인증된 화면과 logout을 실제 브라우저에서 연결한다. 실제 GitHub와 HTTPS 검증은
+이 자동화에 포함하지 않는다.
+
 ## 9. 관측성과 상태 확인
 
 - `/healthz`: 프로세스 생존만 확인한다.

@@ -532,3 +532,20 @@
 - 근거: [RFC 9745 Deprecation header](https://www.rfc-editor.org/rfc/rfc9745.html),
   [OpenAPI 3.1 operation deprecated](https://spec.openapis.org/oas/v3.1.0.html).
 - 관련: `ops/ci/export_openapi.py`, [API versioning 정책](api-versioning.md).
+
+## D-041. 브라우저 OAuth 회귀는 제어된 provider와 실제 application route를 결합
+
+- 결정: Playwright Chromium이 Vite와 FastAPI를 실제 HTTP server로 기동하고 production OAuth,
+  session과 dashboard route를 그대로 사용한다. GitHub 승인·token·user·installation 경계만
+  test server의 결정적 provider로 대체한다.
+- 이유: JSDOM은 top-level redirect, cookie jar, reverse proxy와 callback navigation을 검증하지
+  못한다. 반대로 CI에서 실제 GitHub 계정을 사용하면 credential, MFA, rate limit과 외부 상태로
+  인해 회귀 결과가 비결정적이고 권한 범위도 커진다.
+- 대안: 브라우저의 모든 `/api` 요청 stub, 실제 GitHub OAuth 전용 계정 사용, backend API
+  테스트와 Vitest만 유지.
+- 결과: OAuth state, callback URL, HttpOnly·SameSite session cookie, state cookie 삭제,
+  installation 기반 대시보드와 logout을 Chromium에서 반복 검증한다. 실제 GitHub App 설치,
+  HTTPS·Secure cookie와 production proxy는 별도 P0 인수 테스트로 남는다.
+- 근거: [Playwright web server](https://playwright.dev/docs/test-webserver),
+  [Playwright browser isolation](https://playwright.dev/docs/browser-contexts).
+- 관련: `frontend/e2e/oauth-dashboard.spec.ts`, [브라우저 E2E](browser-e2e.md).

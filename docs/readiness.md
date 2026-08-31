@@ -2,15 +2,15 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 commit `2bba688`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 main commit `77f90fb`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | 고정 진단 평가 | 통과 | 10/10, 100%; CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 121 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 113개와 진단 평가 10/10 |
-| 대시보드 테스트 | 통과 | Node 22 CI, Node 24 로컬 검증, Vitest 4/4와 Vite production build |
+| 백엔드 테스트 | 통과 | 로컬 126 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 126개와 진단 평가 10/10 |
+| 대시보드 테스트 | 통과 | Vitest 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | API·대시보드 이미지 | 통과 | 실제 Docker build, 최종 non-root USER 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
@@ -179,6 +179,7 @@ client와는 별개인 테스트 adapter 경로이며, FastAPI·Starlette 지원
 - 지원 범위 `^22.13.0 || ^24.0.0`의 하한인 Node.js 22
 - `npm ci`
 - Vitest 사용자 흐름·접근성 회귀 테스트
+- Playwright Chromium에서 OAuth state·callback·session cookie·dashboard·logout E2E
 - TypeScript project build와 Vite production bundle
 
 대시보드 Dockerfile은 지원 범위의 최신 LTS인 Node 24로 같은 production build를 실행한다.
@@ -378,10 +379,12 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 ### P2 — 품질 확장
 
-1. 실제 브라우저 기반 OAuth·dashboard E2E
-2. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가
-3. Python 3.15 지원 시점과 dependency compatibility 결정
-4. FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환 시점 검토
+제어된 OAuth provider를 사용하는 실제 Chromium OAuth·dashboard E2E는 완료했다. 실제 GitHub와
+공개 HTTPS 흐름은 위 P0 완료 조건으로 유지한다.
+
+1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가
+2. Python 3.15 지원 시점과 dependency compatibility 결정
+3. FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환 시점 검토
 
 ## 6. 현재 GitHub 저장소 관리 상태
 

@@ -64,6 +64,8 @@ pytest
 ruff check .
 pipelens-evaluate --minimum-accuracy 0.8
 npm --prefix frontend test
+npx --prefix frontend playwright install chromium
+npm --prefix frontend run test:e2e
 npm --prefix frontend run build
 ```
 
@@ -78,8 +80,9 @@ pipelens-evaluate
 pipelens-evaluate --json
 ```
 
-GitHub Actions CI에서도 Ruff, 전체 백엔드·대시보드 테스트, 80% 정확도 게이트와
-대시보드 빌드를 함께 실행합니다.
+GitHub Actions CI에서도 Ruff, 전체 백엔드·대시보드 테스트, Chromium OAuth E2E, 80% 정확도
+게이트와 대시보드 빌드를 함께 실행합니다. 브라우저 검증의 범위와 실제 GitHub 인수 테스트의
+구분은 [브라우저 E2E 문서](docs/browser-e2e.md)에 기록합니다.
 
 Docker를 사용한다면 `.env`를 만든 뒤 다음 명령으로 실행합니다.
 
