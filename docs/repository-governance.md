@@ -67,6 +67,17 @@ homepage는 README나 repository URL을 중복 입력하지 않는다. 공개 HT
 사용자 진입 URL로 설정한다. description, topics와 homepage 변경도 적용 뒤 API로 실제 값을 다시
 조회하고 개발 기록에 남긴다.
 
+## 기여 접수와 보안 신고
+
+공개 bug issue는 구조화된 form으로 재현 절차, version, environment와 최소 마스킹 근거를
+요구한다. feature request는 사용자 문제, 측정 가능한 결과, 대안과 완료 증적을 분리한다. blank
+issue는 끄고 pull request에는 검증, 보안·개인정보 경계와 문서 반영 여부를 명시한다.
+
+취약점, credential 노출, private workflow log와 개인정보는 공개 issue에서 받지 않는다.
+`SECURITY.md`와 issue contact link는 GitHub private vulnerability reporting으로 연결한다.
+Dependabot alerts와 security updates는 활성화하며 생성된 보안 PR도 일반 PR과 같은 branch
+protection, 고정 참조와 전체 CI를 통과해야 한다. 설정 상태는 repository API로 재조회한다.
+
 ## 보호 범위 밖의 항목
 
 branch protection은 version tag와 GitHub Release asset을 잠그지 않는다. Release workflow는
