@@ -395,6 +395,23 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   병합 후 `main` CI `33362037504`는 immutable action으로 5개 job과 action pinning gate,
   Alertmanager 경로를 다시 통과했고 CodeQL `33362037525`의 두 언어 분석도 성공했다.
 
+### 비밀값 inventory와 OAuth token 암호화 키 교체
+
+- production 안전 설정은 별도 Fernet key를 요구했지만 단일 key만 읽었다. key를 바꾸면 DB에
+  저장된 기존 GitHub user access token을 해독하지 못해 해당 session이 모두 삭제되는 구조였고,
+  secret별 교체 순서나 침해 대응 runbook도 없었다.
+- `11f1f0d`: primary와 쉼표 구분 fallback Fernet key ring을 추가했다. 새 token은 항상 primary로
+  암호화하며, 인증 중 primary 실패 후 fallback 복호화가 성공하면 같은 token을 primary로 즉시
+  다시 저장한다. 일치하는 fallback이 없거나 평문이 유효한 UTF-8이 아니면 기존 보안 경계대로
+  session을 삭제한다.
+- 구·신 instance가 섞이는 rollout을 위해 기존 primary+새 fallback을 먼저 전체 배포하고, 이후
+  새 primary+기존 fallback으로 뒤집은 뒤 session TTL과 rollback 기간 후 이전 key를 제거한다.
+  회귀 테스트는 fallback session 유지·재암호화, fallback 없는 이전 token 폐기와 key ring의
+  공백·중복 처리를 확인한다. 로컬 전체 결과는 124 passed, 2 skipped였다.
+- [비밀값과 키 교체](secrets-and-rotation.md)에 GitHub App, webhook, OAuth, OpenAI, PostgreSQL,
+  Redis와 Alertmanager credential inventory, 교체 순서, rollback, 침해 조사와 증적 체크리스트를
+  기록했다. 실제 secret manager와 production rotation drill은 외부 완료 조건으로 남긴다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를

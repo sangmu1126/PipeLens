@@ -299,6 +299,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 - GitHub App RS256 JWT 서명·공개키 검증 회귀 테스트
 - OAuth state 검증, HttpOnly/SameSite session cookie
 - 사용자 token Fernet 암호화 저장
+- primary/fallback Fernet key ring과 로그인 시 lazy 재암호화
 - installation 단위 분석 접근 제어
 - 로그·patch·workflow·실행 metadata 마스킹
 - 외부 fork LLM 전송 차단과 게시 제한
@@ -317,7 +318,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 ### 미구현 또는 외부 설정 필요
 
 - API·대시보드 Dockerfile base image digest 정책
-- production secret manager와 key rotation 절차
+- production secret manager 연결과 실제 credential 주입
 - TLS reverse proxy의 HSTS
 - GitHub 조직 정책에 따른 secret scanning/push protection 확인
 - 정기적인 OAuth session·암호화 key rotation 훈련
@@ -360,7 +361,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 1. production 규모의 PostgreSQL backup 보관·복원 시간과 Grafana 12→13 volume restore drill
 2. Alertmanager의 실제 호출 채널과 production secret 연결
-3. secret manager, key rotation과 incident response runbook
+3. production secret manager 연결과 credential rotation drill
 4. production resource limit·provider latency를 포함한 worker soak/load와 SLO 검증
 
 ### P2 — 품질 확장
@@ -403,7 +404,8 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [x] release image SBOM·provenance
 - [x] GHCR release·attestation 보존 정책과 자동 감사
 - [x] 외부 GitHub Action full commit SHA 고정과 CI 정책 검사
-- [ ] secret manager와 rotation
+- [x] Fernet rolling key rotation 구현과 secret·incident response runbook
+- [ ] production secret manager 연결과 실제 credential rotation drill
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [ ] production 규모 PostgreSQL backup/restore drill
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
