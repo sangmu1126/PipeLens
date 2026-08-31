@@ -370,8 +370,8 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 ### P0 — 서비스 완료 조건
 
-1. 위 GitHub App E2E 인수 테스트 수행
-2. 실제 공개 HTTPS 환경의 OAuth·webhook 검증
+1. [#61 실제 GitHub App E2E 인수 테스트](https://github.com/sangmu1126/PipeLens/issues/61)
+2. [#62 공개 HTTPS OAuth·webhook 검증](https://github.com/sangmu1126/PipeLens/issues/62)
 
 ### P1 — 릴리스와 공급망
 
@@ -380,10 +380,16 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 ### P1 — 운영 신뢰성
 
-1. production 규모의 PostgreSQL backup 보관·복원 시간과 Grafana 12→13 volume restore drill
-2. Alertmanager의 실제 호출 채널과 production secret 연결
-3. production secret manager 연결과 credential rotation drill
-4. production resource limit·provider latency를 포함한 worker soak/load와 SLO 검증
+1. [#63 production 규모 PostgreSQL·Grafana 복원 드릴](https://github.com/sangmu1126/PipeLens/issues/63)
+2. [#64 Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
+3. [#65 production secret manager와 credential rotation](https://github.com/sangmu1126/PipeLens/issues/65)
+4. [#66 production 조건 worker soak/load와 SLO](https://github.com/sangmu1126/PipeLens/issues/66)
+
+여섯 항목은 모두
+[`v0.2.0 Production readiness`](https://github.com/sangmu1126/PipeLens/milestone/1)
+milestone에서 관리한다. `priority:p0`는 서비스 완료를 막는 외부 인수 조건,
+`priority:p1`은 production 신뢰성 증적을 뜻한다. issue를 닫으려면 본문의 acceptance criteria와
+redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 처리하지 않는다.
 
 ### P2 — 품질 확장
 
@@ -396,12 +402,13 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
 
-2026-08-30 조회 결과:
+2026-08-31 조회 결과:
 
 - visibility: public
 - default branch: `main`
-- open issues: 0
+- open issues: 6 (`priority:p0` 2개, `priority:p1` 4개)
 - open pull requests: 0
+- open milestones: 1 (`v0.2.0 Production readiness`, 0/6 완료)
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false); repository 불변성은 미래 release 대상으로 활성화
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
@@ -411,13 +418,13 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 - open CodeQL alerts: 0
 - repository description과 homepage: 비어 있음
 
-열린 이슈가 없다는 것은 남은 작업이 없다는 뜻이 아니다. 위 P0/P1 항목을 GitHub issue 또는
-milestone으로 옮겨 추적하는 작업이 필요하다.
+P0/P1 항목은 issue #61–#66으로 분리해 milestone에 연결했다. 각 issue는 실제 외부 환경,
+완료 조건과 저장해야 할 증적을 명시하며 repository에서 재현 가능한 합성 검증과 구분한다.
 
 ## 7. 운영 전 체크리스트
 
-- [ ] GitHub App 실제 설치와 E2E 증적
-- [ ] production HTTPS와 HSTS
+- [ ] [GitHub App 실제 설치와 E2E 증적](https://github.com/sangmu1126/PipeLens/issues/61)
+- [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62)
 - [x] `main` PR·필수 status check
 - [x] 미래 GitHub Release의 repository 불변성 설정
 - [ ] `immutable: true`인 차기 GitHub Release와 digest-pinned production 배포
@@ -427,13 +434,13 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [x] GHCR release·attestation 보존 정책과 자동 감사
 - [x] 외부 GitHub Action full commit SHA 고정과 CI 정책 검사
 - [x] Fernet rolling key rotation 구현과 secret·incident response runbook
-- [ ] production secret manager 연결과 실제 credential rotation drill
+- [ ] [production secret manager 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
-- [ ] production 규모 PostgreSQL backup/restore drill
+- [ ] [production 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
-- [ ] production Grafana volume backup/restore drill
-- [ ] production 조건의 worker replica soak/load test
+- [ ] [production Grafana volume backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
+- [ ] [production 조건의 worker replica soak/load test](https://github.com/sangmu1126/PipeLens/issues/66)
 - [x] Alertmanager routing과 로컬 webhook 통합 검증
-- [ ] Alertmanager 실제 호출 채널 연결
-- [ ] 외부 fork 공격 입력 검증
-- [ ] 부하 상태에서 시작 60초·완료 120초 SLO 검증
+- [ ] [Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
+- [ ] [외부 fork 공격 입력 검증](https://github.com/sangmu1126/PipeLens/issues/61)
+- [ ] [부하 상태에서 시작 60초·완료 120초 SLO 검증](https://github.com/sangmu1126/PipeLens/issues/66)
