@@ -49,6 +49,15 @@ dashboard job은 Python 3.12와 Node 22를 함께 준비하고 다음 순서로 
 Playwright trace는 실패한 실행에서만 유지된다. `test-results/`와 `playwright-report/`는 생성
 산출물이므로 Git에서 제외한다.
 
+## 검증 증적
+
+- [PR #57](https://github.com/sangmu1126/PipeLens/pull/57)
+- [CI run 33385076481](https://github.com/sangmu1126/PipeLens/actions/runs/33385076481):
+  dashboard job에서 Python 3.12·Node 22, Chromium OAuth E2E 1개, Vitest 4개와 production
+  build 통과; backend·Python 3.14·두 container job도 통과
+- [CodeQL run 33385076451](https://github.com/sangmu1126/PipeLens/actions/runs/33385076451):
+  Python과 JavaScript/TypeScript 분석 통과
+
 ## 유지보수 규칙
 
 - production OAuth route와 session 동작을 사용하고, 브라우저에서 API 응답을 직접 stub하지

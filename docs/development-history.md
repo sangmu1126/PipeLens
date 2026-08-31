@@ -458,6 +458,10 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   committed OpenAPI 일치와 Vite production build를 통과했다. 실제 GitHub 자격증명, 공개 HTTPS와
   Secure cookie는 자동화 완료로 표시하지 않고 P0 인수 테스트로 유지한다.
 - 재현 명령, CI 단계, mock 범위와 유지보수 규칙은 [브라우저 E2E](browser-e2e.md)에 기록했다.
+- 구현과 판단 문서는 [PR #57](https://github.com/sangmu1126/PipeLens/pull/57)에서 분리했다. CI
+  `33385076481`은 Ubuntu dashboard job의 Python 3.12·Node 22, Chromium E2E 1개, Vitest 4개와
+  production build를 비롯한 전체 5개 job을 통과했다. CodeQL `33385076451`의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
 
 ### `main` 변경 통제
 
