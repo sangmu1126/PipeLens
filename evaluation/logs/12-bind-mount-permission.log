@@ -1,0 +1,6 @@
+2026-08-31T12:15:21Z Run Verify Prometheus to Alertmanager webhook routing
+Checking /etc/prometheus/prometheus-bootstrap.yml
+SUCCESS: /etc/prometheus/prometheus-bootstrap.yml is valid prometheus config file syntax
+ts=2026-08-31T12:15:24Z level=error msg="Error loading config" file=/etc/prometheus/prometheus.yml err="open /etc/prometheus/prometheus.yml: permission denied"
+Error response from daemon: No such container: pipelens-prometheus-routing-1234
+Error: Process completed with exit code 1.
