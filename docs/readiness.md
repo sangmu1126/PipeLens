@@ -38,6 +38,9 @@
 
 최근 검증 실행:
 
+- [`production readiness backlog PR #67`](https://github.com/sangmu1126/PipeLens/pull/67)
+- [backlog PR CI run 33397547020](https://github.com/sangmu1126/PipeLens/actions/runs/33397547020)
+- [backlog PR CodeQL run 33397546955](https://github.com/sangmu1126/PipeLens/actions/runs/33397546955)
 - [`httpx2 TestClient 전환 PR #60`](https://github.com/sangmu1126/PipeLens/pull/60)
 - [httpx2 PR CI run 33395140783](https://github.com/sangmu1126/PipeLens/actions/runs/33395140783)
 - [httpx2 PR CodeQL run 33395140791](https://github.com/sangmu1126/PipeLens/actions/runs/33395140791)

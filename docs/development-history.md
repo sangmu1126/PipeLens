@@ -690,6 +690,8 @@ Nginx는 별도 PR로 분리했다.
   [worker soak/load #66](https://github.com/sangmu1126/PipeLens/issues/66)으로 분리했다.
 - 모든 issue에는 목적, 측정 가능한 acceptance criteria, 저장할 redacted evidence와 제외 범위를
   기록했다. milestone 생성 직후 상태는 open 6, closed 0이며 코드 구현만으로 닫지 않는다.
+- [PR #67](https://github.com/sangmu1126/PipeLens/pull/67)의 CI run `33397547020`과 CodeQL
+  run `33397546955`에서 문서 연결을 포함한 필수 검사 7개가 모두 성공했다.
 
 ## 현재까지의 검증 방식
 
