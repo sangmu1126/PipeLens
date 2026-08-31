@@ -15,6 +15,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)
 - [저장소 보호와 변경 절차](docs/repository-governance.md)
 - [기여 가이드](CONTRIBUTING.md)
+- [행동강령](CODE_OF_CONDUCT.md)
 - [비공개 보안 신고 정책](SECURITY.md)
 
 현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.

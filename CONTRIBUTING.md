@@ -1,5 +1,7 @@
 # Contributing to PipeLens
 
+Participation in this project is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Before opening an issue
 
 - Search existing issues and confirm the behavior on the latest `main` or release.
