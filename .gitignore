@@ -9,3 +9,5 @@ node_modules/
 *.db
 dist/
 build/
+playwright-report/
+test-results/

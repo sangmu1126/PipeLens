@@ -51,10 +51,9 @@ class GitHubClient:
         self.retry_policy = retry_policy or RetryPolicy()
         self.on_retry = on_retry
 
-    @classmethod
-    def authorization_url(cls, client_id: str, redirect_uri: str, state: str) -> str:
+    def authorization_url(self, client_id: str, redirect_uri: str, state: str) -> str:
         query = urlencode({"client_id": client_id, "redirect_uri": redirect_uri, "state": state})
-        return f"{cls.web_url}/login/oauth/authorize?{query}"
+        return f"{self.web_url}/login/oauth/authorize?{query}"
 
     async def exchange_user_code(
         self,
