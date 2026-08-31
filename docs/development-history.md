@@ -775,6 +775,10 @@ Nginx는 별도 PR로 분리했다.
   문제·측정 결과·대안·완료 증적을 분리하고 blank issue를 껐다. PR template과 기여 가이드는 테스트,
   문서, 보안·개인정보 경계와 분리 커밋을 같은 접수 계약으로 연결한다.
 - README의 평가 설명에 남아 있던 이전 수치도 실제 회귀 3건, 전체 fixture 13건으로 교정했다.
+- 활성화 직후 Dependabot API에서 open alert 0건, Dependabot이 만든 open PR 0건을 확인했다.
+- [PR #73](https://github.com/sangmu1126/PipeLens/pull/73)의 CI run `33424675679`에서 새 공개
+  접수 파일과 문서가 backend, Python 3.14, dashboard와 두 container build를 통과했다. CodeQL
+  run `33424675633`의 Python·JavaScript 분석도 성공했다.
 
 ## 현재까지의 검증 방식
 
