@@ -38,6 +38,9 @@
 
 최근 검증 실행:
 
+- [`실제 CI 평가 fixture PR #68`](https://github.com/sangmu1126/PipeLens/pull/68)
+- [실제 CI fixture PR CI run 33398998517](https://github.com/sangmu1126/PipeLens/actions/runs/33398998517)
+- [실제 CI fixture PR CodeQL run 33398998843](https://github.com/sangmu1126/PipeLens/actions/runs/33398998843)
 - [`production readiness backlog PR #67`](https://github.com/sangmu1126/PipeLens/pull/67)
 - [backlog PR CI run 33397547020](https://github.com/sangmu1126/PipeLens/actions/runs/33397547020)
 - [backlog PR CodeQL run 33397546955](https://github.com/sangmu1126/PipeLens/actions/runs/33397546955)
