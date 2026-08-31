@@ -657,6 +657,9 @@ Nginx는 별도 PR로 분리했다.
   비-root Prometheus container가 읽지 못해 시작 전에 종료됐다. macOS Docker Desktop의 bind
   mount에서는 드러나지 않은 host 차이다. 임시 디렉터리를 설정 읽기에 필요한 `0755`로 명시해
   Linux와 macOS의 권한 계약을 같게 만들었다.
+- 교정 후 PR CI run `33391726019`은 새 Alertmanager routing 경로와 전체 backend gate를
+  재실행 없이 통과했다. CodeQL run `33391726030`, 두 container build, dashboard와 Python 3.14를
+  포함한 필수 검사 7개가 모두 성공했다.
 
 ## 현재까지의 검증 방식
 
