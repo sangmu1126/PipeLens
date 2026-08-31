@@ -2,13 +2,13 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 commit `9735a11`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 commit `88c671b`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | 고정 진단 평가 | 통과 | 10/10, 100%; CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 115 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| 백엔드 테스트 | 통과 | 로컬 121 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
 | Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 113개와 진단 평가 10/10 |
 | 대시보드 테스트 | 통과 | Node 22 CI, Node 24 로컬 검증, Vitest 4/4와 Vite production build |
 | API·대시보드 이미지 | 통과 | 실제 Docker build, 최종 non-root USER 검사 |
@@ -27,7 +27,7 @@
 | Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
-| GitHub Actions 공급망 | 구현 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate |
+| GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
@@ -35,6 +35,9 @@
 
 최근 검증 실행:
 
+- [`GitHub Actions SHA 고정 PR #51`](https://github.com/sangmu1126/PipeLens/pull/51)
+- [GitHub Actions SHA 고정 PR CI run 33361752707](https://github.com/sangmu1126/PipeLens/actions/runs/33361752707)
+- [GitHub Actions SHA 고정 PR CodeQL run 33361752698](https://github.com/sangmu1126/PipeLens/actions/runs/33361752698)
 - [`setup-python 7 PR #47`](https://github.com/sangmu1126/PipeLens/pull/47)
 - [setup-python 7 PR CI run 33328357773](https://github.com/sangmu1126/PipeLens/actions/runs/33328357773)
 - [setup-python 7 PR CodeQL run 33328357775](https://github.com/sangmu1126/PipeLens/actions/runs/33328357775)
