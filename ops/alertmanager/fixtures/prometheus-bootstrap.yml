@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1s
+  external_labels:
+    environment: ci
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs: []
