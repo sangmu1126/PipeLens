@@ -71,7 +71,7 @@ def test_webhook_accepts_failure_once(tmp_path: Path) -> None:
     with TestClient(app) as client:
         first = client.post("/webhooks/github", content=body, headers=headers)
         second = client.post("/webhooks/github", content=body, headers=headers)
-        detail = client.get("/api/analyses/1234")
+        detail = client.get("/api/v1/analyses/1234")
         metrics = client.get("/metrics")
 
     assert first.status_code == 202

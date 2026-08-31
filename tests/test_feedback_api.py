@@ -22,10 +22,10 @@ def test_feedback_endpoint_updates_analysis_and_metrics(tmp_path: Path) -> None:
             )
         )
         response = client.put(
-            "/api/analyses/501/feedback",
+            "/api/v1/analyses/501/feedback",
             json={"accuracy": "accurate", "suggestion_resolved": True},
         )
-        detail = client.get("/api/analyses/501")
+        detail = client.get("/api/v1/analyses/501")
         metrics = client.get("/metrics")
 
     assert response.status_code == 200
@@ -38,8 +38,10 @@ def test_feedback_endpoint_validates_input_and_run(tmp_path: Path) -> None:
     app = create_app(Settings(database_path=str(tmp_path / "db.sqlite"), auth_required=False))
 
     with TestClient(app) as client:
-        invalid = client.put("/api/analyses/999/feedback", json={})
-        missing = client.put("/api/analyses/999/feedback", json={"accuracy": "inaccurate"})
+        invalid = client.put("/api/v1/analyses/999/feedback", json={})
+        missing = client.put(
+            "/api/v1/analyses/999/feedback", json={"accuracy": "inaccurate"}
+        )
 
     assert invalid.status_code == 422
     assert missing.status_code == 404

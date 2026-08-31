@@ -42,15 +42,15 @@ def test_analysis_list_filters_and_validates_query_values(tmp_path: Path) -> Non
             )
 
         filtered = client.get(
-            "/api/analyses",
+            "/api/v1/analyses",
             params={
                 "repository": "acme/api",
                 "status": "completed",
                 "category": "test_failure",
             },
         )
-        invalid_status = client.get("/api/analyses", params={"status": "unknown"})
-        invalid_category = client.get("/api/analyses", params={"category": "network"})
+        invalid_status = client.get("/api/v1/analyses", params={"status": "unknown"})
+        invalid_category = client.get("/api/v1/analyses", params={"category": "network"})
 
     assert filtered.status_code == 200
     assert [record["run_id"] for record in filtered.json()] == [701]
@@ -77,10 +77,10 @@ def test_analysis_list_uses_stable_cursor_pagination(tmp_path: Path) -> None:
                 )
             )
 
-        first = client.get("/api/analyses", params={"limit": 2})
+        first = client.get("/api/v1/analyses", params={"limit": 2})
         cursor = first.headers["X-PipeLens-Next-Cursor"]
-        second = client.get("/api/analyses", params={"limit": 2, "cursor": cursor})
-        invalid = client.get("/api/analyses", params={"cursor": "not-a-cursor"})
+        second = client.get("/api/v1/analyses", params={"limit": 2, "cursor": cursor})
+        invalid = client.get("/api/v1/analyses", params={"cursor": "not-a-cursor"})
 
     assert [record["run_id"] for record in first.json()] == [803, 802]
     assert [record["run_id"] for record in second.json()] == [801]
