@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 기능 기준 commit `d49e9f7`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 commit `9735a11`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -26,6 +26,7 @@
 | PostgreSQL runtime | 통과 | 18.6 전용 volume, 17→18 dump/restore·Alembic·integration 검증 |
 | Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
+| GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
@@ -33,6 +34,18 @@
 
 최근 검증 실행:
 
+- [`setup-python 7 PR #47`](https://github.com/sangmu1126/PipeLens/pull/47)
+- [setup-python 7 PR CI run 33328357773](https://github.com/sangmu1126/PipeLens/actions/runs/33328357773)
+- [setup-python 7 PR CodeQL run 33328357775](https://github.com/sangmu1126/PipeLens/actions/runs/33328357775)
+- [setup-python 7 PR branch GHCR 감사 run 33328451609](https://github.com/sangmu1126/PipeLens/actions/runs/33328451609)
+- [setup-python 7 병합 후 CI run 33328478789](https://github.com/sangmu1126/PipeLens/actions/runs/33328478789)
+- [setup-python 7 병합 후 CodeQL run 33328478782](https://github.com/sangmu1126/PipeLens/actions/runs/33328478782)
+- [setup-python 7 병합 후 GHCR 감사 run 33328498258](https://github.com/sangmu1126/PipeLens/actions/runs/33328498258)
+- [`Ruff 0.16.5 PR #46`](https://github.com/sangmu1126/PipeLens/pull/46)
+- [Ruff 0.16.5 PR CI run 33327919399](https://github.com/sangmu1126/PipeLens/actions/runs/33327919399)
+- [Ruff 0.16.5 PR CodeQL run 33327919385](https://github.com/sangmu1126/PipeLens/actions/runs/33327919385)
+- [Ruff 0.16.5 병합 후 CI run 33328022359](https://github.com/sangmu1126/PipeLens/actions/runs/33328022359)
+- [Ruff 0.16.5 병합 후 CodeQL run 33328022350](https://github.com/sangmu1126/PipeLens/actions/runs/33328022350)
 - [`Alertmanager routing 안정화 PR #48`](https://github.com/sangmu1126/PipeLens/pull/48)
 - [Alertmanager routing 안정화 PR CI run 33327036671](https://github.com/sangmu1126/PipeLens/actions/runs/33327036671)
 - [Alertmanager routing 안정화 PR CodeQL run 33327036669](https://github.com/sangmu1126/PipeLens/actions/runs/33327036669)
@@ -205,6 +218,13 @@ service image 업데이트를 매주 월요일 순차 실행한다. 대시보드
   버전을 0.8에서 0.16.4로 갱신했다. 최신 `main`으로 PR을 재생성하고 전체 CI·CodeQL을
   통과했으며, 로컬 Ruff 0.16.5 검사와 백엔드 105개 테스트, 진단 평가 10/10 확인 뒤
   `e6016f0`으로 squash merge했다.
+- [#46](https://github.com/sangmu1126/PipeLens/pull/46)은 Ruff 최소 버전을 0.16.5로 올렸다.
+  preview 기능을 활성화하지 않은 현재 설정에서 lint, 전체 테스트와 최신 `main` CI·CodeQL을
+  통과해 `d80ecff`로 squash merge했다.
+- [#47](https://github.com/sangmu1126/PipeLens/pull/47)은 `actions/setup-python`을 Node 24 기반
+  v7.0.0으로 갱신했다. 제거된 `pip-install` 입력은 사용하지 않으며 Python 3.12·3.14 CI와
+  SHA 고정 action을 쓰는 GHCR 감사를 PR branch와 병합 후 `main`에서 각각 통과해 `9735a11`로
+  squash merge했다.
 - [#13](https://github.com/sangmu1126/PipeLens/pull/13)은 HTTPX 최소 버전을 0.27에서
   0.28.1로 갱신했다. 제거 API 미사용, 관련 GitHub·OpenAI·retry·API 테스트 38개와 최신
   `main` 전체 CI·CodeQL 통과를 확인해 `47d2c60`으로 squash merge했다.

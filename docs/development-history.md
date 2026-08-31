@@ -350,6 +350,22 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   [PR #48](https://github.com/sangmu1126/PipeLens/pull/48)에 rebase merge됐다. 병합 후 `main` CI
   `33327158576`은 라우팅 단계를 포함한 전체 gate를 통과했고 CodeQL `33327158575`도 성공했다.
 
+### Ruff 0.16.5와 setup-python 7 유지보수
+
+- [PR #46](https://github.com/sangmu1126/PipeLens/pull/46)은 개발 lint 하한을 Ruff 0.16.4에서
+  0.16.5로 올렸다. preview category·기본 규칙 변경은 현재 비-preview 선택 규칙에 영향을 주지
+  않았고 로컬 Ruff 0.16.5, 전체 115개 테스트와 최신 `main` 기반 CI `33327919399`·CodeQL
+  `33327919385`를 통과했다. `d80ecff`로 squash merge한 뒤 `main` CI `33328022359`와 CodeQL
+  `33328022350`도 성공했다.
+- [PR #47](https://github.com/sangmu1126/PipeLens/pull/47)은 Python 3.12 backend와 Python 3.14
+  compatibility job의 `actions/setup-python`을 v7.0.0으로 좁히고, GHCR 감사 workflow는 공식
+  release commit `5fda3b95a4ea91299a34e894583c3862153e4b97`로 고정했다. v7의 Node 24 runtime과 제거된
+  `pip-install` 입력을 검토했으며 PipeLens는 해당 입력을 사용하지 않는다.
+- PR CI `33328357773`과 CodeQL `33328357775`가 두 Python 경로를 통과했고, PR branch의 수동
+  GHCR 감사 `33328451609`는 SHA 고정 action으로 공개 package inventory를 조회했다. `9735a11`로
+  squash merge한 뒤 `main` CI `33328478789`, CodeQL `33328478782`와 수동 GHCR 감사
+  `33328498258`이 모두 성공했다. 이 처리로 open Dependabot PR은 0개가 됐다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를
