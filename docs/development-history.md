@@ -742,6 +742,10 @@ Nginx는 별도 PR로 분리했다.
   최초 근거로 보존되는지만 고정했다.
 - 평가 세트는 요구 범주 합성 fixture 10건과 실제 PipeLens CI 회귀 3건, 총 13건으로 확장됐고
   로컬 Python 3.14에서 13/13을 통과했다.
+- [PR #70](https://github.com/sangmu1126/PipeLens/pull/70)의 CI run `33420484937`에서 Python
+  3.12 backend와 Python 3.14 compatibility가 새 평가 13/13을 통과했다. preview advisory,
+  dashboard와 두 container build도 성공했고 CodeQL run `33420485072`의 두 언어 분석도
+  통과했다.
 
 ## 현재까지의 검증 방식
 
