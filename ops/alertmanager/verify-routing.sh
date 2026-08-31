@@ -18,6 +18,7 @@ project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 fixture_dir="$project_root/ops/alertmanager/fixtures"
 result_dir="$(mktemp -d)"
 payload_path="$result_dir/alertmanager-webhook.json"
+receiver_ready_path="$result_dir/receiver-ready"
 network_name="pipelens-alert-routing-$$"
 alertmanager_container="pipelens-alertmanager-routing-$$"
 prometheus_container="pipelens-prometheus-routing-$$"
@@ -44,8 +45,24 @@ docker run --rm --entrypoint promtool \
   --volume "$fixture_dir:/etc/prometheus:ro" \
   "$PROMETHEUS_IMAGE" check config /etc/prometheus/prometheus.yml
 
-python "$project_root/ops/alertmanager/test_receiver.py" --output "$payload_path" &
+python "$project_root/ops/alertmanager/test_receiver.py" \
+  --output "$payload_path" \
+  --ready-file "$receiver_ready_path" \
+  --timeout 180 &
 receiver_pid=$!
+
+for attempt in {1..10}; do
+  if [[ -f "$receiver_ready_path" ]]; then
+    break
+  fi
+  if [[ "$attempt" == 10 ]]; then
+    echo "webhook receiver did not become ready" >&2
+    kill "$receiver_pid" >/dev/null 2>&1 || true
+    wait "$receiver_pid" || true
+    exit 1
+  fi
+  sleep 1
+done
 
 docker network create "$network_name" >/dev/null
 docker run --detach --rm \
@@ -84,6 +101,32 @@ docker run --detach --rm \
   --config.file=/etc/prometheus/prometheus.yml \
   --storage.tsdb.path=/prometheus >/dev/null
 
+for attempt in {1..30}; do
+  if curl --fail --silent http://localhost:19090/-/ready >/dev/null; then
+    break
+  fi
+  if [[ "$attempt" == 30 ]]; then
+    docker logs "$prometheus_container"
+    exit 1
+  fi
+  sleep 1
+done
+
+if ! python "$project_root/ops/alertmanager/wait_for_alert.py" prometheus \
+  --url http://localhost:19090/api/v1/alerts \
+  --timeout 30; then
+  docker logs "$prometheus_container"
+  exit 1
+fi
+
+if ! python "$project_root/ops/alertmanager/wait_for_alert.py" alertmanager \
+  --url http://localhost:19093/api/v2/alerts \
+  --timeout 30; then
+  docker logs "$prometheus_container"
+  docker logs "$alertmanager_container"
+  exit 1
+fi
+
 for attempt in {1..60}; do
   if [[ -s "$payload_path" ]]; then
     break
@@ -91,6 +134,8 @@ for attempt in {1..60}; do
   if [[ "$attempt" == 60 ]]; then
     docker logs "$prometheus_container"
     docker logs "$alertmanager_container"
+    echo "Alertmanager accepted the alert but the webhook payload was not received" >&2
+    kill "$receiver_pid" >/dev/null 2>&1 || true
     wait "$receiver_pid" || true
     exit 1
   fi
