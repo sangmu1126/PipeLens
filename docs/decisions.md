@@ -600,3 +600,18 @@
   없고 run ID, 게시 URL, latency 또는 redacted 운영 기록 등 본문의 증적을 확인해야 한다.
 - 관련: [production readiness milestone](https://github.com/sangmu1126/PipeLens/milestone/1),
   [검증 및 운영 준비 현황](readiness.md), [저장소 관리 절차](repository-governance.md).
+
+## D-045. 실제 CI 회귀는 익명화해 평가하고 지원 범주 밖이면 unknown을 유지
+
+- 결정: 실제 PipeLens CI 실패를 secret·repository 식별자가 없는 최소 로그로 재구성해 고정
+  evaluation fixture에 추가한다. 명확한 관측 제한 소진은 `timeout`으로 확장하되, bind-mount
+  권한 실패처럼 현재 10개 범주에 맞지 않는 원인은 `unknown`과 최초 근거를 유지한다.
+- 이유: 합성 로그만으로는 비동기 관측 문구와 cleanup 오류가 실제 최초 원인을 덮는 회귀를 찾기
+  어렵다. 반대로 모든 실패를 기존 범주에 강제로 넣으면 진단이 구체적으로 보이지만 틀린 원인과
+  해결책을 제시하게 된다.
+- 대안: 원본 GitHub log 전체를 fixture로 보관, Docker cleanup 오류를 build failure로 허용,
+  새로운 permission category를 단일 사례만으로 즉시 추가.
+- 결과: 평가 세트는 요구 범주 10건과 실제 CI 회귀 2건, 총 12건이 됐다. Alertmanager 관측
+  timeout과 bind-mount 권한 근거를 모두 보존하며 현재 12/12를 통과한다. 새 범주는 반복 사례와
+  사용자 조치가 충분히 구별될 때 별도 결정으로 추가한다.
+- 관련: `evaluation/scenarios.json`, `src/pipelens/classifier.py`.

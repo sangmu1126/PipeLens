@@ -693,6 +693,20 @@ Nginx는 별도 PR로 분리했다.
 - [PR #67](https://github.com/sangmu1126/PipeLens/pull/67)의 CI run `33397547020`과 CodeQL
   run `33397546955`에서 문서 연결을 포함한 필수 검사 7개가 모두 성공했다.
 
+### 실제 PipeLens CI 실패의 평가 fixture 환류
+
+- 실제 Alertmanager 플래이크는 30초 관측 제한 뒤 `alert state not observed ... []`를
+  출력했지만 기존 timeout 규칙은 일반적인 `timed out` 문구만 인식했다. 해당 문구를 좁은 timeout
+  signal로 추가했다.
+- PR #59의 첫 Linux 실패는 Prometheus 설정의 `permission denied`가 최초 원인이었고 cleanup의
+  `Error response from daemon: No such container`가 뒤따랐다. 기존의 넓은 Docker daemon 규칙은
+  후속 cleanup을 원인으로 오인할 수 있어 `No such container`를 Docker build 판정에서 제외했다.
+- 두 로그는 실제 endpoint와 resource 이름을 합성값으로 바꾸고 secret 없이 최소 구간만
+  `evaluation/logs/11-*`, `12-*`에 남겼다. 권한 실패는 지원 범주에 강제로 넣지 않고 `unknown`과
+  `permission denied` 최초 근거를 기대한다.
+- 평가 계약은 10개 요구 범주 합성 fixture와 실제 회귀 2건, 총 12건으로 확장됐다. 관련 단위
+  테스트 15개, 전체 backend 130개와 평가 12/12가 Python 3.14에서 통과했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -700,7 +714,7 @@ Nginx는 별도 PR로 분리했다.
 - Ruff 정적 lint
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
-- 10개 진단 fixture의 80% 정확도 gate
+- 12개 진단 fixture의 80% 정확도 gate
 - Vitest 대시보드 사용자 흐름·접근성 테스트
 - Playwright Chromium OAuth·session·dashboard·logout E2E
 - TypeScript와 Vite production build
