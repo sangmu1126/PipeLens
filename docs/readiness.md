@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 commit `88c671b`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 commit `3ac158a`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -38,6 +38,8 @@
 - [`GitHub Actions SHA 고정 PR #51`](https://github.com/sangmu1126/PipeLens/pull/51)
 - [GitHub Actions SHA 고정 PR CI run 33361752707](https://github.com/sangmu1126/PipeLens/actions/runs/33361752707)
 - [GitHub Actions SHA 고정 PR CodeQL run 33361752698](https://github.com/sangmu1126/PipeLens/actions/runs/33361752698)
+- [GitHub Actions SHA 고정 병합 후 CI run 33362037504](https://github.com/sangmu1126/PipeLens/actions/runs/33362037504)
+- [GitHub Actions SHA 고정 병합 후 CodeQL run 33362037525](https://github.com/sangmu1126/PipeLens/actions/runs/33362037525)
 - [`setup-python 7 PR #47`](https://github.com/sangmu1126/PipeLens/pull/47)
 - [setup-python 7 PR CI run 33328357773](https://github.com/sangmu1126/PipeLens/actions/runs/33328357773)
 - [setup-python 7 PR CodeQL run 33328357775](https://github.com/sangmu1126/PipeLens/actions/runs/33328357775)

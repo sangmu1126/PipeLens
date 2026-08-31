@@ -386,11 +386,14 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
 - 새 `ops/ci/verify_action_pinning.py`는 `.yml`과 `.yaml`의 모든 외부 `uses:`를 검사한다.
   local action과 `docker://`만 예외로 두며 branch, major tag와 semver tag는 파일·행 번호와 함께
   실패시킨다. 정상 SHA·local·container와 두 mutable 형식을 회귀 테스트로 고정했다.
-- 구현 `1e078ac`, 정책 문서 `9aacd55`, Alertmanager 드릴 안정화 `5764bc3`과 진단 기록
-  `88c671b`를 [PR #51](https://github.com/sangmu1126/PipeLens/pull/51)에 분리했다. 최종 CI
+- 구현, 정책 문서, Alertmanager 드릴 안정화, 진단 기록과 PR 증적을 역할별 commit으로
+  [PR #51](https://github.com/sangmu1126/PipeLens/pull/51)에 분리했다. 최종 CI
   `33361752707`은 action pinning gate에서 모든 외부 참조가 full SHA임을 확인하고, 보강된
   Prometheus→Alertmanager→webhook 경로를 포함한 5개 job을 통과했다. CodeQL
   `33361752698`의 Python·JavaScript/TypeScript 분석도 모두 성공했다.
+- 다섯 commit은 `201c924`, `4ed3508`, `6eaeab3`, `aeb174f`, `3ac158a`로 rebase merge됐다.
+  병합 후 `main` CI `33362037504`는 immutable action으로 5개 job과 action pinning gate,
+  Alertmanager 경로를 다시 통과했고 CodeQL `33362037525`의 두 언어 분석도 성공했다.
 
 ### `main` 변경 통제
 
