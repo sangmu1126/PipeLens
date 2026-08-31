@@ -567,3 +567,21 @@
   [Prometheus 내부 구조](https://github.com/prometheus/prometheus/blob/main/documentation/internal_architecture.md),
   [Prometheus configuration reload](https://prometheus.io/docs/prometheus/latest/configuration/configuration/).
 - 관련: `ops/alertmanager/verify-routing.sh`, [Alertmanager 절차](alertmanager.md).
+
+## D-043. ASGI TestClient만 httpx2로 전환하고 production httpx는 유지
+
+- 결정: dev extra에 `httpx2>=2.12.0,<3`을 추가해 Starlette `TestClient`가 새 transport를
+  사용하게 한다. GitHub API, OpenAI와 retry 경로의 production `httpx>=0.28.1,<1` 의존성과
+  import는 그대로 유지한다.
+- 이유: Starlette 1.6은 `httpx2`를 우선 사용하고 없으면 `httpx`로 fallback하면서 deprecation
+  warning을 낸다. 테스트 adapter의 예정된 전환을 미리 검증할 수 있지만, production client까지
+  함께 바꾸면 인증·streaming·timeout·mock 계약을 별도 검토하지 않고 범위를 넓히게 된다.
+- 대안: 경고를 무시하고 httpx fallback 유지, production과 test client를 동시에 httpx2로 전환,
+  자체 ASGI transport fixture 작성.
+- 결과: Python 3.14에서 Starlette가 `httpx2 2.12.0`을 선택했고 integration 제외 백엔드
+  128개가 경고 없이 통과했다. production image는 `.[dev]`를 설치하지 않아 httpx2와
+  httpcore2를 포함하지 않는다. 다음 httpx2 major는 호환성 검토 뒤 수동 전환한다.
+- 근거: [Starlette 1.2 release notes](https://github.com/Kludex/starlette/blob/main/docs/release-notes.md),
+  [Starlette TestClient 선택 로직](https://github.com/Kludex/starlette/blob/main/starlette/testclient.py),
+  [httpx2 2.12.0](https://pypi.org/project/httpx2/).
+- 관련: `pyproject.toml`, `tests/test_*_api.py`, `tests/test_auth.py`, `tests/test_webhook.py`.

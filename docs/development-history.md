@@ -661,6 +661,17 @@ Nginx는 별도 PR로 분리했다.
   재실행 없이 통과했다. CodeQL run `33391726030`, 두 container build, dashboard와 Python 3.14를
   포함한 필수 검사 7개가 모두 성공했다.
 
+### Starlette TestClient의 httpx2 전환
+
+- FastAPI 0.141.1이 설치한 Starlette 1.6.0은 `httpx2`가 없으면 기존 `httpx`를 사용하면서
+  deprecation warning을 출력했다. Starlette는 1.2부터 httpx2 TestClient를 공식 지원한다.
+- production의 GitHub·OpenAI HTTP client와 테스트 adapter는 변경 위험이 다르므로 함께
+  전환하지 않았다. `httpx2>=2.12.0,<3`을 dev extra에만 추가하고 production `httpx` 의존성과
+  import는 유지했다.
+- Python 3.14 환경에서 `starlette.testclient`가 실제 `httpx2 2.12.0`을 선택함을 확인했다.
+  integration 제외 백엔드 128개, Ruff와 dependency consistency가 통과했고 기존 Starlette
+  fallback 경고는 사라졌다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

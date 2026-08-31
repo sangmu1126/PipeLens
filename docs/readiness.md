@@ -2,14 +2,15 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-08-31**, 검증 기준 main commit `77f90fb`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-08-31**, 검증 기준 main commit `cf184e7`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | 고정 진단 평가 | 통과 | 10/10, 100%; CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 126 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 126개와 진단 평가 10/10 |
+| 백엔드 테스트 | 통과 | 로컬 128 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 128개와 진단 평가 10/10 |
+| ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI·로컬에서 Nginx 기동 후 내부 8080 HTTP smoke test |
@@ -168,16 +169,15 @@
 9. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
 10. `pipelens-evaluate --minimum-accuracy 0.8`
 
-별도 compatibility job은 Python 3.14에서 integration directory를 제외한 106개 테스트와
+별도 compatibility job은 Python 3.14에서 integration directory를 제외한 128개 테스트와
 10개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
 3.14는 상한 직전 호환성 검증을 담당한다. 로컬 3.14에서는 일부 dependency가 Python 3.16을
 앞두고 제거될 asyncio API에 대한 deprecation warning을 출력하지만 테스트 결과에는 영향을
 주지 않는다.
 
-현재 FastAPI/Starlette 테스트 클라이언트는 HTTPX 0.28.1에서 정상 동작하지만 Starlette가
-향후 `httpx2` package 전환을 요구하는 deprecation warning을 출력한다. production HTTPX
-client와는 별개인 테스트 adapter 경로이며, FastAPI·Starlette 지원 정책에 맞춘 전환을 후속
-호환성 작업으로 관리한다.
+FastAPI/Starlette 테스트 클라이언트는 dev extra의 `httpx2` 2.12.0을 사용한다. production의
+GitHub·OpenAI·retry client는 기존 `httpx` 0.28.1을 계속 사용하고 production image는 dev extra를
+설치하지 않으므로 두 전송 계층의 역할과 배포 의존성은 분리된다.
 
 ### 대시보드 CI
 
@@ -389,7 +389,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가
 2. Python 3.15 지원 시점과 dependency compatibility 결정
-3. FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환 시점 검토
+FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
 
