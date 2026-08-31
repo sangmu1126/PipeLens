@@ -38,6 +38,9 @@
 
 최근 검증 실행:
 
+- [`httpx2 TestClient 전환 PR #60`](https://github.com/sangmu1126/PipeLens/pull/60)
+- [httpx2 PR CI run 33395140783](https://github.com/sangmu1126/PipeLens/actions/runs/33395140783)
+- [httpx2 PR CodeQL run 33395140791](https://github.com/sangmu1126/PipeLens/actions/runs/33395140791)
 - [2026-08-31 Docker Desktop arm64 통합 검증](local-docker-validation.md): PostgreSQL·Grafana
   major upgrade, Alertmanager routing, PostgreSQL·Redis integration, worker drill과 두 image smoke
 - [`브라우저 OAuth E2E PR #57`](https://github.com/sangmu1126/PipeLens/pull/57)
