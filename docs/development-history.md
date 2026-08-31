@@ -706,6 +706,8 @@ Nginx는 별도 PR로 분리했다.
   `permission denied` 최초 근거를 기대한다.
 - 평가 계약은 10개 요구 범주 합성 fixture와 실제 회귀 2건, 총 12건으로 확장됐다. 관련 단위
   테스트 15개, 전체 backend 130개와 평가 12/12가 Python 3.14에서 통과했다.
+- [PR #68](https://github.com/sangmu1126/PipeLens/pull/68)의 CI run `33398998517`과 CodeQL
+  run `33398998843`에서 Python 3.12·3.14 평가와 필수 검사 7개가 모두 성공했다.
 
 ## 현재까지의 검증 방식
 
