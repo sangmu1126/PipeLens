@@ -650,3 +650,21 @@
   dependency 실패는 설치 대상과 version을 포함한 최초 resolver 오류를 근거로 반환한다.
 - 관련: `evaluation/logs/13-python-wheel-resolution.log`, `evaluation/scenarios.json`,
   `tests/test_classifier.py`.
+
+## D-048. 공개 metadata는 현재 기능만 설명하고 homepage는 실제 배포까지 유보
+
+- 결정: GitHub description은 Python package description과 동일하게 설정하고 제품 목적·실제
+  기술 stack topics를 추가한다. homepage는 production HTTPS endpoint가 검증될 때까지 비워 둔다.
+  Python 3.15 후속은 `priority:p2`, `area:compatibility` issue로 추적하되 production readiness
+  milestone에는 넣지 않는다.
+- 이유: 빈 description과 topics는 검색·목적 파악을 어렵게 하지만 repository 자체나 아직 없는
+  배포 URL을 homepage로 넣으면 사용 가능한 서비스가 있다는 잘못된 신호를 준다. P2를 문서에만
+  두면 GA와 dependency 배포 시점을 상태로 추적할 수도 없다.
+- 대안: 모든 metadata를 비워 둠, repository URL을 homepage로 사용, Python 3.15를 P0/P1 milestone에
+  포함.
+- 결과: 저장소 검색 정보는 현재 구현과 일치하고 homepage는 #62의 실제 endpoint 증적과 연결된다.
+  #71은 Python final, dependency metadata, 전체 integration과 branch protection 승격 조건을
+  독립적으로 추적하며 v0.2.0 production readiness 완료율을 왜곡하지 않는다.
+- 관련: [저장소 관리 절차](repository-governance.md),
+  [Python 3.15 지원 #71](https://github.com/sangmu1126/PipeLens/issues/71),
+  [공개 HTTPS 검증 #62](https://github.com/sangmu1126/PipeLens/issues/62).
