@@ -210,23 +210,67 @@ jobs:
   python-preview:
     name: Python 3.15 preview
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: preview_python
+        continue-on-error: true
         with:
           python-version: "3.15"
           allow-prereleases: true
           cache: pip
       - name: Report preview interpreter
+        id: interpreter
+        if: steps.preview_python.outcome == 'success'
+        continue-on-error: true
         run: |
           python -VV
           python -c 'import sys; assert sys.version_info[:2] == (3, 15)'
       - name: Install dependencies outside the declared support range
+        id: install
+        if: steps.interpreter.outcome == 'success'
+        continue-on-error: true
         run: python -m pip install --ignore-requires-python -e '.[dev]'
-      - run: python -m pip check
-      - run: pytest -q --ignore=tests/integration
-      - run: pipelens-evaluate --minimum-accuracy 0.8
+      - name: Check dependency consistency
+        id: dependencies
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: python -m pip check
+      - name: Run non-integration backend tests
+        id: tests
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: pytest -q --ignore=tests/integration
+      - name: Run diagnostic evaluation
+        id: evaluation
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: pipelens-evaluate --minimum-accuracy 0.8
+      - name: Report advisory result
+        if: always()
+        env:
+          PYTHON_OUTCOME: ${{ steps.preview_python.outcome }}
+          INTERPRETER_OUTCOME: ${{ steps.interpreter.outcome }}
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+          EVALUATION_OUTCOME: ${{ steps.evaluation.outcome }}
+        run: |
+          summary="runtime=$PYTHON_OUTCOME interpreter=$INTERPRETER_OUTCOME install=$INSTALL_OUTCOME dependencies=$DEPENDENCIES_OUTCOME tests=$TESTS_OUTCOME evaluation=$EVALUATION_OUTCOME"
+          if [[ "$summary" == *"failure"* || "$summary" == *"skipped"* ]]; then
+            echo "::warning title=Python 3.15 preview is not ready::$summary"
+            status="Not ready; inspect the first failed preview step."
+          else
+            echo "::notice title=Python 3.15 preview passed::$summary"
+            status="All preview checks passed."
+          fi
+          {
+            echo "### Python 3.15 preview"
+            echo
+            echo "$status"
+            echo
+            echo "\`$summary\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   dashboard:
     runs-on: ubuntu-latest
