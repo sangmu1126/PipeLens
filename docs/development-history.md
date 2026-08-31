@@ -671,6 +671,9 @@ Nginx는 별도 PR로 분리했다.
 - Python 3.14 환경에서 `starlette.testclient`가 실제 `httpx2 2.12.0`을 선택함을 확인했다.
   integration 제외 백엔드 128개, Ruff와 dependency consistency가 통과했고 기존 Starlette
   fallback 경고는 사라졌다.
+- [PR #60](https://github.com/sangmu1126/PipeLens/pull/60)의 CI run `33395140783`은 Python
+  3.12 backend, Python 3.14 compatibility, dev extra를 설치하지 않는 production API image와
+  dashboard를 포함한 전체 gate를 통과했다. CodeQL run `33395140791`도 성공했다.
 
 ## 현재까지의 검증 방식
 
