@@ -1,0 +1,72 @@
+name: Bug report
+description: Report a reproducible PipeLens defect with sanitized evidence.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve PipeLens. For vulnerabilities or exposed secrets, stop and use the private security reporting link instead. Remove credentials, repository names, user data, private URLs, and unrelated workflow output from all public evidence.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the observed behavior and its impact.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide the smallest deterministic sequence, fixture, or repository-independent example.
+      placeholder: |
+        1. Configure ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: PipeLens version or commit
+      placeholder: v0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, architecture, Python, Node.js, database, queue, browser, and deployment mode when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Include the first relevant error and a minimal surrounding context. Do not paste full workflow logs.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Link related public issues or runs and describe attempted workarounds.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public disclosure checks
+      options:
+        - label: I searched existing issues and reproduced this on the latest applicable version.
+          required: true
+        - label: I removed secrets, credentials, repository identifiers, private URLs, and personal data.
+          required: true
+        - label: This report does not describe an exploitable vulnerability that requires private handling.
+          required: true

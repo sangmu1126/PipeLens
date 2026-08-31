@@ -14,6 +14,8 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)
 - [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)
 - [저장소 보호와 변경 절차](docs/repository-governance.md)
+- [기여 가이드](CONTRIBUTING.md)
+- [비공개 보안 신고 정책](SECURITY.md)
 
 현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.
 
@@ -72,8 +74,8 @@ npm --prefix frontend run build
 ## MVP 정확도 평가
 
 `evaluation/scenarios.json`에는 테스트·빌드·의존성·Lint·Docker·배포 인증·환경변수·
-Timeout·리소스·Workflow 오류의 10개 요구 범주와 실제 PipeLens CI 실패 2건을 재현하는
-12개 고정 로그가 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두 채점하며 기본 통과
+Timeout·리소스·Workflow 오류의 10개 요구 범주와 실제 PipeLens CI 실패 3건을 재현하는
+13개 고정 로그가 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두 채점하며 기본 통과
 기준은 완료 조건과 같은 80%입니다.
 
 ```bash
