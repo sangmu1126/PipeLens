@@ -688,3 +688,20 @@
   [GitHub issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms).
 - 관련: `SECURITY.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/`,
   `.github/PULL_REQUEST_TEMPLATE.md`, [저장소 관리 절차](repository-governance.md).
+
+## D-050. 행동강령은 Contributor Covenant 2.1과 confidential 신고 경로를 사용
+
+- 결정: 공식 최신 릴리스인 Contributor Covenant 2.1을 적용하고 enforcement contact는 기존
+  GitHub private reporting channel로 통합한다. conduct report 제목은 `Code of Conduct` prefix로
+  구분하며 software vulnerability가 아니어도 이 confidential channel에서 받는다.
+- 이유: 공개 저장소의 행동 기준과 단계적 enforcement가 없으면 moderation 판단이 일관되지 않고,
+  공개 issue 신고는 reporter와 대상자의 개인정보를 노출할 수 있다. maintainer 공개 이메일은
+  등록돼 있지 않으므로 존재하지 않는 연락처를 문서에 넣을 수도 없다.
+- 대안: 행동강령 없음, 미출시 Contributor Covenant 차기 초안 사용, conduct incident를 공개 issue나
+  vulnerability report와 구분되지 않는 제목으로 접수.
+- 결과: project interaction, 대표 활동과 moderation에 동일한 기준을 적용한다. private channel을
+  공유하지만 title prefix와 SECURITY policy로 사건 유형을 구분하며 community profile의 마지막
+  정책 공백을 해소한다.
+- 근거: [Contributor Covenant 2.1 release](https://github.com/EthicalSource/contributor_covenant/releases/tag/2.1),
+  [Contributor Covenant 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html).
+- 관련: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, [저장소 관리 절차](repository-governance.md).
