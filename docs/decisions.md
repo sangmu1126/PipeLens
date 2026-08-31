@@ -585,3 +585,18 @@
   [Starlette TestClient 선택 로직](https://github.com/Kludex/starlette/blob/main/starlette/testclient.py),
   [httpx2 2.12.0](https://pypi.org/project/httpx2/).
 - 관련: `pyproject.toml`, `tests/test_*_api.py`, `tests/test_auth.py`, `tests/test_webhook.py`.
+
+## D-044. 외부 운영 완료 조건은 evidence-gated GitHub issue로 관리
+
+- 결정: repository 안에서 자동화할 수 없는 P0/P1을 `v0.2.0 Production readiness` milestone의
+  issue #61–#66으로 분리한다. priority와 acceptance/operations label을 따로 사용하고 각 issue에
+  측정 가능한 완료 조건, 보안 검증, 증적과 제외 범위를 둔다.
+- 이유: 문서의 체크리스트만으로는 소유권, 진행 상태와 완료 근거를 GitHub 변경 흐름에서 추적할
+  수 없다. 반대로 “production 배포” 한 건으로 묶으면 GitHub App, TLS, backup, notification,
+  secret rotation과 load 검증이 서로를 가리고 부분 완료를 판단할 수 없다.
+- 대안: readiness 문서만 유지, P0/P1 전체를 단일 issue로 생성, 아직 실행 환경이 없으므로 issue
+  생성을 연기.
+- 결과: milestone은 P0 2개와 P1 4개의 완료율을 표시한다. 구현 PR만 병합해서 issue를 닫을 수
+  없고 run ID, 게시 URL, latency 또는 redacted 운영 기록 등 본문의 증적을 확인해야 한다.
+- 관련: [production readiness milestone](https://github.com/sangmu1126/PipeLens/milestone/1),
+  [검증 및 운영 준비 현황](readiness.md), [저장소 관리 절차](repository-governance.md).

@@ -38,6 +38,19 @@
 추가해 성공 실행을 만든 뒤 branch protection context를 갱신하고, 마지막에 이전 job 이름을
 제거한다. workflow 변경과 protection 변경을 한 번에 추측으로 적용하지 않는다.
 
+## 운영 준비 backlog
+
+코드로 재현할 수 없는 외부 인수·운영 검증은
+[`v0.2.0 Production readiness`](https://github.com/sangmu1126/PipeLens/milestone/1) milestone에서
+관리한다. `priority:p0`는 서비스 완료를 막는 조건, `priority:p1`은 production 신뢰성 조건이다.
+외부 인수는 `area:acceptance`, backup·notification·secret·load 항목은 `area:operations`로
+구분한다.
+
+issue는 목적, 측정 가능한 acceptance criteria, 보안 검증과 제외 범위를 포함해야 한다. 구현 PR이
+병합됐다는 이유만으로 닫지 않고 run ID, 게시 URL, latency, redacted 운영 기록 등 issue가 요구한
+증적을 확인한 뒤 닫는다. 현재 범위는 issue
+[#61](https://github.com/sangmu1126/PipeLens/issues/61)–[#66](https://github.com/sangmu1126/PipeLens/issues/66)이다.
+
 ## 보호 범위 밖의 항목
 
 branch protection은 version tag와 GitHub Release asset을 잠그지 않는다. Release workflow는

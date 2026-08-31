@@ -675,6 +675,22 @@ Nginx는 별도 PR로 분리했다.
   3.12 backend, Python 3.14 compatibility, dev extra를 설치하지 않는 production API image와
   dashboard를 포함한 전체 gate를 통과했다. CodeQL run `33395140791`도 성공했다.
 
+### production readiness backlog의 GitHub 추적 전환
+
+- readiness 문서에는 외부 환경이 필요한 P0/P1이 남아 있었지만 GitHub issue와 milestone은
+  모두 비어 있어 담당 범위, 종료 조건과 증적을 상태로 추적할 수 없었다.
+- `priority:p0`, `priority:p1`, `area:acceptance`, `area:operations` label과
+  [`v0.2.0 Production readiness`](https://github.com/sangmu1126/PipeLens/milestone/1) milestone을
+  생성했다.
+- P0는 [실제 GitHub App E2E #61](https://github.com/sangmu1126/PipeLens/issues/61)과
+  [공개 HTTPS OAuth·webhook #62](https://github.com/sangmu1126/PipeLens/issues/62)로 분리했다.
+  P1은 [PostgreSQL·Grafana 복원 #63](https://github.com/sangmu1126/PipeLens/issues/63),
+  [Alertmanager 실채널 #64](https://github.com/sangmu1126/PipeLens/issues/64),
+  [secret rotation #65](https://github.com/sangmu1126/PipeLens/issues/65),
+  [worker soak/load #66](https://github.com/sangmu1126/PipeLens/issues/66)으로 분리했다.
+- 모든 issue에는 목적, 측정 가능한 acceptance criteria, 저장할 redacted evidence와 제외 범위를
+  기록했다. milestone 생성 직후 상태는 open 6, closed 0이며 코드 구현만으로 닫지 않는다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
