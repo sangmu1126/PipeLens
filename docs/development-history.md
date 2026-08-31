@@ -366,6 +366,18 @@ worker가 뒤늦게 성공하는 문제”까지 다룬 기록이다.
   squash merge한 뒤 `main` CI `33328478789`, CodeQL `33328478782`와 수동 GHCR 감사
   `33328498258`이 모두 성공했다. 이 처리로 open Dependabot PR은 0개가 됐다.
 
+### GitHub Actions immutable reference 정책
+
+- CI와 CodeQL에는 `actions/checkout@v7`, `actions/setup-python@v7.0.0`,
+  `actions/setup-node@v7`, `github/codeql-action/*@v4`처럼 이동 가능한 참조 10개가 남아 있었다.
+  release와 GHCR 감사 workflow의 기존 SHA 고정과 공급망 경계가 일관되지 않았다.
+- 공식 repository의 release tag를 직접 조회해 checkout 7.0.1, setup-python 7.0.0,
+  setup-node 7.0.0과 CodeQL action 4.37.9가 가리키는 full commit SHA를 확인했다. workflow에는
+  SHA를 실행 참조로 쓰고 version을 주석으로 보존했다.
+- 새 `ops/ci/verify_action_pinning.py`는 `.yml`과 `.yaml`의 모든 외부 `uses:`를 검사한다.
+  local action과 `docker://`만 예외로 두며 branch, major tag와 semver tag는 파일·행 번호와 함께
+  실패시킨다. 정상 SHA·local·container와 두 mutable 형식을 회귀 테스트로 고정했다.
+
 ### `main` 변경 통제
 
 - 최신 녹색 commit `037e55b`에서 GitHub Actions app이 만든 CI 5개와 CodeQL 2개 context를

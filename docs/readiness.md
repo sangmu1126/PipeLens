@@ -27,6 +27,7 @@
 | Grafana runtime | 통과 | 13.2, 12→13 persistent-volume·provisioning·anonymous Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
+| GitHub Actions 공급망 | 구현 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
@@ -396,6 +397,7 @@ milestone으로 옮겨 추적하는 작업이 필요하다.
 - [x] CI build image CycloneDX SBOM
 - [x] release image SBOM·provenance
 - [x] GHCR release·attestation 보존 정책과 자동 감사
+- [x] 외부 GitHub Action full commit SHA 고정과 CI 정책 검사
 - [ ] secret manager와 rotation
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [ ] production 규모 PostgreSQL backup/restore drill
