@@ -1,7 +1,31 @@
 from ops.alertmanager.wait_for_alert import (
     alertmanager_has_active,
+    prometheus_has_active_alertmanager,
     prometheus_has_firing,
 )
+
+
+def test_prometheus_has_active_alertmanager() -> None:
+    payload = {
+        "status": "success",
+        "data": {
+            "activeAlertmanagers": [
+                {"url": "http://alertmanager:9093/api/v2/alerts"}
+            ],
+            "droppedAlertmanagers": [],
+        },
+    }
+
+    assert prometheus_has_active_alertmanager(payload)
+
+
+def test_prometheus_rejects_missing_active_alertmanager() -> None:
+    payload = {
+        "status": "success",
+        "data": {"activeAlertmanagers": [], "droppedAlertmanagers": []},
+    }
+
+    assert not prometheus_has_active_alertmanager(payload)
 
 
 def test_prometheus_has_firing_probe() -> None:

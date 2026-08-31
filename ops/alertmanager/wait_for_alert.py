@@ -13,6 +13,14 @@ from typing import Any
 ALERT_NAME = "PipeLensAlertRoutingProbe"
 
 
+def prometheus_has_active_alertmanager(payload: Any) -> bool:
+    return bool(
+        isinstance(payload, dict)
+        and payload.get("status") == "success"
+        and payload.get("data", {}).get("activeAlertmanagers")
+    )
+
+
 def prometheus_has_firing(payload: Any) -> bool:
     return bool(
         isinstance(payload, dict)
@@ -59,7 +67,10 @@ def wait_for_alert(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("source", choices=("prometheus", "alertmanager"))
+    parser.add_argument(
+        "source",
+        choices=("prometheus-alertmanager", "prometheus", "alertmanager"),
+    )
     parser.add_argument("--url", required=True)
     parser.add_argument("--timeout", type=float, default=30)
     return parser.parse_args()
@@ -70,6 +81,7 @@ def main() -> int:
     if args.timeout <= 0:
         raise SystemExit("timeout must be greater than zero")
     predicate = {
+        "prometheus-alertmanager": prometheus_has_active_alertmanager,
         "prometheus": prometheus_has_firing,
         "alertmanager": alertmanager_has_active,
     }[args.source]

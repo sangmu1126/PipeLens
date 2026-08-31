@@ -17,8 +17,10 @@ fi
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 fixture_dir="$project_root/ops/alertmanager/fixtures"
 result_dir="$(mktemp -d)"
+chmod 0755 "$result_dir"
 payload_path="$result_dir/alertmanager-webhook.json"
 receiver_ready_path="$result_dir/receiver-ready"
+prometheus_config_path="$result_dir/prometheus.yml"
 network_name="pipelens-alert-routing-$$"
 alertmanager_container="pipelens-alertmanager-routing-$$"
 prometheus_container="pipelens-prometheus-routing-$$"
@@ -44,6 +46,12 @@ docker run --rm --entrypoint amtool \
 docker run --rm --entrypoint promtool \
   --volume "$fixture_dir:/etc/prometheus:ro" \
   "$PROMETHEUS_IMAGE" check config /etc/prometheus/prometheus.yml
+docker run --rm --entrypoint promtool \
+  --volume "$fixture_dir:/etc/prometheus:ro" \
+  "$PROMETHEUS_IMAGE" check config /etc/prometheus/prometheus-bootstrap.yml
+
+cp "$fixture_dir/prometheus-bootstrap.yml" "$prometheus_config_path"
+cp "$fixture_dir/probe.yml" "$result_dir/probe.yml"
 
 python "$project_root/ops/alertmanager/test_receiver.py" \
   --output "$payload_path" \
@@ -96,7 +104,7 @@ docker run --detach --rm \
   --name "$prometheus_container" \
   --network "$network_name" \
   --publish 19090:9090 \
-  --volume "$fixture_dir:/etc/prometheus:ro" \
+  --volume "$result_dir:/etc/prometheus:ro" \
   "$PROMETHEUS_IMAGE" \
   --config.file=/etc/prometheus/prometheus.yml \
   --storage.tsdb.path=/prometheus >/dev/null
@@ -111,6 +119,17 @@ for attempt in {1..30}; do
   fi
   sleep 1
 done
+
+if ! python "$project_root/ops/alertmanager/wait_for_alert.py" \
+  prometheus-alertmanager \
+  --url http://localhost:19090/api/v1/alertmanagers \
+  --timeout 30; then
+  docker logs "$prometheus_container"
+  exit 1
+fi
+
+cp "$fixture_dir/prometheus.yml" "$prometheus_config_path"
+docker kill --signal HUP "$prometheus_container" >/dev/null
 
 if ! python "$project_root/ops/alertmanager/wait_for_alert.py" prometheus \
   --url http://localhost:19090/api/v1/alerts \
