@@ -78,6 +78,11 @@ issue는 끄고 pull request에는 검증, 보안·개인정보 경계와 문서
 Dependabot alerts와 security updates는 활성화하며 생성된 보안 PR도 일반 PR과 같은 branch
 protection, 고정 참조와 전체 CI를 통과해야 한다. 설정 상태는 repository API로 재조회한다.
 
+모든 project interaction에는 Contributor Covenant 2.1 기반 `CODE_OF_CONDUCT.md`를 적용한다.
+공개 이메일을 임의로 만들지 않고 confidential conduct report도 private reporting channel로 받되,
+제목을 `Code of Conduct`로 시작해 software vulnerability report와 구분한다. maintainer는 reporter의
+privacy를 보존하고 correction, warning, temporary ban, permanent ban의 단계적 기준을 사용한다.
+
 ## 보호 범위 밖의 항목
 
 branch protection은 version tag와 GitHub Release asset을 잠그지 않는다. Release workflow는

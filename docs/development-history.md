@@ -780,6 +780,16 @@ Nginx는 별도 PR로 분리했다.
   접수 파일과 문서가 backend, Python 3.14, dashboard와 두 container build를 통과했다. CodeQL
   run `33424675633`의 Python·JavaScript 분석도 성공했다.
 
+### Contributor Covenant 행동강령 적용
+
+- 공식 Contributor Covenant 저장소의 최신 release가 2.1이고 version 3 자료는 정식 release가
+  아님을 확인해 2.1 원문과 attribution을 적용했다.
+- maintainer profile에 공개 email이 없으므로 연락처를 만들거나 공개 issue를 사용하지 않았다.
+  기존 private reporting channel이 confidential conduct report도 받도록 명시하고 title prefix로
+  security vulnerability와 구분했다.
+- correction, warning, temporary ban과 permanent ban의 단계적 enforcement 기준을 기여 가이드와
+  repository governance에 연결했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

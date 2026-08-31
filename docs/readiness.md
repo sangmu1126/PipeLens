@@ -33,6 +33,7 @@
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | 공개 보안 접수 | 설정됨 | private vulnerability reporting, Dependabot alerts·security updates, SECURITY policy |
+| 공개 기여 정책 | 설정됨 | 기여 가이드, issue/PR template와 Contributor Covenant 2.1 행동강령 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
 | `main` 보호 | 설정됨 | PR, strict CI 5개·CodeQL 2개, conversation·linear history, 관리자 적용 |
@@ -460,6 +461,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] 외부 GitHub Action full commit SHA 고정과 CI 정책 검사
 - [x] private vulnerability reporting과 Dependabot alerts·security updates
 - [x] SECURITY·기여 가이드와 구조화된 issue/PR template
+- [x] Contributor Covenant 2.1 행동강령과 confidential enforcement 접수
 - [x] Fernet rolling key rotation 구현과 secret·incident response runbook
 - [ ] [production secret manager 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
