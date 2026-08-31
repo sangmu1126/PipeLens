@@ -29,15 +29,16 @@ alert, group과 silence를 확인할 수 있지만 운영 호출을 완료한 �
 2. `promtool`로 합성 Prometheus config와 rule을 검증한다.
 3. Alertmanager를 UTF-8 strict mode로 기동한다.
 4. Prometheus의 `vector(1)` rule로 `PipeLensAlertRoutingProbe` critical alert를 firing한다.
-5. Prometheus가 Alertmanager에 alert를 전달하고 Alertmanager가 group화한 webhook JSON을 로컬
-   일회성 receiver에 POST한다.
-6. webhook의 version, receiver, firing status, alert name, severity, environment와 summary를
-   검증한다.
-7. Prometheus API의 firing 상태와 Alertmanager API의 active 상태를 각각 확인한다.
+5. Prometheus readiness와 API의 firing 상태를 확인한다.
+6. Alertmanager API에서 같은 alert가 active가 될 때까지 확인한다.
+7. Alertmanager가 group화한 webhook JSON을 로컬 일회성 receiver에 POST하면 version, receiver,
+   firing status, alert name, severity, environment와 summary를 검증한다.
 
-receiver는 최대 1 MiB JSON 하나만 받고 60초 뒤 종료한다. 모든 container, network와 임시
-payload는 성공·실패와 관계없이 정리한다. webhook URL과 테스트 alert는 CI fixture에만 있으며
-기본 Compose config에는 포함되지 않는다.
+receiver는 실제 socket bind 뒤 준비 파일을 만들고 최대 1 MiB JSON 하나만 받는다. 전체 수신
+상한은 180초이며 Prometheus readiness, firing, Alertmanager active와 webhook 전달에는 각각 더
+짧은 제한을 둔다. 따라서 실패 시 어느 단계에서 멈췄는지 API의 마지막 응답과 container log로
+구분할 수 있다. 모든 container, network와 임시 payload는 성공·실패와 관계없이 정리한다.
+webhook URL과 테스트 alert는 CI fixture에만 있으며 기본 Compose config에는 포함되지 않는다.
 
 PR #45의 첫 CI run `33325807628`은 합성 Prometheus config가 실제 mount 경로와 다른 rule
 glob을 참조해 rule 0개로 기동했고 webhook 대기 시간이 초과됐다. fixture가 mount한
@@ -53,6 +54,13 @@ Compose healthcheck 명령 검증을 추가한 최종 PR CI run `33326106111`에
 실패했다. 단일-node HA를 끄고 제한을 60초로 보강한 PR #48 CI run `33327036671`과 병합 후
 `main` CI run `33327158576`은 라우팅을 각각 통과했다. 최종 `main` CodeQL run
 `33327158575`도 성공했다.
+
+GitHub Actions 참조를 SHA로 고정한 PR #51의 첫 CI run `33361428377`은 Prometheus와
+Alertmanager가 정상 기동했지만 60초 안에 webhook payload를 받지 못했다. 당시 드릴은 payload
+파일만 기다려 Prometheus 평가, Alertmanager 수신과 webhook 연결 중 어느 구간이 원인인지
+판별할 수 없었다. receiver bind 완료를 명시적으로 기다리고 두 API 상태를 순서대로 관측한 뒤
+webhook을 확인하도록 보강했다. 로컬 Docker daemon이 없어 이 container 경로의 최종 판정은
+PR #51의 GitHub runner 결과로 남긴다.
 
 ## 로컬 검증
 
