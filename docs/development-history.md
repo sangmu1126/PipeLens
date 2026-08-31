@@ -758,6 +758,9 @@ Nginx는 별도 PR로 분리했다.
   acceptance criteria로 고정했다.
 - Python 3.15는 production readiness를 막는 P0/P1이 아니므로 #71을 v0.2.0 milestone에 넣지
   않았다. 이로써 외부 운영 완료율과 향후 runtime 품질 확장을 분리했다.
+- [PR #72](https://github.com/sangmu1126/PipeLens/pull/72)의 CI run `33423256610`에서 metadata
+  정책 문서와 현재 상태가 backend, Python 3.14, dashboard와 두 container build를 통과했다.
+  CodeQL run `33423256608`의 Python·JavaScript 분석도 성공했다.
 
 ## 현재까지의 검증 방식
 
