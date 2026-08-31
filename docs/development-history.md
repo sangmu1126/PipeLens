@@ -640,6 +640,24 @@ Node 26은 공식 LTS 전환 뒤 별도로 검토하며 Nginx 변경만 PR #17�
 처리됐다. Node 26은 LTS 정책에 따라 제외했고 나머지는 검증 뒤 merge했으며, 함께 제안됐던
 Nginx는 별도 PR로 분리했다.
 
+### Alertmanager 최초 전달 경쟁 제거
+
+- CI run `33365266972`와 `33388547313`은 Prometheus firing 확인 뒤 Alertmanager API가
+  30초 동안 빈 목록을 반환해 최초 실행만 실패했고, 같은 revision의 재실행은 통과했다.
+- readiness 뒤 즉시 rule을 관측하던 기존 순서는 notifier discovery와 rule evaluation의 독립
+  시작 순서를 통제하지 않았다. 단순 timeout 확대는 경쟁을 숨기고 CI 시간을 늘리므로 선택하지
+  않았다.
+- Prometheus를 rule 없는 bootstrap config로 시작하고 `/api/v1/alertmanagers`의 active 대상을
+  확인한 다음 검증된 합성 rule config를 `SIGHUP` reload하도록 변경했다. 이제 최초 firing은
+  전달 대상이 준비된 뒤에만 만들어진다.
+- discovery payload predicate의 성공·실패 단위 테스트 2개를 추가했다. Prometheus 3.13.2와
+  Alertmanager 0.33.1의 고정 digest를 사용한 Docker Desktop arm64 검증은 변경 전 기준 1회와
+  변경 후 연속 5회를 통과했다.
+- PR #59의 첫 backend run `33390807339`은 Linux의 `mktemp -d`가 만든 `0700` 디렉터리를
+  비-root Prometheus container가 읽지 못해 시작 전에 종료됐다. macOS Docker Desktop의 bind
+  mount에서는 드러나지 않은 host 차이다. 임시 디렉터리를 설정 읽기에 필요한 `0755`로 명시해
+  Linux와 macOS의 권한 계약을 같게 만들었다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

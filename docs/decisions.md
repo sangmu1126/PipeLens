@@ -549,3 +549,21 @@
 - 근거: [Playwright web server](https://playwright.dev/docs/test-webserver),
   [Playwright browser isolation](https://playwright.dev/docs/browser-contexts).
 - 관련: `frontend/e2e/oauth-dashboard.spec.ts`, [브라우저 E2E](browser-e2e.md).
+
+## D-042. Alert routing 드릴은 notifier discovery 뒤에 합성 rule을 활성화
+
+- 결정: CI의 Prometheus는 rule 없는 bootstrap config로 먼저 시작한다.
+  `/api/v1/alertmanagers`에서 active 대상이 확인된 뒤 합성 rule config를 배치하고 `SIGHUP`으로
+  reload한 다음 firing, Alertmanager active와 webhook을 검증한다.
+- 이유: HTTP readiness는 notifier discovery 완료를 뜻하지 않는다. discovery manager와 rule
+  manager는 독립적으로 실행되므로 항상 firing하는 rule의 최초 평가가 앞설 수 있고, 이 경우
+  짧은 관측 제한 안에서 Alertmanager가 빈 목록을 반환하는 간헐 실패가 발생했다.
+- 대안: Alertmanager 관측 timeout만 60초 이상으로 확대, rule evaluation interval을 임의로
+  늦춤, 실패 시 workflow 자동 재실행.
+- 결과: 검증 시간의 대부분을 sleep으로 늘리지 않으면서 최초 평가 전에 전달 대상이 존재함을
+  보장한다. Docker Desktop arm64에서 변경 후 연속 5회 통과했다. API predicate 단위 테스트와
+  두 Prometheus config의 `promtool` 검사를 함께 유지한다.
+- 근거: [Prometheus Alertmanager discovery API](https://prometheus.io/docs/prometheus/latest/querying/api/#alertmanagers),
+  [Prometheus 내부 구조](https://github.com/prometheus/prometheus/blob/main/documentation/internal_architecture.md),
+  [Prometheus configuration reload](https://prometheus.io/docs/prometheus/latest/configuration/configuration/).
+- 관련: `ops/alertmanager/verify-routing.sh`, [Alertmanager 절차](alertmanager.md).
