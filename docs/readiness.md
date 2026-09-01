@@ -30,6 +30,7 @@
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
+| secret file 주입 경계 | 통과 | 9개 민감 설정의 `*_FILE`, 충돌·빈 값·형식·크기 fail-closed 검증 |
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | repository secret gate | 통과 | GitHub provider scan·push protection과 Trivy generic secret PR gate |
@@ -364,7 +365,7 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 ### 미구현 또는 외부 설정 필요
 
 - API·대시보드 Dockerfile base image digest 정책
-- production secret manager 연결과 실제 credential 주입
+- production secret manager·workload identity 선택, read-only mount와 실제 credential 주입
 - TLS reverse proxy의 HSTS
 - GitHub 조직 정책에 따른 secret scanning/push protection 확인
 - 정기적인 OAuth session·암호화 key rotation 훈련
@@ -476,7 +477,8 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] SECURITY·기여 가이드와 구조화된 issue/PR template
 - [x] Contributor Covenant 2.1 행동강령과 confidential enforcement 접수
 - [x] Fernet rolling key rotation 구현과 secret·incident response runbook
-- [ ] [production secret manager 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
+- [x] vendor-neutral read-only secret file 주입 경계와 fail-closed 검증
+- [ ] [production secret manager·workload identity 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [ ] [production 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill

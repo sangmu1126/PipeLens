@@ -748,3 +748,21 @@
   [Dependency Review Action v5.0.0](https://github.com/actions/dependency-review-action/releases/tag/v5.0.0).
 - 관련: `.github/workflows/dependency-review.yml`, `SECURITY.md`,
   [저장소 관리 절차](repository-governance.md), [검증 현황](readiness.md).
+
+## D-053. Secret manager 연결 경계는 vendor-neutral `*_FILE`로 고정
+
+- 결정: webhook, GitHub private/client secret, session, Fernet primary/fallback, OpenAI, PostgreSQL,
+  Redis의 9개 민감 설정에 대응하는 `PIPELENS_*_FILE` 입력을 제공한다. direct 값과 file 경로는 상호
+  배타적이며 file은 시작 시 한 번만 읽고 변경은 rolling deployment로 반영한다.
+- 이유: 기존 운영 문서는 process environment 또는 read-only file 주입을 계약했지만 구현은 direct
+  환경변수만 지원했다. CSI driver, sidecar와 container secret volume은 공통적으로 file mount를
+  제공하므로 이 경계를 구현하면 cloud SDK·resource ID를 application에 결합하지 않고 workload
+  identity 기반 manager를 연결할 수 있다.
+- 대안: vendor별 SDK 내장, entrypoint에서 file을 환경변수로 복사, 하나의 JSON secret bundle,
+  실행 중 file watch·자동 reload.
+- 결과: 값·file 동시 지정, 누락·비정규·비 UTF-8·빈 값·1 MiB 초과를 fail-closed로 거부한다. PEM
+  내부 newline은 보존하고 마지막 줄바꿈만 제거한다. application은 secret version·resource ID를
+  알지 않으며 실제 manager·권한·read-only mount·rotation audit는 #65의 외부 완료 조건으로 남는다.
+- 관련: `src/pipelens/config.py`, `tests/test_config.py`, `.env.example`,
+  [비밀값과 키 교체](secrets-and-rotation.md),
+  [production secret manager #65](https://github.com/sangmu1126/PipeLens/issues/65).
