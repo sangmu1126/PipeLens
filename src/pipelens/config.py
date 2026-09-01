@@ -1,15 +1,56 @@
 import base64
 import hashlib
+import os
+import stat
 from functools import lru_cache
-from typing import Literal
+from pathlib import Path
+from typing import ClassVar, Literal
 from urllib.parse import urlparse
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_MAX_SECRET_FILE_BYTES = 1024 * 1024
+
+
+def _read_secret_file(path: Path, setting_name: str) -> str:
+    try:
+        path_stat = path.stat()
+        if not stat.S_ISREG(path_stat.st_mode):
+            raise ValueError(f"{setting_name} must reference a regular file")
+        with path.open("rb") as handle:
+            file_stat = os.fstat(handle.fileno())
+            if not stat.S_ISREG(file_stat.st_mode):
+                raise ValueError(f"{setting_name} must reference a regular file")
+            content = handle.read(_MAX_SECRET_FILE_BYTES + 1)
+    except OSError as exc:
+        raise ValueError(f"{setting_name} must reference a readable file") from exc
+
+    if len(content) > _MAX_SECRET_FILE_BYTES:
+        raise ValueError(f"{setting_name} must not exceed {_MAX_SECRET_FILE_BYTES} bytes")
+    try:
+        value = content.decode("utf-8").rstrip("\r\n")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{setting_name} must contain UTF-8 text") from exc
+    if not value:
+        raise ValueError(f"{setting_name} must not be empty")
+    return value
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="PIPELENS_", extra="ignore")
+
+    secret_file_fields: ClassVar[dict[str, str]] = {
+        "webhook_secret": "webhook_secret_file",
+        "github_private_key": "github_private_key_file",
+        "github_client_secret": "github_client_secret_file",
+        "session_secret": "session_secret_file",
+        "token_encryption_key": "token_encryption_key_file",
+        "token_encryption_fallback_keys": "token_encryption_fallback_keys_file",
+        "openai_api_key": "openai_api_key_file",
+        "database_url": "database_url_file",
+        "redis_url": "redis_url_file",
+    }
 
     environment: Literal["development", "production"] = "development"
     webhook_secret: str = "development-secret"
@@ -51,6 +92,16 @@ class Settings(BaseSettings):
     analysis_start_slo_seconds: float = 60.0
     analysis_completion_slo_seconds: float = 120.0
 
+    webhook_secret_file: Path | None = None
+    github_private_key_file: Path | None = None
+    github_client_secret_file: Path | None = None
+    session_secret_file: Path | None = None
+    token_encryption_key_file: Path | None = None
+    token_encryption_fallback_keys_file: Path | None = None
+    openai_api_key_file: Path | None = None
+    database_url_file: Path | None = None
+    redis_url_file: Path | None = None
+
     @property
     def resolved_database_url(self) -> str:
         return self.database_url or f"sqlite:///{self.database_path}"
@@ -70,6 +121,21 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_worker_lease(self) -> "Settings":
+        for value_name, file_name in self.secret_file_fields.items():
+            secret_file = getattr(self, file_name)
+            if secret_file is None:
+                continue
+            direct_value = getattr(self, value_name)
+            if value_name in self.model_fields_set and direct_value not in (None, ""):
+                raise ValueError(
+                    f"PIPELENS_{value_name.upper()} and PIPELENS_{file_name.upper()} conflict"
+                )
+            setattr(
+                self,
+                value_name,
+                _read_secret_file(secret_file, f"PIPELENS_{file_name.upper()}"),
+            )
+
         if self.worker_lease_seconds < 1:
             raise ValueError("worker lease must be at least one second")
         if not 0 < self.worker_heartbeat_seconds < self.worker_lease_seconds:
