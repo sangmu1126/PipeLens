@@ -793,6 +793,22 @@ Nginx는 별도 PR로 분리했다.
   governance 문서가 backend, Python 3.14, dashboard와 두 container build를 통과했다. CodeQL
   run `33425763569`의 Python·JavaScript 분석도 성공했다.
 
+### repository generic secret 탐지 보강
+
+- repository API에서 provider secret scanning과 push protection은 `enabled`, non-provider patterns와
+  validity checks는 `disabled`임을 확인했다. 후자의 두 설정을 독립적으로 PATCH했지만 응답과 최종
+  재조회 모두 `disabled`였고 open secret alert API는 HTTP 404였다. 개인 소유 공개 repository의
+  현재 plan에서 Secret Protection 확장 기능이 제공되지 않는 상태로 판단했다.
+- 기존 CI가 full commit SHA로 고정한 Trivy Action을 재사용해 현재 checkout을 `fs`/`secret` 전용으로
+  검사하는 `Repository secret scan` job을 추가했다. 탐지 시 exit code 1로 PR을 차단하고 vulnerability
+  DB나 container build에 결합하지 않아 gate의 목적과 실패 원인을 분리했다.
+- GitHub의 provider pattern 전체 이력 탐지·push protection은 그대로 유지한다. 실제 secret-shaped
+  fixture를 공개 Git 이력에 추가하지 않고 placeholder 정책과 false-positive 예외 기준을
+  `SECURITY.md`에 명시했다.
+- 새 context는 기존 보호 정책에 바로 넣지 않는다. PR의 첫 성공 실행으로 context를 생성한 뒤
+  branch protection을 7개에서 8개 필수 check로 갱신하고, 이후 commit에서 보호가 실제로
+  적용되는지 다시 검증한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

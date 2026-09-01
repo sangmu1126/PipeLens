@@ -18,6 +18,7 @@
 | Workflow | Required context |
 | --- | --- |
 | CI | `backend` |
+| CI | `Repository secret scan` |
 | CI | `Python 3.14 compatibility` |
 | CI | `dashboard` |
 | CI | `Build container (api)` |
@@ -30,7 +31,7 @@
 1. 최신 `main`에서 목적별 branch를 만든다.
 2. 서로 독립적으로 검토할 변경은 별도 commit으로 유지한다.
 3. branch를 push하고 PR을 만든다.
-4. 7개 필수 check와 추가 workflow가 성공했는지 확인한다.
+4. 8개 필수 check와 추가 workflow가 성공했는지 확인한다.
 5. review conversation이 모두 해결된 뒤 squash 또는 rebase 방식으로 merge한다.
 6. merge commit의 `main` CI·CodeQL도 성공하는지 확인한다.
 
@@ -77,6 +78,13 @@ issue는 끄고 pull request에는 검증, 보안·개인정보 경계와 문서
 `SECURITY.md`와 issue contact link는 GitHub private vulnerability reporting으로 연결한다.
 Dependabot alerts와 security updates는 활성화하며 생성된 보안 PR도 일반 PR과 같은 branch
 protection, 고정 참조와 전체 CI를 통과해야 한다. 설정 상태는 repository API로 재조회한다.
+
+GitHub의 provider secret scanning과 push protection은 활성화한다. 개인 소유 공개 저장소에서
+Secret Protection이 필요한 generic/non-provider patterns와 validity checks는 API 요청 뒤에도
+`disabled`로 유지되므로, 현재 tree의 generic secret 탐지는 Trivy `fs` scan을 별도 필수 CI로
+보완한다. 실제 secret과 유사한 fixture는 커밋하지 않고 명시적인 placeholder를 사용한다. 예외는
+구체적인 false-positive 근거와 최소 범위가 검토된 경우에만 허용하며 inactive·unknown 판정은
+credential 회전이나 제거를 대신하지 않는다.
 
 모든 project interaction에는 Contributor Covenant 2.1 기반 `CODE_OF_CONDUCT.md`를 적용한다.
 공개 이메일을 임의로 만들지 않고 confidential conduct report도 private reporting channel로 받되,

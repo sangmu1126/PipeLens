@@ -705,3 +705,26 @@
 - 근거: [Contributor Covenant 2.1 release](https://github.com/EthicalSource/contributor_covenant/releases/tag/2.1),
   [Contributor Covenant 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html).
 - 관련: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, [저장소 관리 절차](repository-governance.md).
+
+## D-051. 유료 generic secret 탐지 공백은 고정된 Trivy CI gate로 보완
+
+- 결정: GitHub provider secret scanning과 push protection을 유지하고, Trivy `fs` scan의 builtin
+  secret rules를 독립 CI job으로 실행한다. 첫 성공 check가 생성된 뒤 `Repository secret scan`을
+  `main` branch protection의 필수 context로 승격한다.
+- 이유: 개인 소유 공개 저장소에서 non-provider patterns와 validity checks 활성화를 각각 API로
+  요청했지만 재조회 결과는 `disabled`였고 secret scanning alerts API도 HTTP 404를 반환했다.
+  GitHub 문서상 generic pattern과 확장 validity는 Team·Enterprise의 Secret Protection 범위다.
+  반면 Trivy는 filesystem의 평문 파일을 builtin secret rule로 검사할 수 있고 이미 full commit
+  SHA로 고정해 사용하는 공급망 의존성이므로 새 mutable action을 추가하지 않는다.
+- 대안: 유료 plan 전환 전까지 공백 유지, 별도 secret scanner 추가, provider pattern만 사용,
+  실제와 유사한 secret fixture를 커밋해 gate를 검증.
+- 결과: provider pattern의 전체 Git 이력 탐지와 push 차단에 현재 tree의 generic secret PR gate를
+  결합한다. 실제 secret-shaped fixture는 push protection과 공개 이력 자체를 오염시키므로 넣지
+  않으며, 예외는 좁은 false-positive 근거가 있을 때만 검토한다. validity는 우선순위 정보일 뿐
+  inactive·unknown secret의 제거·회전을 면제하지 않는다.
+- 근거: [GitHub secret scanning](https://docs.github.com/en/code-security/concepts/secret-security/secret-scanning),
+  [지원 패턴](https://docs.github.com/en/code-security/reference/secret-security/supported-secret-scanning-patterns),
+  [Trivy secret scanner](https://trivy.dev/latest/docs/scanner/secret/),
+  [Trivy Action](https://github.com/aquasecurity/trivy-action).
+- 관련: `.github/workflows/ci.yml`, `SECURITY.md`,
+  [저장소 관리 절차](repository-governance.md), [검증 현황](readiness.md).
