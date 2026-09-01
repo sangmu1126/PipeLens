@@ -47,6 +47,10 @@
 
 최근 검증 실행:
 
+- [`worker soak evidence PR #81`](https://github.com/sangmu1126/PipeLens/pull/81)
+- [worker soak evidence PR CI run 33518902192](https://github.com/sangmu1126/PipeLens/actions/runs/33518902192)
+- [worker soak evidence dependency review run 33518902120](https://github.com/sangmu1126/PipeLens/actions/runs/33518902120)
+- [worker soak evidence PR CodeQL run 33518902328](https://github.com/sangmu1126/PipeLens/actions/runs/33518902328)
 - [`public HTTPS preflight PR #80`](https://github.com/sangmu1126/PipeLens/pull/80)
 - [HTTPS preflight PR CI run 33471055534](https://github.com/sangmu1126/PipeLens/actions/runs/33471055534)
 - [HTTPS preflight dependency review run 33471055528](https://github.com/sangmu1126/PipeLens/actions/runs/33471055528)
