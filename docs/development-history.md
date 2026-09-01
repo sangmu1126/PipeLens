@@ -1011,6 +1011,13 @@ Nginx는 별도 PR로 분리했다.
   축약하며 endpoint, token, routing key와 raw payload는 입력 계약 자체에 없다.
 - 체크인한 example과 단위 테스트는 도구 계약만 검증한다. 실제 owner·policy 승인, secret manager
   주입, staging notification과 rotation/retry는 외부 증적이 없으므로 #64 완료로 표시하지 않았다.
+- [PR #84](https://github.com/sangmu1126/PipeLens/pull/84)의 첫 head에서
+  [CI run 33552382222](https://github.com/sangmu1126/PipeLens/actions/runs/33552382222)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, repository secret scan, 두 container build와 기존 운영 drill을
+  통과했다. [Dependency Review run 33552382228](https://github.com/sangmu1126/PipeLens/actions/runs/33552382228)과
+  [CodeQL run 33552382306](https://github.com/sangmu1126/PipeLens/actions/runs/33552382306)의 Python·
+  JavaScript/TypeScript 분석도 성공했다. 이 결과는 증적 검증기 회귀만 확인하며 실제 receiver
+  연결이나 notification 전달을 증명하지 않는다.
 
 ## 현재까지의 검증 방식
 
