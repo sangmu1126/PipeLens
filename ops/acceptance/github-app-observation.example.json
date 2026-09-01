@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "acceptance_id": "github-app-example-20250902",
+  "source_revision": "release-example",
+  "environment": "staging-example",
+  "repository_url": "https://github.com/example-org/pipelens-acceptance",
+  "installation_id": 12345678,
+  "permissions": {
+    "actions": "read",
+    "checks": "write",
+    "contents": "read",
+    "metadata": "read",
+    "pull_requests": "write"
+  },
+  "started_at": "2025-09-02T00:00:00Z",
+  "completed_at": "2025-09-02T00:12:00Z",
+  "pr_run": {
+    "run_id": 100000001,
+    "run_url": "https://github.com/example-org/pipelens-acceptance/actions/runs/100000001",
+    "workflow_conclusion": "failure",
+    "pull_request_number": 42,
+    "workflow_failed_at": "2025-09-02T00:01:00Z",
+    "webhook_recorded_at": "2025-09-02T00:01:05Z",
+    "analysis_started_at": "2025-09-02T00:01:15Z",
+    "analysis_completed_at": "2025-09-02T00:01:45Z",
+    "published_at": "2025-09-02T00:01:50Z",
+    "comment_url": "https://github.com/example-org/pipelens-acceptance/pull/42#issuecomment-200000001",
+    "evidence_present": true,
+    "related_files_present": true,
+    "run_link_present": true
+  },
+  "branch_run": {
+    "run_id": 100000002,
+    "run_url": "https://github.com/example-org/pipelens-acceptance/actions/runs/100000002",
+    "workflow_conclusion": "failure",
+    "workflow_failed_at": "2025-09-02T00:03:00Z",
+    "webhook_recorded_at": "2025-09-02T00:03:06Z",
+    "analysis_started_at": "2025-09-02T00:03:20Z",
+    "analysis_completed_at": "2025-09-02T00:03:58Z",
+    "published_at": "2025-09-02T00:04:03Z",
+    "check_url": "https://github.com/example-org/pipelens-acceptance/runs/300000001"
+  },
+  "redelivery": {
+    "pr_comment": {
+      "initial_url": "https://github.com/example-org/pipelens-acceptance/pull/42#issuecomment-200000001",
+      "redelivery_url": "https://github.com/example-org/pipelens-acceptance/pull/42#issuecomment-200000001",
+      "count_before": 1,
+      "count_after": 1,
+      "redelivered_at": "2025-09-02T00:05:00Z"
+    },
+    "branch_check": {
+      "initial_url": "https://github.com/example-org/pipelens-acceptance/runs/300000001",
+      "redelivery_url": "https://github.com/example-org/pipelens-acceptance/runs/300000001",
+      "count_before": 1,
+      "count_after": 1,
+      "redelivered_at": "2025-09-02T00:06:00Z"
+    }
+  },
+  "seeded_secret_scan": {
+    "seeded_secret_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "published_matches": 0,
+    "persistence_matches": 0,
+    "provider_request_matches": 0,
+    "checked_at": "2025-09-02T00:10:00Z"
+  },
+  "external_fork": {
+    "run_id": 100000003,
+    "run_url": "https://github.com/example-org/pipelens-acceptance/actions/runs/100000003",
+    "pull_request_number": 43,
+    "webhook_recorded_at": "2025-09-02T00:09:00Z",
+    "processed_at": "2025-09-02T00:09:10Z",
+    "warning_comment_url": "https://github.com/example-org/pipelens-acceptance/pull/43#issuecomment-200000002",
+    "llm_invocations": 0,
+    "commit_check_publications": 0
+  }
+}
