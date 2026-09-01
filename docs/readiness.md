@@ -33,6 +33,7 @@
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
 | secret file 주입 경계 | 통과 | 9개 민감 설정의 `*_FILE`, 충돌·빈 값·형식·크기 fail-closed 검증 |
 | production startup 계약 | 통과 | HTTPS origin·GitHub App·PostgreSQL psycopg·Redis queue 필수 검증 |
+| HTTPS acceptance preflight | 준비됨 | TLS·redirect·HSTS·header·readiness·OAuth 시작 redacted JSON probe |
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | repository secret gate | 통과 | GitHub provider scan·push protection과 Trivy generic secret PR gate |
@@ -476,6 +477,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 
 - [ ] [GitHub App 실제 설치와 E2E 증적](https://github.com/sangmu1126/PipeLens/issues/61)
 - [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62)
+- [x] 공개 HTTPS 경계의 redacted machine-readable preflight 도구
 - [x] `main` PR·필수 status check
 - [x] 미래 GitHub Release의 repository 불변성 설정
 - [ ] `immutable: true`인 차기 GitHub Release와 digest-pinned production 배포

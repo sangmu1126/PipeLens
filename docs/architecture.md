@@ -264,3 +264,7 @@ URL과 Redis queue를 시작 전에 검증한다. SQLite·memory queue 또는 �
 - `immutable: true`인 차기 GitHub Release 발행 확인
 - production resource limit·provider latency를 포함한 worker soak/load test
 - 외부에서 접근 가능한 GitHub OAuth callback, App setup URL과 webhook URL
+
+공개 배포 직후 `ops.acceptance.verify_https`가 인증서 검증을 강제한 채 HTTP→HTTPS, HSTS,
+dashboard header, database·queue readiness와 OAuth callback URL·state cookie flag를 확인한다.
+이는 ingress 사전검증이며 실제 GitHub 로그인, 설치와 signed webhook 증적을 대체하지 않는다.

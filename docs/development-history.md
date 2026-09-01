@@ -905,6 +905,20 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 33469692739](https://github.com/sangmu1126/PipeLens/actions/runs/33469692739)의 두 언어
   분석도 통과했다.
 
+### 공개 HTTPS acceptance preflight
+
+- #62는 실제 hostname과 credential이 있어야 완료할 수 있지만 배포 직후 반복할 repository-native
+  검증 도구는 없었다. platform을 선택하지 않고 public origin을 입력받는 read-only probe를 추가했다.
+- HTTP endpoint는 exact HTTPS origin으로 301·308 영구 redirect해야 한다. HTTPS dashboard는 기본
+  certificate·hostname 검증, 1년 이상 HSTS, CSP·Permissions·Referrer·nosniff·frame header를 모두
+  통과해야 하며 `/readyz`는 database와 queue를 각각 `ok`로 보고해야 한다.
+- OAuth 시작 응답은 GitHub HTTPS authorize endpoint, exact callback URI, non-empty state와
+  Secure·HttpOnly·SameSite=Lax state cookie를 확인한다. JSON에는 state, cookie와 client ID 대신
+  검증 boolean만 남겨 공개 issue나 승인된 운영 증적 위치에 안전하게 첨부할 수 있게 했다.
+- unit test는 정상 redacted evidence, unsafe origin 4종, 짧은 HSTS와 state 없는 OAuth redirect를
+  검증한다. 이 도구는 실제 login·installation·logout, signed webhook과 proxy forwarding을 수행하지
+  않으므로 #62의 완료 상태는 바꾸지 않는다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
