@@ -817,3 +817,20 @@
 - 관련: `ops/acceptance/verify_https.py`, `tests/test_https_acceptance.py`,
   [HTTPS acceptance 절차](https-acceptance.md),
   [public HTTPS 검증 #62](https://github.com/sangmu1126/PipeLens/issues/62).
+
+## D-057. Worker 회귀 drill과 production soak evidence는 같은 invariant·다른 부하 조건을 사용
+
+- 결정: 기존 200-job 단일 burst CI 기본값은 유지하고, 같은 runner에 enqueue rate·burst·합성 처리
+  latency와 JSON output을 추가한다. 결과에는 timestamp, schema version, p50·p95·p99 시작·완료
+  latency, throughput, SLO 달성률, replica 분배, orphan 복구, exactly-once와 queue drain을 기록한다.
+- 이유: max latency만 있는 고정 burst는 회귀 차단에는 충분하지만 production arrival profile과
+  capacity recommendation의 재현 입력·machine-readable 결과로 재사용하기 어렵다. 별도 runner를
+  만들면 queue invariant와 복구 검증이 서로 달라질 위험이 있다.
+- 대안: CI 결과만 production 근거로 사용, 외부 load framework를 지금 선택, job별 raw timestamp를
+  모두 저장, 평균 latency만 기록.
+- 결과: orphan을 먼저 claim한 뒤 replica와 arrival stream을 동시에 시작해 rate shaping이 queue
+  wait를 왜곡하지 않는다. raw repository·payload는 저장하지 않는다. 실제 container resource limit,
+  PostgreSQL pool, provider jitter·429·5xx와 network interruption은 #66 외부 실행에서 추가한다.
+- 관련: `ops/worker/verify_replica_recovery.py`, `tests/test_worker_drill.py`,
+  [worker drill](worker-replica-drill.md),
+  [production soak #66](https://github.com/sangmu1126/PipeLens/issues/66).

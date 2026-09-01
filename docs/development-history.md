@@ -925,6 +925,22 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 33471055578](https://github.com/sangmu1126/PipeLens/actions/runs/33471055578)의 두 언어
   분석도 통과했다.
 
+### Worker soak/load machine-readable evidence 확장
+
+- 기존 4-replica·200-job drill은 모든 job을 한 번에 넣고 max latency만 출력해 #66에서 요구하는
+  arrival rate·burst·duration별 비교와 capacity 결과 축적에 부족했다. CI 기본 시나리오는 바꾸지
+  않고 rate, burst, 합성 처리 latency와 JSON file output option을 추가했다.
+- orphan job 한 건을 먼저 processing으로 옮긴 뒤 replica를 시작하고 나머지 arrival stream을
+  주입한다. 모든 enqueue가 끝난 뒤 worker를 시작해 앞쪽 queue wait가 부풀어 오르는 측정 왜곡을
+  피했다. 미연결 Redis cleanup이 원래 connection error를 덮지 않도록 연결 상태도 추적한다.
+- 결과 schema는 checked timestamp와 입력 조건, enqueue·전체 관측 시간, throughput, p50·p95·p99
+  시작·완료 latency, SLO 달성률, replica 분배, orphan 복구와 exactly-once·drain boolean을 포함한다.
+- Docker Desktop arm64와 고정 Redis 8.2 digest에서 40 jobs, 20 jobs/s, burst 4, 30ms 처리와 replica
+  4개를 실행했다. 각 replica 10건, orphan 복구 1.074초, p95 시작 0.008초, p95 완료 0.039초,
+  21.698 jobs/s, 두 SLO 100%와 최종 drain을 확인하고 임시 Redis를 제거했다.
+- 실제 CPU·memory 제한, PostgreSQL pool, provider latency·rate limit·transient failure와 network
+  interruption은 이 합성 기준선에 포함하지 않으므로 #66은 계속 외부 인수 항목으로 유지한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
