@@ -1,7 +1,7 @@
 # PipeLens 개발 문서
 
 이 디렉터리는 `README.md`의 사용자용 설명을 보완하는 개발·운영 기록이다. 문서의 기준
-시점은 **2026-08-31**, 기준 브랜치는 `main`이다.
+시점은 **2026-09-02**, 기준 브랜치는 `main`이다.
 
 ## 문서 구성
 
@@ -22,6 +22,8 @@
   Fernet·외부 credential rotation과 장애 대응 JSON 판정
 - [API versioning](api-versioning.md): v1 계약, 호환성, deprecation과 OpenAPI drift gate
 - [브라우저 E2E](browser-e2e.md): Chromium OAuth·session·dashboard 인수 흐름과 외부 검증 경계
+- [실제 GitHub App E2E 증적](github-app-acceptance.md): PR·branch 실패 게시, 재전달, SLO와
+  fork·secret 경계를 검증하는 외부 인수 절차
 - [로컬 Docker 검증](local-docker-validation.md): arm64 major-upgrade·routing·worker·image 증적
 - [PostgreSQL 18 업그레이드](postgres-18-upgrade.md): 17 backup, 18 복원, 검증과 rollback 경계
 - [PostgreSQL 복원 증적 drill](postgres-restore-drill.md): 격리 복원, RTO/RPO·무결성 JSON 증적

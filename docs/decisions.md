@@ -909,3 +909,23 @@
 - 관련: `ops/secrets/verify_rotation_evidence.py`, `tests/test_secret_rotation_evidence.py`,
   [Production secret manager 증적](secret-manager-drill.md),
   [production secret manager #65](https://github.com/sangmu1126/PipeLens/issues/65).
+
+## D-062. 실제 GitHub App 인수 증적은 공개 식별자와 redacted audit count를 결합
+
+- 결정: 테스트 저장소의 실제 GitHub App 실행을 strict JSON으로 정규화해 installation 권한,
+  PR·branch 실패 run, webhook 기준 60초/120초 SLO, 게시 URL·내용, 재전달 upsert, seeded-secret
+  scan과 외부 fork 무부작용을 한 번에 판정한다. GitHub/provider API는 검증기가 직접 호출하지 않는다.
+- 이유: run ID와 게시 URL을 제거한 boolean checklist는 실제 GitHub 결과와 연결할 수 없지만,
+  delivery body·DB row·provider request 원본을 저장소에 넣으면 credential과 비신뢰 입력이 노출될
+  수 있다. provider credential을 CI에 주입해 자동 호출하면 외부 환경 소유권과 #62의 HTTPS 범위도
+  섞인다.
+- 대안: screenshot과 수동 checklist만 보관, 실제 GitHub API client를 repository에 추가,
+  mock E2E를 #61 완료 근거로 사용, 원본 audit 전체를 artifact로 업로드.
+- 결과: credential·query 없는 동일 repository의 GitHub URL과 ID, UTC timeline, count와 seeded-secret
+  SHA-256만 공개 증적에 남긴다. cross-field ID·시간 관계와 unknown field를 거부하고 실패한 유효
+  관측은 `passed: false`로 보존한다. example·단위 테스트 통과는 실제 설치·외부 실행이 아니므로
+  private 원본 review와 실제 URL 없이는 #61을 닫지 않는다.
+- 관련: `ops/acceptance/verify_github_app_evidence.py`,
+  `tests/test_github_app_acceptance_evidence.py`,
+  [실제 GitHub App E2E 증적](github-app-acceptance.md),
+  [GitHub App acceptance #61](https://github.com/sangmu1126/PipeLens/issues/61).

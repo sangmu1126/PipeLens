@@ -10,6 +10,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [현재 아키텍처](docs/architecture.md)
 - [주요 의사결정 기록](docs/decisions.md)
 - [검증 및 운영 준비 현황](docs/readiness.md)
+- [실제 GitHub App E2E 증적 절차](docs/github-app-acceptance.md)
 - [컨테이너 릴리스 정책과 절차](docs/release.md)
 - [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)
 - [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)
@@ -137,6 +138,8 @@ Callback URL은 `https://<host>/auth/github/callback`, Setup URL은
 installation**은 끕니다.
 공개 ingress를 연결한 뒤에는 [HTTPS acceptance preflight](docs/https-acceptance.md)로 TLS,
 HSTS, redirect, readiness와 OAuth 시작 경계를 redacted JSON으로 확인합니다.
+실제 App을 테스트 저장소에 설치한 뒤의 실패 run, PR 코멘트·Commit Check, 재전달, SLO와
+외부 fork 경계는 [GitHub App E2E 증적 절차](docs/github-app-acceptance.md)에 따라 별도로 기록합니다.
 
 Webhook secret과 아래 환경변수를 구성해야 실제 로그를 가져올 수 있습니다. 운영에서는
 HTTPS를 사용하고 `SESSION_COOKIE_SECURE=true`로 설정해야 합니다. Fernet 키는
