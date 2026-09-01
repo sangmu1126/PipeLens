@@ -237,6 +237,8 @@ Redis worker는 인스턴스별 processing 목록과 TTL lease를 사용합니�
 lease가 만료된 worker의 작업만 다른 worker가 원자적으로 pending queue에 복구하므로 여러
 worker replica를 실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS`는
 `PIPELENS_WORKER_LEASE_SECONDS`보다 충분히 작게 유지해야 합니다.
+장시간 검증 전에는 [worker 부하·복구 drill](docs/worker-replica-drill.md)의 rate/burst option과
+JSON evidence를 사용해 arrival profile, latency percentile, throughput과 SLO 달성률을 기록합니다.
 Docker Compose에서 API healthcheck는 `/readyz`를 사용하며 대시보드는 API가 준비된
 후에 시작합니다.
 큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과 pending 적재가
