@@ -990,6 +990,13 @@ Nginx는 별도 PR로 분리했다.
   119,991,857 uncompressed bytes를 복원했다. archive restore 1.461초, 전체 recovery 5.443초,
   `grafana.db` 1,642,496 bytes, provisioned·persistent dashboard, folder, Prometheus datasource,
   anonymous Viewer와 admin 차단, cleanup을 확인했다. production 규모·browser·rollback 증적은 아니다.
+- [PR #83](https://github.com/sangmu1126/PipeLens/pull/83)의 첫 head에서
+  [CI run 33549002512](https://github.com/sangmu1126/PipeLens/actions/runs/33549002512)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, 두 container build와 기존 운영 drill을 통과했다.
+  [Dependency Review run 33549002707](https://github.com/sangmu1126/PipeLens/actions/runs/33549002707)과
+  [CodeQL run 33549002653](https://github.com/sangmu1126/PipeLens/actions/runs/33549002653)의 Python·
+  JavaScript/TypeScript 분석도 성공했다. 이 공개 실행은 합성 Grafana 복원 도구와 문서 변경의
+  회귀가 없음을 증명하며 production volume 복원 결과를 대신하지 않는다.
 
 ## 현재까지의 검증 방식
 
