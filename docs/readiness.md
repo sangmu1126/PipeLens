@@ -52,6 +52,10 @@
 
 최근 검증 실행:
 
+- [`GitHub App acceptance evidence PR #86`](https://github.com/sangmu1126/PipeLens/pull/86)
+- [GitHub App acceptance evidence PR CI run 33558346922](https://github.com/sangmu1126/PipeLens/actions/runs/33558346922)
+- [GitHub App acceptance evidence dependency review run 33558347165](https://github.com/sangmu1126/PipeLens/actions/runs/33558347165)
+- [GitHub App acceptance evidence PR CodeQL run 33558347039](https://github.com/sangmu1126/PipeLens/actions/runs/33558347039)
 - [`secret rotation evidence PR #85`](https://github.com/sangmu1126/PipeLens/pull/85)
 - [secret rotation evidence PR CI run 33556138439](https://github.com/sangmu1126/PipeLens/actions/runs/33556138439)
 - [secret rotation evidence dependency review run 33556138245](https://github.com/sangmu1126/PipeLens/actions/runs/33556138245)
