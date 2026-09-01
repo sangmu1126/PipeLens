@@ -1033,6 +1033,13 @@ Nginx는 별도 PR로 분리했다.
 - redacted 결과에는 owner, identity와 version 원문 대신 boolean과 16자리 SHA-256 fingerprint만 남긴다.
   실제 secret, resource URL, manifest와 log 원문은 입력할 수 없다. example은 9개 check, detection
   10초와 recovery 120초를 통과하지만 합성 계약 검증이므로 #65는 열린 상태로 유지했다.
+- [PR #85](https://github.com/sangmu1126/PipeLens/pull/85)의 첫 head에서
+  [CI run 33556138439](https://github.com/sangmu1126/PipeLens/actions/runs/33556138439)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, repository secret scan, 두 container build와 기존 운영 drill을
+  통과했다. [Dependency Review run 33556138245](https://github.com/sangmu1126/PipeLens/actions/runs/33556138245)과
+  [CodeQL run 33556138296](https://github.com/sangmu1126/PipeLens/actions/runs/33556138296)의 두 언어
+  분석도 성공했다. 이는 증적 schema와 redaction 회귀를 검증하지만 실제 workload identity나
+  credential rotation을 증명하지 않는다.
 
 ## 현재까지의 검증 방식
 
