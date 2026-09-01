@@ -48,6 +48,10 @@
 
 최근 검증 실행:
 
+- [`PostgreSQL restore evidence PR #82`](https://github.com/sangmu1126/PipeLens/pull/82)
+- [PostgreSQL restore evidence PR CI run 33522859800](https://github.com/sangmu1126/PipeLens/actions/runs/33522859800)
+- [PostgreSQL restore evidence dependency review run 33522859708](https://github.com/sangmu1126/PipeLens/actions/runs/33522859708)
+- [PostgreSQL restore evidence PR CodeQL run 33522859793](https://github.com/sangmu1126/PipeLens/actions/runs/33522859793)
 - [`worker soak evidence PR #81`](https://github.com/sangmu1126/PipeLens/pull/81)
 - [worker soak evidence PR CI run 33518902192](https://github.com/sangmu1126/PipeLens/actions/runs/33518902192)
 - [worker soak evidence dependency review run 33518902120](https://github.com/sangmu1126/PipeLens/actions/runs/33518902120)
