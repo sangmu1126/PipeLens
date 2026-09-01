@@ -51,6 +51,13 @@ class Settings(BaseSettings):
         "database_url": "database_url_file",
         "redis_url": "redis_url_file",
     }
+    production_github_settings: ClassVar[tuple[str, ...]] = (
+        "github_app_id",
+        "github_private_key",
+        "github_app_slug",
+        "github_client_id",
+        "github_client_secret",
+    )
 
     environment: Literal["development", "production"] = "development"
     webhook_secret: str = "development-secret"
@@ -120,7 +127,7 @@ class Settings(BaseSettings):
         return list(dict.fromkeys(keys))
 
     @model_validator(mode="after")
-    def validate_worker_lease(self) -> "Settings":
+    def resolve_secrets_and_validate(self) -> "Settings":
         for value_name, file_name in self.secret_file_fields.items():
             secret_file = getattr(self, file_name)
             if secret_file is None:
@@ -146,6 +153,12 @@ class Settings(BaseSettings):
             public_url = urlparse(self.public_url)
             if public_url.scheme != "https" or not public_url.netloc:
                 raise ValueError("production public URL must use HTTPS")
+            if public_url.username or public_url.password:
+                raise ValueError("production public URL must not contain credentials")
+            if public_url.path not in ("", "/") or public_url.params or public_url.query:
+                raise ValueError("production public URL must be an origin without path or query")
+            if public_url.fragment:
+                raise ValueError("production public URL must not contain a fragment")
             if not self.auth_required:
                 raise ValueError("production authentication must be required")
             if not self.session_cookie_secure:
@@ -156,6 +169,28 @@ class Settings(BaseSettings):
                 raise ValueError("production session secret must be at least 32 characters")
             if not self.token_encryption_key:
                 raise ValueError("production token encryption key must be configured")
+            missing_github_settings = [
+                f"PIPELENS_{name.upper()}"
+                for name in self.production_github_settings
+                if not isinstance(getattr(self, name), str) or not getattr(self, name).strip()
+            ]
+            if missing_github_settings:
+                raise ValueError(
+                    "production GitHub App settings must be configured: "
+                    + ", ".join(missing_github_settings)
+                )
+            if not self.github_app_id.isdigit() or int(self.github_app_id) < 1:
+                raise ValueError("production GitHub App ID must be a positive integer")
+            if not self.database_url:
+                raise ValueError("production PostgreSQL URL must be configured")
+            database_url = urlparse(self.database_url)
+            if database_url.scheme != "postgresql+psycopg" or not database_url.netloc:
+                raise ValueError("production database URL must use postgresql+psycopg")
+            if self.queue_backend != "redis":
+                raise ValueError("production queue backend must be redis")
+            redis_url = urlparse(self.redis_url)
+            if redis_url.scheme not in ("redis", "rediss") or not redis_url.netloc:
+                raise ValueError("production Redis URL must use redis or rediss")
         return self
 
 
