@@ -1041,6 +1041,20 @@ Nginx는 별도 PR로 분리했다.
   분석도 성공했다. 이는 증적 schema와 redaction 회귀를 검증하지만 실제 workload identity나
   credential rotation을 증명하지 않는다.
 
+### 실제 GitHub App E2E 증적 계약
+
+- #61의 실제 설치·실패 workflow 인수 기준은 문서에 있었지만 run URL, webhook/분석 timeline,
+  PR 코멘트·Commit Check upsert와 security audit를 일관된 형식으로 판정할 도구가 없었다.
+- provider credential을 CI에 넣지 않고 운영자가 GitHub, PipeLens DB와 provider audit를 대조해
+  정규화한 strict JSON을 검증하는 도구를 추가했다. exact permission, 동일 repository URL,
+  URL 속 run/PR ID와 별도 필드, UTC chronology와 acceptance window를 상호 검증한다.
+- PR과 branch 각각 webhook 저장 기준 시작 60초·완료 120초를 계산하고 실패 conclusion을 요구한다.
+  PR은 근거·관련 파일·run link를, 재전달은 최초 게시 뒤 같은 URL과 전후 count 1을 요구한다.
+- seeded secret은 원문 없이 SHA-256과 게시물·persistence·provider request match count만 받는다.
+  외부 fork는 경고 코멘트 URL을 보존하면서 LLM invocation과 Commit Check publication 0을 판정한다.
+- 체크인 example과 34개 집중 테스트는 schema, cross-field 관계와 실패 판정만 증명한다. 실제 App
+  installation, run·게시 URL과 private audit review가 없으므로 #61은 열린 상태로 유지한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

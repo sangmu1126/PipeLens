@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-01**, 변경 전 기준 main commit `2bc99c2`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-02**, 변경 전 기준 main commit `50ee318`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -39,6 +39,7 @@
 | secret manager 증적 도구 | 준비됨 | inventory·least privilege·file 주입·rotation·unavailable 대응 JSON 판정 |
 | production startup 계약 | 통과 | HTTPS origin·GitHub App·PostgreSQL psycopg·Redis queue 필수 검증 |
 | HTTPS acceptance preflight | 준비됨 | TLS·redirect·HSTS·header·readiness·OAuth 시작 redacted JSON probe |
+| GitHub App E2E 증적 도구 | 준비됨 | 실제 run URL·SLO·upsert·secret scan·fork 격리 strict JSON 판정 |
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | repository secret gate | 통과 | GitHub provider scan·push protection과 Trivy generic secret PR gate |
@@ -432,8 +433,8 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 12. GitHub/OpenAI 429·5xx, Redis worker 종료와 lease recovery를 fault injection으로 확인한다.
 13. 대시보드 접근 격리와 feedback 저장을 확인한다.
 
-이 결과는 실행 날짜, run ID, 게시 URL, latency와 발견된 문제를 별도 인수 테스트 기록으로
-남겨야 한다.
+이 결과는 실행 날짜, run ID, 게시 URL, latency와 발견된 문제를
+[GitHub App E2E 증적 절차](github-app-acceptance.md)에 따라 별도 인수 테스트 기록으로 남겨야 한다.
 
 ## 5. 남은 작업 우선순위
 
@@ -505,6 +506,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 ## 7. 운영 전 체크리스트
 
 - [ ] [GitHub App 실제 설치와 E2E 증적](https://github.com/sangmu1126/PipeLens/issues/61)
+- [x] GitHub App 실제 run·게시·SLO·secret·fork의 redacted machine-readable evidence 도구
 - [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62)
 - [x] 공개 HTTPS 경계의 redacted machine-readable preflight 도구
 - [x] `main` PR·필수 status check
