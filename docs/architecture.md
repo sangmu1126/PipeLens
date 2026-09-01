@@ -251,6 +251,9 @@ Compose는 개발과 통합 검증을 위한 단일 호스트 구성이다. 운�
 PipeLens 설정은 9개 민감 값에 direct 환경변수와 상호 배타적인 `*_FILE` 입력을 제공하므로
 workload identity 기반 CSI·sidecar·secret volume을 vendor 종속 코드 없이 연결할 수 있다. 실제
 manager 선택, read-only mount와 접근 정책, version rollout과 audit 증적은 배포 환경 책임이다.
+production mode는 공개 HTTPS origin, 인증·Secure cookie, GitHub App 5개 설정, PostgreSQL psycopg
+URL과 Redis queue를 시작 전에 검증한다. SQLite·memory queue 또는 불완전한 App 설정으로 겉보기만
+정상인 production instance를 만들지 않는다.
 
 - HTTPS 종료와 HSTS
 - secret manager 또는 동등한 비밀 주입 수단

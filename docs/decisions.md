@@ -766,3 +766,20 @@
 - 관련: `src/pipelens/config.py`, `tests/test_config.py`, `.env.example`,
   [비밀값과 키 교체](secrets-and-rotation.md),
   [production secret manager #65](https://github.com/sangmu1126/PipeLens/issues/65).
+
+## D-054. Production은 완전한 GitHub App·PostgreSQL·Redis 설정 없이는 시작하지 않음
+
+- 결정: production public URL은 credential·path·query·fragment가 없는 HTTPS origin으로 제한한다.
+  GitHub App ID, private key, slug, OAuth client ID/secret과 별도 Fernet key,
+  `postgresql+psycopg` database URL, Redis queue 및 `redis`/`rediss` URL을 시작 전에 필수 검증한다.
+- 이유: 기존 production 검증은 HTTPS, 인증, cookie와 일부 secret 길이만 확인해 GitHub App이 없거나
+  SQLite·memory queue 기본값인 instance도 시작할 수 있었다. health endpoint가 살아 있어도 OAuth,
+  webhook 처리와 replica worker가 동작하지 않는 구성은 production readiness의 false positive다.
+- 대안: readiness endpoint에서만 실패, 첫 OAuth/webhook 요청 때 지연 실패, SQLite·memory queue를
+  single-instance production으로 허용, LLM provider와 게시까지 동시에 필수화.
+- 결과: secret file 주입이 먼저 완료된 뒤 같은 계약을 검증하며 불완전한 mount도 시작 단계에서
+  드러난다. OpenAI와 `PIPELENS_PUBLISH_CHECKS`는 규칙 fallback·단계적 acceptance를 위해 선택으로
+  유지한다. 실제 credential 유효성, public ingress와 provider 연결은 #61·#62·#65 증적으로 남는다.
+- 관련: `src/pipelens/config.py`, `tests/test_config.py`,
+  [공개 HTTPS 검증 #62](https://github.com/sangmu1126/PipeLens/issues/62),
+  [production secret manager #65](https://github.com/sangmu1126/PipeLens/issues/65).
