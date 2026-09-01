@@ -45,6 +45,8 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 대시보드 GHCR image를 제공한다. 각 image는 취약점·기동 검사를 통과했고 SLSA provenance와
 CycloneDX SBOM attestation이 digest에 연결돼 있다. 운영에서는 version tag보다
 [기록된 immutable digest](docs/releases/v0.1.0.md)를 사용한다.
+소스 Dockerfile의 Python·Node·Nginx base image도 읽을 수 있는 tag와 multi-platform digest를
+함께 고정하며 CI가 새 stage의 mutable reference를 차단한다.
 
 ## 로컬 실행
 

@@ -13,6 +13,7 @@
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
+| Dockerfile base image | 통과 | Python·Node·Nginx multi-platform digest 고정과 CI 정책 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI·로컬에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
@@ -373,7 +374,6 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 
 ### 미구현 또는 외부 설정 필요
 
-- API·대시보드 Dockerfile base image digest 정책
 - production secret manager·workload identity 선택, read-only mount와 실제 credential 주입
 - TLS reverse proxy의 HSTS
 - GitHub 조직 정책에 따른 secret scanning/push protection 확인
@@ -475,6 +475,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] `main` PR·필수 status check
 - [x] 미래 GitHub Release의 repository 불변성 설정
 - [ ] `immutable: true`인 차기 GitHub Release와 digest-pinned production 배포
+- [x] API·대시보드 Dockerfile base image의 multi-platform digest 고정과 CI 정책 검사
 - [x] fixable HIGH/CRITICAL container vulnerability scan
 - [x] CI build image CycloneDX SBOM
 - [x] release image SBOM·provenance

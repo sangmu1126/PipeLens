@@ -783,3 +783,19 @@
 - 관련: `src/pipelens/config.py`, `tests/test_config.py`,
   [공개 HTTPS 검증 #62](https://github.com/sangmu1126/PipeLens/issues/62),
   [production secret manager #65](https://github.com/sangmu1126/PipeLens/issues/65).
+
+## D-055. Dockerfile의 모든 외부 base image는 tag와 multi-platform digest를 함께 고정
+
+- 결정: API의 Python runtime, dashboard의 Node build와 Nginx runtime `FROM`을
+  `tag@sha256:<OCI index digest>`로 참조한다. 저장소의 모든 `Dockerfile*`을 검사해 외부 stage가
+  digest 없이 추가되면 backend CI를 실패시킨다. `scratch`와 앞서 선언한 local stage는 제외한다.
+- 이유: tag만 사용하면 같은 source commit과 dependency lock으로 다시 빌드해도 registry tag 이동에
+  따라 다른 base layer가 들어갈 수 있다. 취약점 scan과 SBOM은 결과 image를 검사하지만 build 입력의
+  재현성을 보장하지 않으므로 pull 전에 immutable reference가 필요하다.
+- 대안: mutable tag와 build 시점 scan만 사용, platform별 manifest digest 고정, tag 없이 digest만
+  사용, release workflow에서만 검사.
+- 결과: amd64 CI와 arm64 개발 환경은 같은 OCI index에서 각 platform manifest를 선택한다. tag는
+  review와 Dependabot version 판단을 위해 유지하며 기존 주간 Docker update가 tag·digest 변경을
+  제안한다. base 갱신은 실제 build, smoke, 취약점 scan과 SBOM gate를 다시 통과해야 한다.
+- 관련: `Dockerfile`, `frontend/Dockerfile`, `ops/ci/verify_dockerfile_pinning.py`,
+  `tests/test_dockerfile_pinning.py`, `.github/workflows/ci.yml`.

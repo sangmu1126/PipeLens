@@ -881,6 +881,24 @@ Nginx는 별도 PR로 분리했다.
   CI에는 backend·dashboard, Python 3.14, 두 container build, repository secret scan과 advisory
   Python 3.15가 포함됐고 CodeQL 두 언어 분석도 통과했다.
 
+### Dockerfile base image digest 정책
+
+- Compose service image는 이미 digest로 고정했지만 source Dockerfile의 Python, Node와 Nginx
+  `FROM`은 mutable tag만 사용하고 있었다. 결과 image scan·SBOM과 별개로 build 입력을 재현할 수
+  있도록 세 reference를 tag와 OCI index digest 조합으로 바꿨다.
+- 2026-09-01 Docker registry에서 `python:3.14-slim`은
+  `sha256:656d12e70054d5fda18a045e2494c96701e9792dd1445f95b3d038df954f57e9`,
+  `node:24-alpine`은 `sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf`,
+  `nginxinc/nginx-unprivileged:1.31-alpine`은
+  `sha256:d9083fe47768377ef55dedafd67d4da7c2f2bc2bece7554954f29359deb0dce9`임을 확인했다.
+  모두 amd64와 arm64 manifest를 포함하는 multi-platform index다.
+- 새 정책 검사는 저장소의 `Dockerfile*`을 탐색하고 `--platform`, multi-stage alias와 `scratch`를
+  구분한다. 외부 `FROM`은 읽을 수 있는 tag와 정확한 64자리 SHA-256 digest가 모두 있어야 하며,
+  누락 시 파일·줄·reference를 출력한다. generated dependency tree는 탐색에서 제외한다.
+- Docker Desktop arm64에서 고정 digest를 직접 pull해 API와 dashboard production image를 모두
+  빌드했다. 이후에도 Dependabot의 두 Docker 생태계가 version·digest 갱신을 제안하며 모든 image
+  build, smoke, 취약점 scan과 SBOM 검증을 거친다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -894,6 +912,7 @@ Nginx는 별도 PR로 분리했다.
 - TypeScript와 Vite production build
 - Prometheus config·규칙과 실제 server readiness, Compose config 검증
 - API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
+- Dockerfile 외부 base image의 tag·multi-platform digest 고정 정책 검사
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·language package 취약점 gate
 - 실제 빌드 이미지의 CycloneDX SBOM 생성·내용 검증·artifact 보관
 - Python·JavaScript/TypeScript CodeQL

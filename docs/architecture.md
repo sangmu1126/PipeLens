@@ -49,6 +49,8 @@ flowchart LR
 API와 worker는 같은 Python 이미지를 사용한다. API와 대시보드 이미지는 각각 `pipelens`,
 `nginx` 비권한 사용자로 실행한다. 대시보드 컨테이너 내부 포트는 비특권 포트 `8080`이고
 Compose가 호스트 `3000`에 연결한다.
+두 Dockerfile의 모든 외부 `FROM`은 tag와 multi-platform manifest digest를 함께 사용하며,
+CI가 새 Dockerfile과 multi-stage build까지 저장소 전체에서 검사한다.
 
 ## 3. Webhook 처리
 
