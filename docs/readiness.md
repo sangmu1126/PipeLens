@@ -43,6 +43,10 @@
 
 최근 검증 실행:
 
+- [`secret file injection PR #77`](https://github.com/sangmu1126/PipeLens/pull/77)
+- [secret injection PR CI run 33468146876](https://github.com/sangmu1126/PipeLens/actions/runs/33468146876)
+- [secret injection dependency review run 33468146869](https://github.com/sangmu1126/PipeLens/actions/runs/33468146869)
+- [secret injection PR CodeQL run 33468146873](https://github.com/sangmu1126/PipeLens/actions/runs/33468146873)
 - [`dependency review gate PR #76`](https://github.com/sangmu1126/PipeLens/pull/76)
 - [dependency review run 33467240944](https://github.com/sangmu1126/PipeLens/actions/runs/33467240944)
 - [dependency gate PR CI run 33467240895](https://github.com/sangmu1126/PipeLens/actions/runs/33467240895)

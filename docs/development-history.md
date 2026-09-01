@@ -852,6 +852,13 @@ Nginx는 별도 PR로 분리했다.
   않고 secret version 변경은 rolling deployment로 적용한다.
 - 이 구현은 #65를 완료하지 않는다. 승인된 manager·workload identity, read-only 권한, 실제 Fernet
   3단계 rotation, 외부 credential 폐기와 redacted audit 증적은 issue acceptance criteria로 유지한다.
+- 로컬 Ruff, 전체 테스트 `148 passed, 2 skipped`와 진단 평가 13/13을 통과했다.
+  [PR #77](https://github.com/sangmu1126/PipeLens/pull/77)의
+  [CI run 33468146876](https://github.com/sangmu1126/PipeLens/actions/runs/33468146876)은 새 설정 테스트,
+  PostgreSQL·Redis integration, worker drill, secret scan, Python 3.14, dashboard와 두 container build를
+  모두 통과했다. [Dependency Review run 33468146869](https://github.com/sangmu1126/PipeLens/actions/runs/33468146869)와
+  [CodeQL run 33468146873](https://github.com/sangmu1126/PipeLens/actions/runs/33468146873)의 두 언어
+  분석도 성공했다.
 
 ## 현재까지의 검증 방식
 
