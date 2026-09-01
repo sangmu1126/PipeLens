@@ -18,6 +18,8 @@
 - [Alertmanager production 채널 증적](alertmanager-channel-drill.md): 실채널 정책·rotation·retry와
   latency의 redacted JSON 검증
 - [비밀값과 키 교체](secrets-and-rotation.md): secret inventory, Fernet rolling rotation과 침해 대응
+- [Production secret manager 증적](secret-manager-drill.md): workload identity, file 주입,
+  Fernet·외부 credential rotation과 장애 대응 JSON 판정
 - [API versioning](api-versioning.md): v1 계약, 호환성, deprecation과 OpenAPI drift gate
 - [브라우저 E2E](browser-e2e.md): Chromium OAuth·session·dashboard 인수 흐름과 외부 검증 경계
 - [로컬 Docker 검증](local-docker-validation.md): arm64 major-upgrade·routing·worker·image 증적

@@ -1019,6 +1019,21 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript 분석도 성공했다. 이 결과는 증적 검증기 회귀만 확인하며 실제 receiver
   연결이나 notification 전달을 증명하지 않는다.
 
+### Production secret manager와 credential rotation 증적 계약
+
+- 기존 `*_FILE`과 Fernet key ring은 application 경계를 검증하지만 #65의 실제 manager inventory,
+  workload identity 권한, 배포·폐기 timeline과 unavailable-secret incident를 같은 형식으로 판정하지
+  못했다.
+- vendor API와 cloud credential을 저장소에 결합하지 않고 manager·deployment·provider audit를
+  정규화한 strict JSON 검증기를 추가했다. required credential 9개와 선택적 OpenAI key, workload,
+  owner·version·rotation deadline, file/read-only 여부를 inventory로 대조한다.
+- Fernet는 기존 primary+새 fallback, 새 primary+기존 fallback, lazy rewrap, 관찰 기간, fallback 제거와
+  canary 순서를 강제한다. 외부 credential은 새 version 배포·canary·이전 version 폐기·재검증을,
+  unavailable secret은 detection·incident·replacement·recovery와 fail-closed를 검증한다.
+- redacted 결과에는 owner, identity와 version 원문 대신 boolean과 16자리 SHA-256 fingerprint만 남긴다.
+  실제 secret, resource URL, manifest와 log 원문은 입력할 수 없다. example은 9개 check, detection
+  10초와 recovery 120초를 통과하지만 합성 계약 검증이므로 #65는 열린 상태로 유지했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

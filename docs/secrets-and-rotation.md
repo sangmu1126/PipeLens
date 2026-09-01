@@ -176,3 +176,8 @@ firing/resolved canary 중 해당 경로를 검증한다.
 
 이 증적은 key ring 동작과 기존 token migration 회귀를 검증한다. 실제 secret manager version
 전환, GitHub App credential 폐기와 production session 영향은 위 외부 체크리스트로 남는다.
+
+실제 manager 연결 뒤 inventory, least-privilege workload identity, file 주입, Fernet·외부 credential
+rotation과 unavailable-secret 대응은
+[production secret manager 증적 drill](secret-manager-drill.md)의 strict JSON 계약으로 검증한다.
+검증기는 credential이나 manager resource ID를 받지 않으며 실제 audit 검토를 대신하지 않는다.
