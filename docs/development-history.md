@@ -839,6 +839,20 @@ Nginx는 별도 PR로 분리했다.
   `app_id: 15368`을 확인한 뒤 같은 출처로 required status checks에 추가했다. 최종 재조회는
   `strict: true`와 총 9개 context를 반환했다.
 
+### vendor-neutral secret file 주입 경계
+
+- #65의 실제 secret manager 선택에는 운영자 결정과 workload identity가 필요하지만, 문서가 이미
+  허용한 read-only file 경로는 application에서 구현되지 않은 상태였다. 특정 vendor SDK나 resource
+  ID를 선택하지 않고 9개 민감 설정에 대응하는 `PIPELENS_*_FILE` 입력을 추가했다.
+- API와 worker는 시작 시 regular UTF-8 file을 읽어 기존 Settings field에 주입한다. direct 값과
+  file을 함께 지정하거나 file이 누락·비정규·비 UTF-8·빈 값·1 MiB 초과이면 값이나 내용을 출력하지
+  않고 시작을 거부한다. PEM 내부 newline을 보존하고 secret volume의 마지막 newline만 제거한다.
+- 모든 9개 mapping, 실제 환경변수 source, production 검증 순서, 값·file 충돌과 각 fail-closed 경계를
+  단위 테스트로 고정했다. runtime 자동 reload는 일관되지 않은 replica 상태를 만들 수 있어 지원하지
+  않고 secret version 변경은 rolling deployment로 적용한다.
+- 이 구현은 #65를 완료하지 않는다. 승인된 manager·workload identity, read-only 권한, 실제 Fernet
+  3단계 rotation, 외부 credential 폐기와 redacted audit 증적은 issue acceptance criteria로 유지한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

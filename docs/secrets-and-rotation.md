@@ -7,9 +7,9 @@
 배포 환경은 승인된 secret manager 또는 동등한 workload identity 기반 주입 수단으로 값을
 process environment나 읽기 전용 file에 제공해야 한다.
 
-현재 자동 검증은 OAuth access token용 Fernet key ring과 기존 token의 lazy 재암호화까지
-포함한다. 특정 secret manager 연결, GitHub App production credential 교체와 실제 incident
-훈련은 외부 환경 증적이 생기기 전까지 완료로 간주하지 않는다.
+현재 자동 검증은 OAuth access token용 Fernet key ring, 기존 token의 lazy 재암호화와 읽기 전용
+file 주입의 fail-closed 경계까지 포함한다. 특정 secret manager 연결, GitHub App production
+credential 교체와 실제 incident 훈련은 외부 환경 증적이 생기기 전까지 완료로 간주하지 않는다.
 
 ## 비밀값 목록
 
@@ -29,6 +29,39 @@ process environment나 읽기 전용 file에 제공해야 한다.
 비밀값 inventory에는 실제 값 대신 secret version, 소유자, 생성·교체·폐기 시각, 다음 교체 예정일,
 적용 workload와 마지막 검증 run만 기록한다. 접근 권한은 배포 service와 교체 담당자에게만 주고,
 조회·변경 audit log를 보존한다.
+
+## 읽기 전용 secret file 주입
+
+민감 설정은 direct 환경변수 대신 대응하는 file 환경변수로 주입할 수 있다.
+
+| Direct setting | File setting |
+| --- | --- |
+| `PIPELENS_WEBHOOK_SECRET` | `PIPELENS_WEBHOOK_SECRET_FILE` |
+| `PIPELENS_GITHUB_PRIVATE_KEY` | `PIPELENS_GITHUB_PRIVATE_KEY_FILE` |
+| `PIPELENS_GITHUB_CLIENT_SECRET` | `PIPELENS_GITHUB_CLIENT_SECRET_FILE` |
+| `PIPELENS_SESSION_SECRET` | `PIPELENS_SESSION_SECRET_FILE` |
+| `PIPELENS_TOKEN_ENCRYPTION_KEY` | `PIPELENS_TOKEN_ENCRYPTION_KEY_FILE` |
+| `PIPELENS_TOKEN_ENCRYPTION_FALLBACK_KEYS` | `PIPELENS_TOKEN_ENCRYPTION_FALLBACK_KEYS_FILE` |
+| `PIPELENS_OPENAI_API_KEY` | `PIPELENS_OPENAI_API_KEY_FILE` |
+| `PIPELENS_DATABASE_URL` | `PIPELENS_DATABASE_URL_FILE` |
+| `PIPELENS_REDIS_URL` | `PIPELENS_REDIS_URL_FILE` |
+
+배포 platform은 workload identity로 secret을 조회하고 API·worker container에 읽기 전용 regular
+file로 mount한다. 예시는 다음과 같으며 resource ID와 실제 경로는 환경별 배포 설정에서 관리하고
+repository에 넣지 않는다.
+
+```text
+PIPELENS_GITHUB_PRIVATE_KEY_FILE=/run/secrets/github-private-key
+PIPELENS_TOKEN_ENCRYPTION_KEY_FILE=/run/secrets/token-primary
+PIPELENS_DATABASE_URL_FILE=/run/secrets/database-url
+```
+
+PipeLens는 시작 시 file을 한 번 읽는다. direct setting과 대응 file setting을 동시에 지정하거나,
+file이 없거나 읽을 수 없거나 regular file이 아니거나, UTF-8 text가 아니거나, 비어 있거나, 1 MiB를
+초과하면 fail-closed로 시작을 거부한다. 마지막 CR/LF만 제거해 PEM의 내부 newline과 secret의 다른
+문자는 보존한다. 새 secret version은 새 file mount와 rolling deployment로 적용하며 실행 중 file
+변경을 자동 reload하지 않는다. 실제 manager 연결 뒤에는 mount가 read-only인지, API와 worker만
+읽을 수 있는지, file 내용이 process argument·log·image layer에 나타나지 않는지 확인한다.
 
 ## Fernet token encryption key 무중단 교체
 
