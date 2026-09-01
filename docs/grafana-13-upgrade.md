@@ -88,7 +88,8 @@ Grafana 13 기동 뒤에는 이전 이미지만 지정하는 downgrade를 하지
 
 이는 현재 schema와 작은 SQLite volume의 migration 호환성을 검증한다. production volume의
 backup 내구성, 복원 시간, 실제 browser rendering과 13 이후 변경분 병합은 별도 운영 drill이
-필요하다.
+필요하다. 반복 가능한 격리 복원과 JSON 기록은 [Grafana 복원 증적 drill](grafana-restore-drill.md)을
+사용한다.
 
 2026-08-31 Docker Desktop 29.6.2 arm64에서도 같은 12.1·13.2 digest와 임시 volume으로
 probe 보존, dashboard·datasource와 익명 API 검증을 통과했다. 상세 결과는

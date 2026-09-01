@@ -971,6 +971,26 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 33522859793](https://github.com/sangmu1126/PipeLens/actions/runs/33522859793)의 두 언어
   분석도 통과했다.
 
+### Grafana production volume 복원 증적 기반
+
+- #63의 Grafana 항목도 기존 12→13 CI migration과 별개로 stopped volume backup의 크기·checksum,
+  복원 시간, persistent content와 접근 정책을 같은 형식으로 기록할 도구가 없었다.
+- `ops/grafana/verify_restore.py`는 고정 Grafana 13 image와 새 volume만 사용하고 archive의 path
+  traversal, link, device와 root `grafana.db` 누락을 거부한다. backup을 root로 추출해 UID 472로
+  소유권을 맞춘 뒤 version·database health, dashboard·folder·datasource와 access policy를 API로
+  확인하고 성공·실패 target을 정리한다.
+- 첫 실제 복원 두 번은 source API에서 dashboard를 확인한 뒤 backup해도 provisioning directory가
+  없는 target에서 `pipelens-operations`가 404였다. file provisioning이 volume DB와 별도 복구
+  입력임을 확인해 current provisioning을 read-only mount하고, 최소 하나의 non-provisioned
+  dashboard가 backup에서 보존돼야 성공하도록 바꿨다.
+- 다음 실행은 content 검증 뒤 admin settings에서 403이었다. restored SQLite의 기존 admin password가
+  새 `GF_SECURITY_ADMIN_PASSWORD`로 덮이지 않는 경계를 확인해 임의 password 환경변수를 제거하고
+  승인된 admin password file을 API 요청에만 사용하도록 수정했다.
+- Docker Desktop 29.6.2 arm64의 최종 실행은 43,036,207-byte archive, 707 members와
+  119,991,857 uncompressed bytes를 복원했다. archive restore 1.461초, 전체 recovery 5.443초,
+  `grafana.db` 1,642,496 bytes, provisioned·persistent dashboard, folder, Prometheus datasource,
+  anonymous Viewer와 admin 차단, cleanup을 확인했다. production 규모·browser·rollback 증적은 아니다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

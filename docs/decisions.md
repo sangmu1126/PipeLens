@@ -851,3 +851,21 @@
 - 관련: `ops/postgres/verify_restore.py`, `tests/test_postgres_restore.py`,
   [PostgreSQL 복원 drill](postgres-restore-drill.md),
   [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).
+
+## D-059. Grafana backup DB와 file provisioning을 분리해 함께 검증
+
+- 결정: stopped data-volume tar를 새 disposable volume에 복원하고 고정 Grafana 13 image를
+  기동한다. backup DB의 non-provisioned dashboard를 최소 하나 요구하면서 현재 provisioning
+  directory를 read-only로 별도 적용해 dashboard·folder·datasource와 access policy를 검증한다.
+- 이유: file-provisioned dashboard와 datasource는 repository 정의도 복구 입력이며 volume archive만
+  기동하면 API에서 사라질 수 있다. 반대로 provisioning만 재적용하면 손상되거나 비어 있는 SQLite
+  backup도 성공한 것처럼 보이므로 persistent probe가 필요하다. 복원 DB의 기존 admin password는
+  새 container 환경변수로 교체되지 않으므로 승인된 secret file을 사용해야 한다.
+- 대안: volume archive만 검증, provisioning만 재생성, live volume을 쓰기 중 backup, mutable image,
+  임의 helper image로 extraction, production Grafana를 target으로 직접 복원.
+- 결과: archive traversal·link·device를 거부하고 root `grafana.db`를 요구한다. content의 실제 title과
+  datasource URL, admin password와 filesystem 경로는 evidence에 쓰지 않고 match boolean만 남긴다.
+  실제 browser·panel query·SSO, production RTO/RPO와 rollback은 #63 외부 acceptance로 유지한다.
+- 관련: `ops/grafana/verify_restore.py`, `tests/test_grafana_restore.py`,
+  [Grafana 복원 drill](grafana-restore-drill.md),
+  [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).
