@@ -27,6 +27,7 @@
 | Worker replica drill | 통과 | CI와 로컬 4 replica·200 job, orphan 1개 복구와 60초/120초 SLO 검증 |
 | Worker soak evidence 도구 | 준비됨 | rate·burst 입력, percentile·throughput·SLO 달성률 JSON 출력 |
 | PostgreSQL runtime | 통과 | CI amd64·로컬 arm64에서 18.6, 17→18 dump/restore·Alembic·integration 검증 |
+| PostgreSQL 복원 증적 도구 | 준비됨 | 격리 18 volume 복원, RTO/RPO·checksum·Alembic·대표 count JSON 출력 |
 | Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2, 12→13 volume·provisioning·Viewer 검증 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
@@ -506,6 +507,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] production startup의 HTTPS origin·GitHub App·PostgreSQL·Redis fail-fast 계약
 - [ ] [production secret manager·workload identity 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
+- [x] PostgreSQL 18 격리 복원·machine-readable evidence 도구
 - [ ] [production 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
 - [ ] [production Grafana volume backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)

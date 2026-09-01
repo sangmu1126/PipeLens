@@ -948,6 +948,23 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 33518902328](https://github.com/sangmu1126/PipeLens/actions/runs/33518902328)의 두 언어
   분석도 통과해 선택적 rate shaping이 기존 CI 기준선을 바꾸지 않음을 확인했다.
 
+### PostgreSQL production backup 복원 증적 기반
+
+- #63의 실제 production 규모 실행 전, operator가 dump·restore 명령과 수동 기록을 조합해야 했고
+  기존 CI upgrade drill은 합성 source를 즉시 만들고 제거해 외부 backup의 duration·checksum·RTO와
+  대표 데이터 결과를 축적할 수 없었다.
+- `ops/postgres/verify_restore.py`는 고정 PostgreSQL 18 image, 기존 이름 충돌 거부, read-only
+  backup·password mount와 새 disposable volume을 강제한다. custom-format 목록을 먼저 읽고
+  `pg_restore --exit-on-error` 뒤 PostgreSQL major, repository Alembic heads와 최소 대표 count를
+  대조한다. 성공·실패 때 생성한 target만 정리한다.
+- JSON에는 source revision과 write-freeze·backup 시각, 운영자가 측정한 backup duration·observed
+  RPO, backup·database bytes와 SHA-256, restore·전체 recovery duration, RTO/RPO 판정과 무결성
+  결과만 기록한다. backup/password 경로, database credential과 실제 record는 포함하지 않는다.
+- Docker Desktop 29.6.2 arm64에서 합성 17,585-byte custom dump를 고정 PostgreSQL 18.6에 실제
+  복원했다. restore 0.099초, 전체 recovery 4.928초, database 8,255,167 bytes, Alembic
+  `20260829_0009`, analysis 1건과 자동 cleanup을 확인했다. 이는 도구 검증이며 production 규모
+  RTO/RPO나 Grafana 복원 완료로 간주하지 않는다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

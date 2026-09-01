@@ -834,3 +834,20 @@
 - 관련: `ops/worker/verify_replica_recovery.py`, `tests/test_worker_drill.py`,
   [worker drill](worker-replica-drill.md),
   [production soak #66](https://github.com/sangmu1126/PipeLens/issues/66).
+
+## D-058. Production PostgreSQL 복원은 source와 분리된 disposable target에서 증적
+
+- 결정: 승인된 custom-format backup을 고정 PostgreSQL 18 image와 새 이름의 Docker volume에만
+  복원한다. backup·password file은 read-only로 mount하고 RTO/RPO, duration, byte 크기, SHA-256,
+  Alembic head와 대표 relation count를 schema-versioned JSON으로 기록한다.
+- 이유: 기존 17→18 CI는 작은 합성 데이터의 schema 호환성을 검증하지만 production backup의
+  내구성·복구 시간·대표 데이터 보존을 입증하지 않는다. 운영자가 수동 명령을 조합하면 source
+  volume 오선택, mutable image, credential 또는 record가 evidence에 포함될 위험이 있다.
+- 대안: production Compose volume에 직접 복원, CI 합성 결과를 production 증적으로 사용, database
+  URL로 기존 server에 연결해 destructive restore, vendor backup service를 application에 결합.
+- 결과: 기존 container·volume은 덮어쓰지 않고 source/Compose volume을 mount하지 않는다. 성공과
+  실패 모두 disposable target을 정리하며 명시적 보존 option만 예외다. 운영 시간·RPO 입력은 원본
+  backup log와 대조해야 하고 API·worker·접근 통제, Grafana와 실제 rollback은 별도 acceptance다.
+- 관련: `ops/postgres/verify_restore.py`, `tests/test_postgres_restore.py`,
+  [PostgreSQL 복원 drill](postgres-restore-drill.md),
+  [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).
