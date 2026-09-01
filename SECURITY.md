@@ -36,6 +36,10 @@ Trivy's built-in secret rules in addition to GitHub secret scanning and push pro
 requires a narrow, reviewed rule with a documented false-positive reason; never suppress a finding merely
 because a validity check labels a credential inactive or unknown.
 
+Pull requests that introduce a known vulnerability of moderate severity or higher in a runtime or
+development dependency are blocked by dependency review. An exception must identify the advisory, affected
+scope, compensating control, owner, and removal date; updating to a patched version remains preferred.
+
 The maintainer will coordinate validation, remediation, release, and disclosure in the private advisory.
 Please do not disclose the issue publicly until a coordinated disclosure time is agreed.
 
