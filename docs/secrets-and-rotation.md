@@ -154,7 +154,12 @@ firing/resolved canary 중 해당 경로를 검증한다.
 
 ## 자동 검증 증적
 
-- 로컬 Ruff와 전체 테스트: 124 passed, 2 skipped
+- 로컬 Ruff와 전체 테스트: 148 passed, 2 skipped; file mapping·production 순서·fail-closed 검증
+- [PR #77 CI run `33468146876`](https://github.com/sangmu1126/PipeLens/actions/runs/33468146876):
+  Python 3.12·3.14, PostgreSQL·Redis integration, secret scan, container와 관측성 gate 통과
+- [PR #77 CodeQL run `33468146873`](https://github.com/sangmu1126/PipeLens/actions/runs/33468146873):
+  Python·JavaScript/TypeScript 분석 통과
+- 초기 key ring 구현 당시 로컬 Ruff와 전체 테스트: 124 passed, 2 skipped
 - [PR #53 CI run `33363411829`](https://github.com/sangmu1126/PipeLens/actions/runs/33363411829):
   Python 3.12·3.14, PostgreSQL·Redis integration, container와 관측성 gate 통과
 - [PR #53 CodeQL run `33363411722`](https://github.com/sangmu1126/PipeLens/actions/runs/33363411722):
