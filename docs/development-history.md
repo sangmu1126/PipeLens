@@ -898,6 +898,12 @@ Nginx는 별도 PR로 분리했다.
 - Docker Desktop arm64에서 고정 digest를 직접 pull해 API와 dashboard production image를 모두
   빌드했다. 이후에도 Dependabot의 두 Docker 생태계가 version·digest 갱신을 제안하며 모든 image
   build, smoke, 취약점 scan과 SBOM 검증을 거친다.
+- [PR #79](https://github.com/sangmu1126/PipeLens/pull/79)의
+  [CI run 33469692762](https://github.com/sangmu1126/PipeLens/actions/runs/33469692762)에서 새 pinning
+  gate, amd64 API·dashboard build와 기존 전체 검증이 성공했다.
+  [Dependency Review run 33469692736](https://github.com/sangmu1126/PipeLens/actions/runs/33469692736)과
+  [CodeQL run 33469692739](https://github.com/sangmu1126/PipeLens/actions/runs/33469692739)의 두 언어
+  분석도 통과했다.
 
 ## 현재까지의 검증 방식
 
