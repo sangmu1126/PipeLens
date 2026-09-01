@@ -931,8 +931,9 @@ Nginx는 별도 PR로 분리했다.
   arrival rate·burst·duration별 비교와 capacity 결과 축적에 부족했다. CI 기본 시나리오는 바꾸지
   않고 rate, burst, 합성 처리 latency와 JSON file output option을 추가했다.
 - orphan job 한 건을 먼저 processing으로 옮긴 뒤 replica를 시작하고 나머지 arrival stream을
-  주입한다. 모든 enqueue가 끝난 뒤 worker를 시작해 앞쪽 queue wait가 부풀어 오르는 측정 왜곡을
-  피했다. 미연결 Redis cleanup이 원래 connection error를 덮지 않도록 연결 상태도 추적한다.
+  주입한다. 남은 enqueue와 worker 처리를 겹쳐 rate-shaped stream의 앞쪽 queue wait가 부풀어
+  오르는 측정 왜곡을 피했다. 미연결 Redis cleanup이 원래 connection error를 덮지 않도록 연결
+  상태도 추적한다.
 - 결과 schema는 checked timestamp와 입력 조건, enqueue·전체 관측 시간, throughput, p50·p95·p99
   시작·완료 latency, SLO 달성률, replica 분배, orphan 복구와 exactly-once·drain boolean을 포함한다.
 - Docker Desktop arm64와 고정 Redis 8.2 digest에서 40 jobs, 20 jobs/s, burst 4, 30ms 처리와 replica
@@ -940,6 +941,12 @@ Nginx는 별도 PR로 분리했다.
   21.698 jobs/s, 두 SLO 100%와 최종 drain을 확인하고 임시 Redis를 제거했다.
 - 실제 CPU·memory 제한, PostgreSQL pool, provider latency·rate limit·transient failure와 network
   interruption은 이 합성 기준선에 포함하지 않으므로 #66은 계속 외부 인수 항목으로 유지한다.
+- [PR #81](https://github.com/sangmu1126/PipeLens/pull/81)의
+  [CI run 33518902192](https://github.com/sangmu1126/PipeLens/actions/runs/33518902192)에서 기존 기본값인
+  4-replica·200-job burst drill과 Python 3.12 전체 테스트, Python 3.14 호환성, 두 container build가
+  성공했다. [Dependency Review run 33518902120](https://github.com/sangmu1126/PipeLens/actions/runs/33518902120)과
+  [CodeQL run 33518902328](https://github.com/sangmu1126/PipeLens/actions/runs/33518902328)의 두 언어
+  분석도 통과해 선택적 rate shaping이 기존 CI 기준선을 바꾸지 않음을 확인했다.
 
 ## 현재까지의 검증 방식
 
