@@ -45,6 +45,10 @@
 
 최근 검증 실행:
 
+- [`Dockerfile base image pinning PR #79`](https://github.com/sangmu1126/PipeLens/pull/79)
+- [base image pinning PR CI run 33469692762](https://github.com/sangmu1126/PipeLens/actions/runs/33469692762)
+- [base image pinning dependency review run 33469692736](https://github.com/sangmu1126/PipeLens/actions/runs/33469692736)
+- [base image pinning PR CodeQL run 33469692739](https://github.com/sangmu1126/PipeLens/actions/runs/33469692739)
 - [`production startup 계약 PR #78`](https://github.com/sangmu1126/PipeLens/pull/78)
 - [production startup PR CI run 33468992166](https://github.com/sangmu1126/PipeLens/actions/runs/33468992166)
 - [production startup dependency review run 33468992135](https://github.com/sangmu1126/PipeLens/actions/runs/33468992135)
