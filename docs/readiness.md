@@ -51,6 +51,10 @@
 
 최근 검증 실행:
 
+- [`secret rotation evidence PR #85`](https://github.com/sangmu1126/PipeLens/pull/85)
+- [secret rotation evidence PR CI run 33556138439](https://github.com/sangmu1126/PipeLens/actions/runs/33556138439)
+- [secret rotation evidence dependency review run 33556138245](https://github.com/sangmu1126/PipeLens/actions/runs/33556138245)
+- [secret rotation evidence PR CodeQL run 33556138296](https://github.com/sangmu1126/PipeLens/actions/runs/33556138296)
 - [`Alertmanager channel evidence PR #84`](https://github.com/sangmu1126/PipeLens/pull/84)
 - [Alertmanager channel evidence PR CI run 33552382222](https://github.com/sangmu1126/PipeLens/actions/runs/33552382222)
 - [Alertmanager channel evidence dependency review run 33552382228](https://github.com/sangmu1126/PipeLens/actions/runs/33552382228)
