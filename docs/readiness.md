@@ -46,6 +46,10 @@
 
 최근 검증 실행:
 
+- [`public HTTPS preflight PR #80`](https://github.com/sangmu1126/PipeLens/pull/80)
+- [HTTPS preflight PR CI run 33471055534](https://github.com/sangmu1126/PipeLens/actions/runs/33471055534)
+- [HTTPS preflight dependency review run 33471055528](https://github.com/sangmu1126/PipeLens/actions/runs/33471055528)
+- [HTTPS preflight PR CodeQL run 33471055578](https://github.com/sangmu1126/PipeLens/actions/runs/33471055578)
 - [`Dockerfile base image pinning PR #79`](https://github.com/sangmu1126/PipeLens/pull/79)
 - [base image pinning PR CI run 33469692762](https://github.com/sangmu1126/PipeLens/actions/runs/33469692762)
 - [base image pinning dependency review run 33469692736](https://github.com/sangmu1126/PipeLens/actions/runs/33469692736)
