@@ -242,6 +242,9 @@ JSON evidence를 사용해 arrival profile, latency percentile, throughput과 SL
 Production PostgreSQL backup은 [복원 증적 drill](docs/postgres-restore-drill.md)을 사용해 새
 PostgreSQL 18 volume에 격리 복원하고 backup 크기·checksum, RTO/RPO, Alembic head와 대표 레코드
 수를 redacted JSON으로 남깁니다.
+Grafana volume backup은 [Grafana 복원 증적 drill](docs/grafana-restore-drill.md)로 새 volume에
+복원하고 Grafana 13 migration, provisioned·persistent dashboard, folder, datasource와 접근 정책을
+같은 형식의 redacted evidence로 확인합니다.
 Docker Compose에서 API healthcheck는 `/readyz`를 사용하며 대시보드는 API가 준비된
 후에 시작합니다.
 큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과 pending 적재가

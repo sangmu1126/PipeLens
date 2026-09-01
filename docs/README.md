@@ -22,6 +22,7 @@
 - [PostgreSQL 18 업그레이드](postgres-18-upgrade.md): 17 backup, 18 복원, 검증과 rollback 경계
 - [PostgreSQL 복원 증적 drill](postgres-restore-drill.md): 격리 복원, RTO/RPO·무결성 JSON 증적
 - [Grafana 13 업그레이드](grafana-13-upgrade.md): volume backup, unified storage migration과 rollback
+- [Grafana 복원 증적 drill](grafana-restore-drill.md): 격리 volume 복원, content·접근 정책 JSON 증적
 - [저장소 보호와 변경 절차](repository-governance.md): `main` PR·필수 check와 운영 규칙
 
 ## 기록 원칙
