@@ -860,6 +860,21 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 33468146873](https://github.com/sangmu1126/PipeLens/actions/runs/33468146873)의 두 언어
   분석도 성공했다.
 
+### production startup 계약 강화
+
+- production 설정이 HTTPS·Secure cookie와 일부 secret만 확인해 GitHub App credential이 없거나
+  SQLite·memory queue 기본값이어도 Settings 생성에 성공하는 공백을 확인했다. 외부 ingress 검증
+  전에 잘못된 deployment가 healthy로 보이지 않도록 필수 runtime 계약을 시작 단계로 옮겼다.
+- public URL은 credential, subpath, query와 fragment가 없는 HTTPS origin만 허용한다. GitHub App
+  ID·private key·slug·OAuth client ID/secret, PostgreSQL psycopg URL과 Redis queue가 모두 있어야
+  production API와 worker가 설정 검증을 통과한다.
+- App ID는 양의 정수이고 database scheme은 `postgresql+psycopg`, queue backend는 `redis`, queue
+  URL은 `redis` 또는 `rediss`인지 좁게 검사한다. secret file 입력은 먼저 해석되므로 direct 값과
+  mount 방식이 동일한 production 계약을 사용한다.
+- OpenAI provider와 GitHub 게시 flag는 규칙 기반 fallback과 #61의 단계적 검증을 위해 선택으로
+  유지했다. 실제 hostname, TLS, callback·webhook과 credential 유효성은 #61·#62·#65를 닫기 전까지
+  외부 미검증 상태다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

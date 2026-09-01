@@ -31,6 +31,7 @@
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
 | secret file 주입 경계 | 통과 | 9개 민감 설정의 `*_FILE`, 충돌·빈 값·형식·크기 fail-closed 검증 |
+| production startup 계약 | 통과 | HTTPS origin·GitHub App·PostgreSQL psycopg·Redis queue 필수 검증 |
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | repository secret gate | 통과 | GitHub provider scan·push protection과 Trivy generic secret PR gate |
@@ -482,6 +483,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] Contributor Covenant 2.1 행동강령과 confidential enforcement 접수
 - [x] Fernet rolling key rotation 구현과 secret·incident response runbook
 - [x] vendor-neutral read-only secret file 주입 경계와 fail-closed 검증
+- [x] production startup의 HTTPS origin·GitHub App·PostgreSQL·Redis fail-fast 계약
 - [ ] [production secret manager·workload identity 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [ ] [production 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)

@@ -63,6 +63,12 @@ file이 없거나 읽을 수 없거나 regular file이 아니거나, UTF-8 text�
 변경을 자동 reload하지 않는다. 실제 manager 연결 뒤에는 mount가 read-only인지, API와 worker만
 읽을 수 있는지, file 내용이 process argument·log·image layer에 나타나지 않는지 확인한다.
 
+`PIPELENS_ENVIRONMENT=production`이면 file 주입을 마친 뒤 GitHub private/client secret을 포함한
+App 설정 전체와 Fernet key, PostgreSQL·Redis URL을 검증한다. secret volume이 늦게 mount되거나
+필수 version이 빠졌으면 application은 개발용 SQLite·memory queue로 fallback하지 않고 시작을
+거부한다. 이 검증은 manager 가용성이나 credential 유효성을 대신하지 않으므로 deployment readiness와
+실제 canary는 별도로 수행한다.
+
 ## Fernet token encryption key 무중단 교체
 
 Fernet key는 다음 명령으로 각각 새로 만든다.

@@ -168,7 +168,9 @@ PIPELENS_WORKER_HEARTBEAT_SECONDS=15
 
 `PIPELENS_ENVIRONMENT=production`에서는 인증 활성화, 외부 URL의 HTTPS 사용, Secure 세션
 쿠키, 32자 이상의 Webhook·세션 secret, 별도 Fernet 토큰 암호화 키를 시작 시 검증합니다.
-안전하지 않은 설정이 남아 있으면 API가 시작되지 않습니다.
+외부 URL은 credential·path·query·fragment가 없는 origin이어야 합니다. GitHub App ID·private
+key·slug·OAuth client ID/secret, `postgresql+psycopg` database URL과 Redis queue도 모두
+필수이며 안전하지 않거나 개발용 기본 설정이 남아 있으면 API와 worker가 시작되지 않습니다.
 OAuth token 암호화 키는 [비밀값 관리와 키 교체 절차](docs/secrets-and-rotation.md)에 따라
 primary와 fallback key ring으로 무중단 교체할 수 있습니다. fallback key로 읽은 기존 token은
 로그인 시 primary key로 다시 암호화됩니다.
