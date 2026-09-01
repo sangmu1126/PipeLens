@@ -874,6 +874,12 @@ Nginx는 별도 PR로 분리했다.
 - OpenAI provider와 GitHub 게시 flag는 규칙 기반 fallback과 #61의 단계적 검증을 위해 선택으로
   유지했다. 실제 hostname, TLS, callback·webhook과 credential 유효성은 #61·#62·#65를 닫기 전까지
   외부 미검증 상태다.
+- [PR #78](https://github.com/sangmu1126/PipeLens/pull/78)에서
+  [CI run 33468992166](https://github.com/sangmu1126/PipeLens/actions/runs/33468992166),
+  [Dependency Review run 33468992135](https://github.com/sangmu1126/PipeLens/actions/runs/33468992135),
+  [CodeQL run 33468992127](https://github.com/sangmu1126/PipeLens/actions/runs/33468992127)이 성공했다.
+  CI에는 backend·dashboard, Python 3.14, 두 container build, repository secret scan과 advisory
+  Python 3.15가 포함됐고 CodeQL 두 언어 분석도 통과했다.
 
 ## 현재까지의 검증 방식
 
