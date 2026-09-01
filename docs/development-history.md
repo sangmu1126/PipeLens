@@ -817,6 +817,19 @@ Nginx는 별도 PR로 분리했다.
   API로 확인한 뒤 required status checks에 같은 app ID로 추가했다. 최종 재조회는 `strict: true`와
   기존 7개 context 및 `Repository secret scan`, 총 8개를 반환했다.
 
+### dependency 변경의 취약점 사전 차단
+
+- Dependabot alerts·security updates는 활성화됐지만 PR dependency diff를 판정하는 필수 check는
+  없었다. 공개 repository에서 무료로 지원되는 공식 Dependency Review Action을 독립 workflow로
+  추가했다.
+- 2026-05-08 공개된 최신 v5.0.0 tag가 가리키는 commit
+  `a1d282b36b6f3519aa1f3fc636f609c47dddb294`를 API로 확인해 full SHA로 고정했다. v5의 Node 24
+  runtime은 GitHub-hosted runner 조건을 충족한다.
+- runtime과 development scope에서 새로 도입되는 `moderate` 이상 취약점만 차단한다. license 정책과
+  OpenSSF scorecard는 이번 보안 gate의 실패 조건에서 제외해 서로 다른 판단을 섞지 않았다.
+- 새 `Dependency review` context는 PR의 첫 성공과 GitHub Actions app 출처를 확인한 뒤 기존 8개에
+  추가하고, 후속 commit으로 9개 필수 check가 실제 적용되는지 재검증한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

@@ -23,6 +23,7 @@
 | CI | `dashboard` |
 | CI | `Build container (api)` |
 | CI | `Build container (dashboard)` |
+| Dependency Review | `Dependency review` |
 | CodeQL | `Analyze (python)` |
 | CodeQL | `Analyze (javascript-typescript)` |
 
@@ -31,7 +32,7 @@
 1. 최신 `main`에서 목적별 branch를 만든다.
 2. 서로 독립적으로 검토할 변경은 별도 commit으로 유지한다.
 3. branch를 push하고 PR을 만든다.
-4. 8개 필수 check와 추가 workflow가 성공했는지 확인한다.
+4. 9개 필수 check와 추가 workflow가 성공했는지 확인한다.
 5. review conversation이 모두 해결된 뒤 squash 또는 rebase 방식으로 merge한다.
 6. merge commit의 `main` CI·CodeQL도 성공하는지 확인한다.
 
@@ -78,6 +79,11 @@ issue는 끄고 pull request에는 검증, 보안·개인정보 경계와 문서
 `SECURITY.md`와 issue contact link는 GitHub private vulnerability reporting으로 연결한다.
 Dependabot alerts와 security updates는 활성화하며 생성된 보안 PR도 일반 PR과 같은 branch
 protection, 고정 참조와 전체 CI를 통과해야 한다. 설정 상태는 repository API로 재조회한다.
+
+모든 pull request에는 dependency review를 실행한다. runtime과 development scope에서 새로 추가되는
+`moderate` 이상 알려진 취약점은 병합을 차단한다. license 허용 목록과 OpenSSF 점수는 별도 정책
+합의 없이 차단 조건으로 사용하지 않는다. 첫 성공 context를 확인한 뒤 GitHub Actions app으로
+출처를 제한한 필수 check로 승격한다.
 
 GitHub의 provider secret scanning과 push protection은 활성화한다. 개인 소유 공개 저장소에서
 Secret Protection이 필요한 generic/non-provider patterns와 validity checks는 API 요청 뒤에도
