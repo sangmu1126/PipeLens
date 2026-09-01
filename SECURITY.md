@@ -30,6 +30,12 @@ Never include live GitHub App private keys, OAuth secrets, webhook secrets, sess
 keys, access tokens, repository credentials, or unredacted user data. Revoke or rotate an exposed secret
 before reporting it.
 
+Do not commit realistic secret-shaped test values, even when they are inactive. Use explicit placeholders
+such as `<redacted-token>` and inject test credentials at runtime. Every pull request is scanned with
+Trivy's built-in secret rules in addition to GitHub secret scanning and push protection. A scan exception
+requires a narrow, reviewed rule with a documented false-positive reason; never suppress a finding merely
+because a validity check labels a credential inactive or unknown.
+
 The maintainer will coordinate validation, remediation, release, and disclosure in the private advisory.
 Please do not disclose the issue publicly until a coordinated disclosure time is agreed.
 
