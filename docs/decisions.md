@@ -890,3 +890,22 @@
   `tests/test_alertmanager_channel_evidence.py`,
   [Alertmanager production 채널 증적](alertmanager-channel-drill.md),
   [production receiver #64](https://github.com/sangmu1126/PipeLens/issues/64).
+
+## D-061. Secret manager 외부 증적은 값이 아닌 inventory·권한·timeline을 검증
+
+- 결정: 실제 manager/deployment/provider audit를 운영자가 strict JSON으로 정규화해 credential
+  inventory, workload identity least privilege, read-only file 주입, Fernet rolling rotation, 외부
+  credential 폐기와 unavailable-secret 대응을 함께 판정한다. 특정 vendor API나 secret 값은 받지 않는다.
+- 이유: manager마다 identity와 version API가 다르지만 #65의 핵심 invariant는 동일하다. provider SDK를
+  먼저 선택하면 운영 결정을 침범하고 CI나 개발 환경에 cloud credential이 필요해진다. 반대로 boolean
+  체크리스트만 두면 version·inventory·rotation timeline 사이 불일치와 detection/recovery 상한을
+  자동으로 검증하지 못한다.
+- 대안: 한 cloud vendor를 기본 구현, deployment manifest와 audit log 원문 저장, 수동 screenshot만
+  증적으로 사용, application이 runtime에 manager를 직접 조회하고 자동 reload.
+- 결과: required credential 9개와 선택적 OpenAI key를 이름·workload 기준으로 확인한다. manager
+  identity, owner와 version 원문은 출력에서 제거하고 version fingerprint, 사건 시각, incident ID,
+  권한·scan boolean과 입력 SHA-256만 남긴다. 실제 IAM policy, canary, 폐기 audit와 production 영향은
+  private 원본 검토가 필요하므로 example·도구 통과만으로 #65를 닫지 않는다.
+- 관련: `ops/secrets/verify_rotation_evidence.py`, `tests/test_secret_rotation_evidence.py`,
+  [Production secret manager 증적](secret-manager-drill.md),
+  [production secret manager #65](https://github.com/sangmu1126/PipeLens/issues/65).

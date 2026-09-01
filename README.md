@@ -183,6 +183,8 @@ primary와 fallback key ring으로 무중단 교체할 수 있습니다. fallbac
 mount 경로를 지정할 수 있습니다. 예를 들어 `PIPELENS_GITHUB_PRIVATE_KEY_FILE=/run/secrets/github-private-key`
 형식이며 direct 값과 file 경로를 동시에 지정하면 시작을 거부합니다. 지원 목록과 file 검증 규칙은
 [비밀값 관리와 키 교체 절차](docs/secrets-and-rotation.md)에 있습니다.
+실제 manager의 inventory·workload identity·rotation 결과는
+[production secret manager 증적 drill](docs/secret-manager-drill.md)로 기록합니다.
 API 응답에는 MIME sniffing·iframe 삽입·불필요한 referrer와 브라우저 권한 사용을 제한하는
 보안 헤더가 포함됩니다. Compose 대시보드 Nginx는 같은 헤더와 Content Security Policy를
 정적 파일 및 프록시 응답에 적용합니다. HSTS는 HTTPS를 종료하는 외부 프록시에서 설정해야
