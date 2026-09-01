@@ -918,6 +918,12 @@ Nginx는 별도 PR로 분리했다.
 - unit test는 정상 redacted evidence, unsafe origin 4종, 짧은 HSTS와 state 없는 OAuth redirect를
   검증한다. 이 도구는 실제 login·installation·logout, signed webhook과 proxy forwarding을 수행하지
   않으므로 #62의 완료 상태는 바꾸지 않는다.
+- [PR #80](https://github.com/sangmu1126/PipeLens/pull/80)의
+  [CI run 33471055534](https://github.com/sangmu1126/PipeLens/actions/runs/33471055534)에서 Python 3.12
+  전체 테스트, Python 3.14 호환성, 두 container build와 기존 운영 drill이 성공했다.
+  [Dependency Review run 33471055528](https://github.com/sangmu1126/PipeLens/actions/runs/33471055528)과
+  [CodeQL run 33471055578](https://github.com/sangmu1126/PipeLens/actions/runs/33471055578)의 두 언어
+  분석도 통과했다.
 
 ## 현재까지의 검증 방식
 
