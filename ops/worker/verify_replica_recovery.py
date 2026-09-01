@@ -9,6 +9,9 @@ import time
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from math import ceil
+from pathlib import Path
 from typing import Any
 
 from pipelens.metrics import Metrics
@@ -70,6 +73,14 @@ def counter_value(metrics: Metrics, sample_name: str) -> float:
     )
 
 
+def percentile(values: list[float], percentage: int) -> float:
+    """Return a nearest-rank percentile for a non-empty sample."""
+    if not values or not 1 <= percentage <= 100:
+        raise DrillError("percentile requires samples and a percentage from 1 to 100")
+    ordered = sorted(values)
+    return ordered[ceil(len(ordered) * percentage / 100) - 1]
+
+
 def validate_args(args: argparse.Namespace) -> None:
     positive_values = {
         "jobs": args.jobs,
@@ -88,6 +99,10 @@ def validate_args(args: argparse.Namespace) -> None:
         raise DrillError("heartbeat must be shorter than the worker lease")
     if args.completion_slo_seconds < args.start_slo_seconds:
         raise DrillError("completion SLO must not be shorter than start SLO")
+    if args.enqueue_rate_per_second < 0:
+        raise DrillError("enqueue rate must not be negative")
+    if args.burst_size < 0 or args.burst_size > args.jobs:
+        raise DrillError("burst size must be zero or no greater than jobs")
 
 
 async def wait_until_acknowledged(queue: RedisAnalysisQueue, timeout: float = 5) -> None:
@@ -96,8 +111,45 @@ async def wait_until_acknowledged(queue: RedisAnalysisQueue, timeout: float = 5)
             await asyncio.sleep(0.01)
 
 
+async def enqueue_jobs(
+    args: argparse.Namespace,
+    producer: RedisAnalysisQueue,
+    tracker: WorkTracker,
+    start_offset: int = 0,
+    stop_offset: int | None = None,
+) -> float:
+    """Enqueue a burst or rate-shaped workload and return enqueue duration."""
+    started = time.monotonic()
+    burst_size = args.burst_size or (1 if args.enqueue_rate_per_second else args.jobs)
+    for position, offset in enumerate(
+        range(start_offset, stop_offset if stop_offset is not None else args.jobs), start=1
+    ):
+        run_id = 1_000_000 + offset
+        tracker.enqueued_at[run_id] = time.monotonic()
+        created = await producer.enqueue(
+            AnalysisRequest(
+                run_id=run_id,
+                repository="pipelens/replica-drill",
+                installation_id=1,
+                head_sha=f"{offset:040x}",
+            )
+        )
+        if not created:
+            raise DrillError(f"duplicate enqueue for synthetic run {run_id}")
+        if (
+            args.enqueue_rate_per_second
+            and stop_offset is None
+            and offset + 1 < args.jobs
+            and position % burst_size == 0
+        ):
+            target = started + position / args.enqueue_rate_per_second
+            await asyncio.sleep(max(0, target - time.monotonic()))
+    return time.monotonic() - started
+
+
 async def run_drill(args: argparse.Namespace) -> dict[str, object]:
     validate_args(args)
+    checked_at = datetime.now(UTC)
     queue_name = f"pipelens:replica-drill:{uuid.uuid4().hex}"
     producer = RedisAnalysisQueue.from_url(
         args.redis_url, queue_name, worker_id="producer", lease_seconds=args.lease_seconds
@@ -137,21 +189,12 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
     }
 
     abandoned_run_id: int | None = None
+    redis_connected = False
     try:
         await producer.healthcheck()
-        for offset in range(args.jobs):
-            run_id = 1_000_000 + offset
-            tracker.enqueued_at[run_id] = time.monotonic()
-            created = await producer.enqueue(
-                AnalysisRequest(
-                    run_id=run_id,
-                    repository="pipelens/replica-drill",
-                    installation_id=1,
-                    head_sha=f"{offset:040x}",
-                )
-            )
-            if not created:
-                raise DrillError(f"duplicate enqueue for synthetic run {run_id}")
+        redis_connected = True
+        enqueue_started = time.monotonic()
+        await enqueue_jobs(args, producer, tracker, stop_offset=1)
 
         abandoned_job = await abandoned.dequeue(timeout=1)
         if abandoned_job is None:
@@ -160,6 +203,9 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
 
         for worker in workers:
             await worker.start()
+        if args.jobs > 1:
+            await enqueue_jobs(args, producer, tracker, start_offset=1)
+        enqueue_seconds = time.monotonic() - enqueue_started
         async with asyncio.timeout(args.completion_slo_seconds):
             await tracker.completed.wait()
         await wait_until_acknowledged(producer)
@@ -212,16 +258,46 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
         if await producer.size() != 0:
             raise DrillError("pending queue was not fully drained")
 
+        start_samples = list(start_latencies.values())
+        completion_samples = list(completion_latencies.values())
+        observed_seconds = max(tracker.completed_at.values()) - min(tracker.enqueued_at.values())
+        start_attainment = sum(
+            latency <= args.start_slo_seconds for latency in start_samples
+        ) / args.jobs
+        completion_attainment = sum(
+            latency <= args.completion_slo_seconds for latency in completion_samples
+        ) / args.jobs
+
         return {
+            "schema_version": 1,
+            "checked_at": checked_at.isoformat(),
             "jobs": args.jobs,
             "replicas": args.replicas,
+            "enqueue_rate_per_second": args.enqueue_rate_per_second,
+            "burst_size": args.burst_size or (1 if args.enqueue_rate_per_second else args.jobs),
+            "synthetic_processing_seconds": args.processing_seconds,
+            "enqueue_seconds": round(enqueue_seconds, 3),
+            "observed_seconds": round(observed_seconds, 3),
+            "throughput_jobs_per_second": round(args.jobs / observed_seconds, 3),
             "processed_per_replica": dict(sorted(tracker.worker_counts.items())),
             "recovered_jobs": int(recovered),
             "max_start_seconds": round(max_start, 3),
             "max_completion_seconds": round(max_completion, 3),
             "orphan_recovery_seconds": round(recovery_latency, 3),
+            "start_latency_seconds": {
+                f"p{rank}": round(percentile(start_samples, rank), 3)
+                for rank in (50, 95, 99)
+            },
+            "completion_latency_seconds": {
+                f"p{rank}": round(percentile(completion_samples, rank), 3)
+                for rank in (50, 95, 99)
+            },
             "start_slo_seconds": args.start_slo_seconds,
             "completion_slo_seconds": args.completion_slo_seconds,
+            "start_slo_attainment_percent": round(start_attainment * 100, 3),
+            "completion_slo_attainment_percent": round(completion_attainment * 100, 3),
+            "exactly_once": True,
+            "queue_drained": True,
         }
     except TimeoutError as error:
         raise DrillError(
@@ -230,7 +306,8 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
     finally:
         await asyncio.gather(*(worker.stop() for worker in workers), return_exceptions=True)
         try:
-            await producer.redis.delete(*keys)
+            if redis_connected:
+                await producer.redis.delete(*keys)
         finally:
             await asyncio.gather(*(queue.close() for queue in all_queues), return_exceptions=True)
 
@@ -243,9 +320,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--lease-seconds", type=int, default=2)
     parser.add_argument("--heartbeat-seconds", type=float, default=0.5)
     parser.add_argument("--processing-seconds", type=float, default=0.01)
+    parser.add_argument("--enqueue-rate-per-second", type=float, default=0)
+    parser.add_argument("--burst-size", type=int, default=0)
     parser.add_argument("--start-slo-seconds", type=float, default=60)
     parser.add_argument("--completion-slo-seconds", type=float, default=120)
     parser.add_argument("--recovery-grace-seconds", type=float, default=5)
+    parser.add_argument("--output", type=Path)
     return parser.parse_args(argv)
 
 
@@ -256,7 +336,14 @@ def main(argv: list[str] | None = None) -> int:
     except DrillError as error:
         print(f"worker replica drill failed: {error}")
         return 1
-    print(json.dumps(result, indent=2, sort_keys=True))
+    rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    if args.output:
+        try:
+            args.output.write_text(rendered, encoding="utf-8")
+        except OSError as error:
+            print(f"worker replica drill could not write evidence: {error}")
+            return 1
+    print(rendered, end="")
     return 0
 
 
