@@ -134,6 +134,8 @@ Callback URL은 `https://<host>/auth/github/callback`, Setup URL은
 `https://<host>/github/setup`으로 지정합니다. 사용자가 먼저 PipeLens에 로그인한 뒤 App을
 설치하고 Setup URL로 돌아오는 흐름이므로 **Request user authorization during
 installation**은 끕니다.
+공개 ingress를 연결한 뒤에는 [HTTPS acceptance preflight](docs/https-acceptance.md)로 TLS,
+HSTS, redirect, readiness와 OAuth 시작 경계를 redacted JSON으로 확인합니다.
 
 Webhook secret과 아래 환경변수를 구성해야 실제 로그를 가져올 수 있습니다. 운영에서는
 HTTPS를 사용하고 `SESSION_COOKIE_SECURE=true`로 설정해야 합니다. Fernet 키는

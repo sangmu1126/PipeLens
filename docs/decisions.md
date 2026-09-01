@@ -799,3 +799,21 @@
   제안한다. base 갱신은 실제 build, smoke, 취약점 scan과 SBOM gate를 다시 통과해야 한다.
 - 관련: `Dockerfile`, `frontend/Dockerfile`, `ops/ci/verify_dockerfile_pinning.py`,
   `tests/test_dockerfile_pinning.py`, `.github/workflows/ci.yml`.
+
+## D-056. 공개 HTTPS 검증은 redacted machine-readable preflight와 실제 E2E를 분리
+
+- 결정: operator가 production origin을 지정해 HTTP 영구 redirect, 기본 TLS 인증서 검증,
+  1년 이상 HSTS, dashboard 보안 header, database·queue readiness, GitHub OAuth redirect URI와
+  state cookie flag를 검사하는 repository 도구를 제공한다. 성공 결과는 schema version이 있는
+  JSON으로 출력하되 redirect state, cookie 값과 client ID는 저장하지 않는다.
+- 이유: #62의 실제 ingress 검증을 수동 curl·스크린샷만으로 수행하면 누락과 민감값 노출 위험이
+  있다. 반대로 실제 GitHub authorization code와 webhook delivery 없이 production E2E 완료로
+  표시해서도 안 된다.
+- 대안: 배포 플랫폼 health check에만 의존, shell과 curl 조합, repository가 특정 ingress 또는
+  certificate provider를 선택, 실제 credential을 받는 완전 자동 E2E.
+- 결과: 인증서 검증을 끄는 option은 제공하지 않으며 HSTS `includeSubDomains`와 `preload`는 운영
+  domain 정책 차이를 위해 기록만 한다. preflight 통과 후에도 real browser login·logout, callback,
+  signed webhook, forwarding behavior와 timestamped 외부 증적이 있어야 #62를 닫는다.
+- 관련: `ops/acceptance/verify_https.py`, `tests/test_https_acceptance.py`,
+  [HTTPS acceptance 절차](https-acceptance.md),
+  [public HTTPS 검증 #62](https://github.com/sangmu1126/PipeLens/issues/62).
