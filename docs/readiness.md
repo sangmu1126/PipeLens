@@ -42,6 +42,10 @@
 
 최근 검증 실행:
 
+- [`dependency review gate PR #76`](https://github.com/sangmu1126/PipeLens/pull/76)
+- [dependency review run 33467240944](https://github.com/sangmu1126/PipeLens/actions/runs/33467240944)
+- [dependency gate PR CI run 33467240895](https://github.com/sangmu1126/PipeLens/actions/runs/33467240895)
+- [dependency gate PR CodeQL run 33467240943](https://github.com/sangmu1126/PipeLens/actions/runs/33467240943)
 - [`repository secret gate PR #75`](https://github.com/sangmu1126/PipeLens/pull/75)
 - [secret gate PR CI run 33466619219](https://github.com/sangmu1126/PipeLens/actions/runs/33466619219)
 - [secret gate PR CodeQL run 33466619215](https://github.com/sangmu1126/PipeLens/actions/runs/33466619215)

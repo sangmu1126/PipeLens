@@ -829,6 +829,15 @@ Nginx는 별도 PR로 분리했다.
   OpenSSF scorecard는 이번 보안 gate의 실패 조건에서 제외해 서로 다른 판단을 섞지 않았다.
 - 새 `Dependency review` context는 PR의 첫 성공과 GitHub Actions app 출처를 확인한 뒤 기존 8개에
   추가하고, 후속 commit으로 9개 필수 check가 실제 적용되는지 재검증한다.
+- [PR #76](https://github.com/sangmu1126/PipeLens/pull/76)의
+  [Dependency Review run 33467240944](https://github.com/sangmu1126/PipeLens/actions/runs/33467240944)는
+  5초에 성공했다. [CI run 33467240895](https://github.com/sangmu1126/PipeLens/actions/runs/33467240895)의
+  secret scan, backend, Python 3.14, dashboard와 두 container build 및
+  [CodeQL run 33467240943](https://github.com/sangmu1126/PipeLens/actions/runs/33467240943)의 두 언어
+  분석도 모두 통과했다.
+- commit check API에서 `Dependency review`의 conclusion `success`, GitHub Actions
+  `app_id: 15368`을 확인한 뒤 같은 출처로 required status checks에 추가했다. 최종 재조회는
+  `strict: true`와 총 9개 context를 반환했다.
 
 ## 현재까지의 검증 방식
 
