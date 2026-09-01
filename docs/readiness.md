@@ -33,11 +33,12 @@
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
 | repository secret gate | 통과 | GitHub provider scan·push protection과 Trivy generic secret PR gate |
+| dependency 변경 gate | 통과 | PR에서 runtime·development의 신규 moderate 이상 취약점 차단 |
 | 공개 보안 접수 | 설정됨 | private vulnerability reporting, Dependabot alerts·security updates, SECURITY policy |
 | 공개 기여 정책 | 설정됨 | 기여 가이드, issue/PR template와 Contributor Covenant 2.1 행동강령 |
 | 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
-| `main` 보호 | 설정됨 | PR, strict CI 6개·CodeQL 2개, conversation·linear history, 관리자 적용 |
+| `main` 보호 | 설정됨 | PR, strict CI 6개·Dependency Review 1개·CodeQL 2개, 관리자 적용 |
 
 최근 검증 실행:
 
@@ -436,7 +437,7 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 - releases: 1 (`v0.1.0`, immutable false); repository 불변성은 미래 release 대상으로 활성화
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
 - GHCR retention: 정식 release·attestation 영구 보존, 월별 자동 감사
-- branch protection: PR과 8개 GitHub Actions check 필수, 관리자 적용
+- branch protection: PR과 9개 GitHub Actions check 필수, 관리자 적용
 - repository rulesets: 0
 - open CodeQL alerts: 0
 - private vulnerability reporting: enabled
@@ -467,6 +468,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] 외부 GitHub Action full commit SHA 고정과 CI 정책 검사
 - [x] private vulnerability reporting과 Dependabot alerts·security updates
 - [x] provider secret scanning·push protection과 Trivy repository secret gate
+- [x] 신규 moderate 이상 runtime·development dependency 취약점 PR gate
 - [x] SECURITY·기여 가이드와 구조화된 issue/PR template
 - [x] Contributor Covenant 2.1 행동강령과 confidential enforcement 접수
 - [x] Fernet rolling key rotation 구현과 secret·incident response runbook

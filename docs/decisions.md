@@ -728,3 +728,23 @@
   [Trivy Action](https://github.com/aquasecurity/trivy-action).
 - 관련: `.github/workflows/ci.yml`, `SECURITY.md`,
   [저장소 관리 절차](repository-governance.md), [검증 현황](readiness.md).
+
+## D-052. 신규 취약 dependency는 PR diff에서 병합 전에 차단
+
+- 결정: 공식 `actions/dependency-review-action` v5.0.0을 full commit SHA로 고정해 모든 PR에서
+  실행한다. runtime·development scope에 새로 추가되는 `moderate` 이상 알려진 취약점은 실패시키고,
+  첫 성공 check 뒤 `Dependency review`를 `main`의 필수 context로 승격한다.
+- 이유: Dependabot alerts와 security updates는 repository snapshot의 알려진 취약점을 탐지·수정하지만,
+  dependency 변경 PR 자체를 필수 gate로 만들지는 않는다. dependency review는 base와 head의 dependency
+  snapshot 차이를 사용하므로 기존 취약점과 이번 변경이 새로 도입한 위험을 구분할 수 있다. 개발
+  dependency도 CI와 build 환경에서 코드를 실행하므로 runtime과 함께 차단 범위에 넣는다.
+- 대안: Dependabot 사후 탐지만 사용, Trivy filesystem vulnerability scan 추가, `high` 이상만 차단,
+  모든 severity와 unknown scope까지 차단.
+- 결과: 새 moderate·high·critical 취약 dependency는 merge 전에 차단하면서 기존 backlog와 scope가
+  불명확한 결과 때문에 모든 PR이 교착되는 것을 피한다. license check와 OpenSSF scorecard는 법무·품질
+  기준이 합의되지 않았으므로 끄고, 향후 별도 결정으로 다룬다. 예외는 advisory, 보완 통제, owner와
+  제거 날짜를 남겨야 한다.
+- 근거: [GitHub dependency review](https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/customize-dependency-review-action),
+  [Dependency Review Action v5.0.0](https://github.com/actions/dependency-review-action/releases/tag/v5.0.0).
+- 관련: `.github/workflows/dependency-review.yml`, `SECURITY.md`,
+  [저장소 관리 절차](repository-governance.md), [검증 현황](readiness.md).
