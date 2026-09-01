@@ -22,6 +22,7 @@
 | Compose service image | 통과 | 5개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
 | Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Alertmanager routing | 통과 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI·로컬 drill |
+| Alertmanager 채널 증적 도구 | 준비됨 | 실채널 timeline, grouping·dedupe·억제·rotation·retry와 latency JSON 판정 |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | Worker replica drill | 통과 | CI와 로컬 4 replica·200 job, orphan 1개 복구와 60초/120초 SLO 검증 |
@@ -524,6 +525,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [ ] [production 조건의 worker replica soak/load test](https://github.com/sangmu1126/PipeLens/issues/66)
 - [x] worker arrival profile과 machine-readable capacity evidence 도구
 - [x] Alertmanager routing과 로컬 webhook 통합 검증
+- [x] Alertmanager production 채널의 redacted machine-readable evidence 도구
 - [ ] [Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
 - [ ] [외부 fork 공격 입력 검증](https://github.com/sangmu1126/PipeLens/issues/61)
 - [ ] [부하 상태에서 시작 60초·완료 120초 SLO 검증](https://github.com/sangmu1126/PipeLens/issues/66)
