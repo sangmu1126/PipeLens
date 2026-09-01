@@ -964,6 +964,12 @@ Nginx는 별도 PR로 분리했다.
   복원했다. restore 0.099초, 전체 recovery 4.928초, database 8,255,167 bytes, Alembic
   `20260829_0009`, analysis 1건과 자동 cleanup을 확인했다. 이는 도구 검증이며 production 규모
   RTO/RPO나 Grafana 복원 완료로 간주하지 않는다.
+- [PR #82](https://github.com/sangmu1126/PipeLens/pull/82)의
+  [CI run 33522859800](https://github.com/sangmu1126/PipeLens/actions/runs/33522859800)에서 전체 backend,
+  Python 3.14, 두 container build와 기존 PostgreSQL·Grafana·worker drill이 성공했다.
+  [Dependency Review run 33522859708](https://github.com/sangmu1126/PipeLens/actions/runs/33522859708)과
+  [CodeQL run 33522859793](https://github.com/sangmu1126/PipeLens/actions/runs/33522859793)의 두 언어
+  분석도 통과했다.
 
 ## 현재까지의 검증 방식
 
