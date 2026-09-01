@@ -1054,6 +1054,13 @@ Nginx는 별도 PR로 분리했다.
   외부 fork는 경고 코멘트 URL을 보존하면서 LLM invocation과 Commit Check publication 0을 판정한다.
 - 체크인 example과 34개 집중 테스트는 schema, cross-field 관계와 실패 판정만 증명한다. 실제 App
   installation, run·게시 URL과 private audit review가 없으므로 #61은 열린 상태로 유지한다.
+- [PR #86](https://github.com/sangmu1126/PipeLens/pull/86)의 첫 head에서
+  [CI run 33558346922](https://github.com/sangmu1126/PipeLens/actions/runs/33558346922)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, Python 3.15 preview, repository secret scan, dashboard와 두
+  container build를 통과했다. [Dependency Review run 33558347165](https://github.com/sangmu1126/PipeLens/actions/runs/33558347165)과
+  [CodeQL run 33558347039](https://github.com/sangmu1126/PipeLens/actions/runs/33558347039)의 Python·
+  JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서의 회귀만 확인하며 실제
+  GitHub App 설치, 실패 run 게시 또는 외부 fork 처리를 증명하지 않는다.
 
 ## 현재까지의 검증 방식
 
