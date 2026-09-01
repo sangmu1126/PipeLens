@@ -41,6 +41,9 @@
 
 최근 검증 실행:
 
+- [`repository secret gate PR #75`](https://github.com/sangmu1126/PipeLens/pull/75)
+- [secret gate PR CI run 33466619219](https://github.com/sangmu1126/PipeLens/actions/runs/33466619219)
+- [secret gate PR CodeQL run 33466619215](https://github.com/sangmu1126/PipeLens/actions/runs/33466619215)
 - [`실제 CI 평가 fixture PR #68`](https://github.com/sangmu1126/PipeLens/pull/68)
 - [실제 CI fixture PR CI run 33398998517](https://github.com/sangmu1126/PipeLens/actions/runs/33398998517)
 - [실제 CI fixture PR CodeQL run 33398998843](https://github.com/sangmu1126/PipeLens/actions/runs/33398998843)

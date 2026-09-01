@@ -808,6 +808,14 @@ Nginx는 별도 PR로 분리했다.
 - 새 context는 기존 보호 정책에 바로 넣지 않는다. PR의 첫 성공 실행으로 context를 생성한 뒤
   branch protection을 7개에서 8개 필수 check로 갱신하고, 이후 commit에서 보호가 실제로
   적용되는지 다시 검증한다.
+- [PR #75](https://github.com/sangmu1126/PipeLens/pull/75)의 첫
+  [CI run 33466619219](https://github.com/sangmu1126/PipeLens/actions/runs/33466619219)에서
+  `Repository secret scan`이 18초에 성공했고 기존 backend, Python 3.14, dashboard와 두 container
+  build도 통과했다. [CodeQL run 33466619215](https://github.com/sangmu1126/PipeLens/actions/runs/33466619215)의
+  Python·JavaScript 분석도 성공했다.
+- 새 check의 creator가 GitHub Actions `app_id: 15368`이고 conclusion이 `success`임을 commit check
+  API로 확인한 뒤 required status checks에 같은 app ID로 추가했다. 최종 재조회는 `strict: true`와
+  기존 7개 context 및 `Repository secret scan`, 총 8개를 반환했다.
 
 ## 현재까지의 검증 방식
 
