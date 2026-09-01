@@ -29,8 +29,16 @@ def _production_settings(**overrides: object) -> dict[str, object]:
         "public_url": "https://pipelens.example.com",
         "session_cookie_secure": True,
         "webhook_secret": "w" * 32,
+        "github_app_id": "123456",
+        "github_private_key": "private-key",
+        "github_app_slug": "pipelens",
+        "github_client_id": "client-id",
+        "github_client_secret": "client-secret",
         "session_secret": "s" * 32,
         "token_encryption_key": "encryption-key",
+        "database_url": "postgresql+psycopg://service:password@database/pipelens",
+        "queue_backend": "redis",
+        "redis_url": "redis://service:password@queue/0",
     }
     values.update(overrides)
     return values
@@ -41,11 +49,43 @@ def _production_settings(**overrides: object) -> dict[str, object]:
     [
         ({"public_url": "http://pipelens.example.com"}, "public URL must use HTTPS"),
         ({"public_url": "https:not-a-host"}, "public URL must use HTTPS"),
+        (
+            {"public_url": "https://user:password@pipelens.example.com"},
+            "public URL must not contain credentials",
+        ),
+        (
+            {"public_url": "https://pipelens.example.com/app"},
+            "public URL must be an origin",
+        ),
+        (
+            {"public_url": "https://pipelens.example.com?redirect=other"},
+            "public URL must be an origin",
+        ),
+        (
+            {"public_url": "https://pipelens.example.com/#fragment"},
+            "public URL must not contain a fragment",
+        ),
         ({"auth_required": False}, "authentication must be required"),
         ({"session_cookie_secure": False}, "session cookies must be secure"),
         ({"webhook_secret": "short"}, "webhook secret must be at least 32"),
         ({"session_secret": "short"}, "session secret must be at least 32"),
         ({"token_encryption_key": None}, "token encryption key must be configured"),
+        ({"github_app_id": None}, "GitHub App settings must be configured.*GITHUB_APP_ID"),
+        (
+            {"github_private_key": None},
+            "GitHub App settings must be configured.*GITHUB_PRIVATE_KEY",
+        ),
+        ({"github_app_slug": None}, "GitHub App settings.*GITHUB_APP_SLUG"),
+        ({"github_client_id": None}, "GitHub App settings.*GITHUB_CLIENT_ID"),
+        ({"github_client_secret": ""}, "GitHub App settings.*GITHUB_CLIENT_SECRET"),
+        ({"github_app_id": "not-numeric"}, "GitHub App ID must be a positive integer"),
+        ({"database_url": None}, "PostgreSQL URL must be configured"),
+        (
+            {"database_url": "sqlite:///pipelens.db"},
+            "database URL must use postgresql\\+psycopg",
+        ),
+        ({"queue_backend": "memory"}, "queue backend must be redis"),
+        ({"redis_url": "http://queue/0"}, "Redis URL must use redis or rediss"),
     ],
 )
 def test_production_rejects_unsafe_security_settings(
@@ -110,26 +150,28 @@ def test_secret_file_setting_loads_from_environment(tmp_path: Path, monkeypatch)
 
 
 def test_production_validation_uses_file_injected_secrets(tmp_path: Path) -> None:
+    production_settings = _production_settings()
     secret_files: dict[str, Path] = {}
-    for name, value in {
-        "webhook_secret_file": "w" * 32,
-        "session_secret_file": "s" * 32,
-        "token_encryption_key_file": "encryption-key",
+    for value_name, file_name in {
+        "webhook_secret": "webhook_secret_file",
+        "github_private_key": "github_private_key_file",
+        "github_client_secret": "github_client_secret_file",
+        "session_secret": "session_secret_file",
+        "token_encryption_key": "token_encryption_key_file",
+        "database_url": "database_url_file",
+        "redis_url": "redis_url_file",
     }.items():
-        secret_file = tmp_path / name
-        secret_file.write_text(value, encoding="utf-8")
-        secret_files[name] = secret_file
+        secret_file = tmp_path / file_name
+        secret_file.write_text(str(production_settings.pop(value_name)), encoding="utf-8")
+        secret_files[file_name] = secret_file
 
-    settings = Settings(
-        environment="production",
-        public_url="https://pipelens.example.com",
-        session_cookie_secure=True,
-        **secret_files,
-    )
+    settings = Settings(**production_settings, **secret_files)
 
     assert settings.webhook_secret == "w" * 32
     assert settings.session_secret == "s" * 32
     assert settings.token_encryption_key == "encryption-key"
+    assert settings.database_url == "postgresql+psycopg://service:password@database/pipelens"
+    assert settings.redis_url == "redis://service:password@queue/0"
 
 
 def test_secret_value_and_file_are_mutually_exclusive(tmp_path: Path) -> None:
