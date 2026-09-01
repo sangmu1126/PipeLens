@@ -15,6 +15,8 @@
 - [GHCR 보존 정책](ghcr-retention.md): 정식 image·attestation 영구 보존과 월별 감사
 - [Worker replica drill](worker-replica-drill.md): Redis 부하, lease 장애 복구와 SLO 검증
 - [Alertmanager](alertmanager.md): Prometheus alert routing, webhook 통합 검증과 운영 채널 경계
+- [Alertmanager production 채널 증적](alertmanager-channel-drill.md): 실채널 정책·rotation·retry와
+  latency의 redacted JSON 검증
 - [비밀값과 키 교체](secrets-and-rotation.md): secret inventory, Fernet rolling rotation과 침해 대응
 - [API versioning](api-versioning.md): v1 계약, 호환성, deprecation과 OpenAPI drift gate
 - [브라우저 E2E](browser-e2e.md): Chromium OAuth·session·dashboard 인수 흐름과 외부 검증 경계

@@ -998,6 +998,20 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript 분석도 성공했다. 이 공개 실행은 합성 Grafana 복원 도구와 문서 변경의
   회귀가 없음을 증명하며 production volume 복원 결과를 대신하지 않는다.
 
+### Alertmanager production 채널 증적 계약
+
+- 기존 로컬 webhook drill은 Prometheus→Alertmanager 전달을 검증하지만 #64의 실제 receiver,
+  acknowledgement, grouping·deduplication·inhibition·silence, credential rotation과 장애 retry를
+  같은 형식으로 판정하거나 기록하지 못했다.
+- provider API를 직접 호출하지 않고 Alertmanager, incident provider와 secret manager audit log를
+  대조한 strict JSON timeline을 입력으로 받는 검증기를 추가했다. unknown field, 미래·역전 timestamp,
+  공백·query가 있는 identifier, 1 MiB 초과 입력과 입력 자체를 output으로 덮어쓰는 경로를 거부한다.
+- 결과는 group, 외부 incident ID, 사건 timestamp, delivery·acknowledgement·resolve·rotation·retry
+  latency, exercise count와 개별 판정을 남긴다. owner·escalation policy 실제 identifier는 boolean으로
+  축약하며 endpoint, token, routing key와 raw payload는 입력 계약 자체에 없다.
+- 체크인한 example과 단위 테스트는 도구 계약만 검증한다. 실제 owner·policy 승인, secret manager
+  주입, staging notification과 rotation/retry는 외부 증적이 없으므로 #64 완료로 표시하지 않았다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

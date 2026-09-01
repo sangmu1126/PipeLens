@@ -122,3 +122,7 @@ Compose 실행 뒤에는 `http://localhost:9093/-/ready`와 Alertmanager UI를 �
 
 실제 채널 증적 전에는 “Alertmanager routing 구현·로컬 webhook 검증”만 완료 상태다. 외부
 호출 채널 연결은 production secret manager와 함께 남은 작업으로 유지한다.
+
+실제 채널의 firing/resolved, grouping, deduplication, inhibition, silence, credential rotation과
+receiver retry 결과는 [production 채널 증적 drill](alertmanager-channel-drill.md)의 정규화 입력과
+검증기로 기록한다. 이 도구는 외부 호출이나 secret 주입을 대신하지 않는다.

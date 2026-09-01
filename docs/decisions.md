@@ -869,3 +869,24 @@
 - 관련: `ops/grafana/verify_restore.py`, `tests/test_grafana_restore.py`,
   [Grafana 복원 drill](grafana-restore-drill.md),
   [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).
+
+## D-060. Alertmanager 실채널 증적은 provider-neutral timeline으로 검증
+
+- 결정: Alertmanager, incident provider와 secret manager의 audit log를 운영자가 정규화한 strict
+  JSON 입력으로 받고 firing/resolved, grouping, deduplication, inhibition, silence, credential
+  rotation, receiver failure retry와 latency를 판정한다. 도구는 receiver API나 credential에 접근하지
+  않는다.
+- 이유: PagerDuty, incident.io, Slack과 webhook은 event·acknowledgement 형식이 다르지만 #64의 완료
+  invariant는 같다. 특정 provider SDK를 저장소에 결합하거나 raw payload를 증적으로 보관하면 선택을
+  선행하고 token·contact·내부 URL을 노출할 위험이 있다. 수동 체크리스트만으로는 timestamp 순서와
+  latency threshold, 실패 exercise 누락을 자동 판정할 수 없다.
+- 대안: provider별 API client 구현, screenshot과 수동 문서만 보관, Alertmanager local webhook을
+  production 증적으로 재사용, boolean self-attestation만 입력.
+- 결과: 입력은 정해진 count와 UTC timeline만 허용하고 임의 필드를 거부한다. 결과에는 group과 외부
+  incident ID, timestamp·latency·판정을 남기되 owner·policy identifier는 boolean으로 축약하고
+  endpoint·credential·raw payload는 받지 않는다. 도구와 example 통과는 실제 채널 실행이 아니므로
+  owner 승인, secret 주입 audit와 외부 incident 원본을 검토하기 전까지 #64는 열린 상태다.
+- 관련: `ops/alertmanager/verify_channel_evidence.py`,
+  `tests/test_alertmanager_channel_evidence.py`,
+  [Alertmanager production 채널 증적](alertmanager-channel-drill.md),
+  [production receiver #64](https://github.com/sangmu1126/PipeLens/issues/64).

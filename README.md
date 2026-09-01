@@ -107,7 +107,8 @@ Prometheus는 `http://localhost:9090`, Alertmanager는 `http://localhost:9093`, 
 Prometheus는 API·Worker를 각각 수집하고 서비스 중단, 분석 시작·완료 SLO 위반,
 큐 backlog 규칙을 Alertmanager로 전달합니다. 기본 receiver는 외부 호출을 보내지 않으므로
 운영 배포에서는 [Alertmanager 절차](docs/alertmanager.md)에 따라 secret manager로 조직의 알림
-채널을 연결해야 합니다.
+채널을 연결하고 [production 채널 증적 drill](docs/alertmanager-channel-drill.md)로 firing·resolved,
+억제 정책, credential rotation과 retry 결과를 기록해야 합니다.
 
 PostgreSQL·Redis 통합 테스트는 외부 서비스 URL을 명시했을 때만 실행됩니다. 마이그레이션
 실수를 방지하기 위해 데이터베이스 이름은 반드시 `_test`로 끝나야 합니다.
