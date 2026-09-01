@@ -44,6 +44,10 @@
 
 최근 검증 실행:
 
+- [`production startup 계약 PR #78`](https://github.com/sangmu1126/PipeLens/pull/78)
+- [production startup PR CI run 33468992166](https://github.com/sangmu1126/PipeLens/actions/runs/33468992166)
+- [production startup dependency review run 33468992135](https://github.com/sangmu1126/PipeLens/actions/runs/33468992135)
+- [production startup PR CodeQL run 33468992127](https://github.com/sangmu1126/PipeLens/actions/runs/33468992127)
 - [`secret file injection PR #77`](https://github.com/sangmu1126/PipeLens/pull/77)
 - [secret injection PR CI run 33468146876](https://github.com/sangmu1126/PipeLens/actions/runs/33468146876)
 - [secret injection dependency review run 33468146869](https://github.com/sangmu1126/PipeLens/actions/runs/33468146869)
