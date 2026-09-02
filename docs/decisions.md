@@ -950,3 +950,23 @@
   `ops/acceptance/verify_https_e2e_evidence.py`, `tests/test_https_e2e_evidence.py`,
   [공개 HTTPS acceptance](https-acceptance.md),
   [public HTTPS acceptance #62](https://github.com/sangmu1126/PipeLens/issues/62).
+
+## D-064. Production worker soak는 queue runner와 외부 telemetry를 hash로 결합
+
+- 결정: 기존 deterministic/rate-shaped runner는 queue invariant 측정기로 유지하고, 실제 soak의
+  resource limit·telemetry, GitHub/LLM latency·429·transient failure, 세 fault injection과 capacity
+  recommendation을 strict JSON verifier에서 함께 판정한다. runner·telemetry·provider audit 원본은
+  SHA-256으로 연결한다.
+- 이유: in-process runner에 container orchestrator, PostgreSQL, provider mock과 network control을
+  모두 결합하면 CI 회귀가 무겁고 실제 production limit 적용 여부도 증명하지 못한다. 반대로 서로
+  다른 dashboard와 수동 checklist만 남기면 같은 UTC window/source인지, lost/duplicate job과
+  resource saturation·capacity headroom이 일관되는지 자동 판정할 수 없다.
+- 대안: 합성 processing sleep을 provider 증적으로 사용, vendor load framework를 repository에 고정,
+  raw Prometheus/provider payload 업로드, CI 200-job 결과를 production capacity로 승격.
+- 결과: 최소 1시간, 양 provider의 fault 회복, worker/lease/network fault, 99% SLO attainment,
+  90% resource ceiling, exactly-once·drain과 20% capacity headroom을 기본 계약으로 둔다. credential,
+  endpoint와 raw payload는 받지 않고 owner 원문도 출력에서 제거한다. 실제 deployment limit과 원본
+  audit review가 없으면 example 통과만으로 #66을 닫지 않는다.
+- 관련: `ops/worker/verify_replica_recovery.py`, `ops/worker/verify_soak_evidence.py`,
+  `tests/test_worker_soak_evidence.py`, [worker drill](worker-replica-drill.md),
+  [production soak #66](https://github.com/sangmu1126/PipeLens/issues/66).

@@ -84,6 +84,62 @@ rate를 지정하고 burst를 생략하면 job을 하나씩 일정하게 주입�
 - stale worker가 복구 뒤 뒤늦게 재개하는 fencing은 DB attempt token 회귀 테스트가 별도로
   검증한다. 이 drill의 abandoned worker는 재개하지 않는다.
 
+## Production soak 증적 계약
+
+`verify_replica_recovery.py`의 JSON은 queue invariant와 latency의 한 입력이다. #66의 실제
+production-representative 결과는 CPU·memory·PostgreSQL·Redis telemetry, provider audit와 fault
+injection을 함께 정규화한 `ops/worker/soak-observation.example.json` 형식으로 기록한다. 체크인
+예제는 schema 설명용이며 실제 soak 결과가 아니다.
+
+사전에 다음 값을 승인된 test plan에 고정한다.
+
+- 1시간 이상의 duration, job 수, arrival rate, burst, concurrency와 worker replica 수
+- worker별 CPU·memory, PostgreSQL pool과 server max connection, Redis maxmemory
+- GitHub·LLM latency profile과 주입할 429·일시적 5xx 수
+- worker termination, expired lease와 Redis network interruption의 시점·복구 상한
+- 60초/120초 SLO, 최소 attainment, 허용 resource utilization과 capacity headroom
+
+실행 뒤 기존 runner output, 같은 UTC window의 container/DB/Redis telemetry와 provider/fault audit를
+대조한다. 세 원본 bundle은 접근 제한된 위치에 두고 lowercase SHA-256만 observation에 입력한다.
+Redis URL/password, database URL, provider endpoint/token, request·response body, repository와 job
+payload는 JSON에 넣지 않는다.
+
+```bash
+cp ops/worker/soak-observation.example.json \
+  /secure/work/worker-soak-observation.json
+
+.venv/bin/python -m ops.worker.verify_soak_evidence \
+  --input /secure/work/worker-soak-observation.json \
+  --output /secure/work/worker-soak-evidence.json
+```
+
+기본 판정은 다음을 요구한다.
+
+1. 실제·계획 duration 모두 3,600초 이상이고 arrival/burst/concurrency가 명시됨
+2. replica별 PostgreSQL pool 합계가 server max connection 이하
+3. GitHub와 LLM 각각 실제 latency 표본, 429와 transient failure 1회 이상, 모든 retry 회복
+4. worker termination·expired lease·network interruption 각각 120초 이내 회복, lost job 0
+5. 모든 job 완료, duplicate/lost 0, exactly-once와 final queue drain
+6. p95 시작 60초·완료 120초 이하와 두 SLO attainment 99% 이상
+7. CPU·memory·Redis peak 90% 이하, PostgreSQL pool/server connection budget 이하
+8. 측정 max 이하이면서 tested arrival rate 이상, 20% 이상 headroom을 둔 reviewer 승인 capacity
+   recommendation
+9. runner·telemetry·provider audit artifact의 SHA-256과 secret scan match 0
+
+승인된 운영 기준이 다르면 `--min-duration-seconds`, `--min-slo-attainment-percent`,
+`--max-resource-utilization-percent`, `--max-fault-recovery-seconds`를 명시하고 change record에 이유를
+남긴다. 기준을 느슨하게 바꾼 실행은 #66 reviewer가 acceptance와 별도로 비교해야 한다.
+
+Strict JSON은 임의 필드와 URL 형태 resource identifier를 거부한다. 유효하지만 기준을 어긴 관측은
+`passed: false`와 exit 1로 보존하고, schema·timestamp·count 관계가 신뢰 불가능하면 출력 없이
+종료한다. 결과는 owner 원문을 `owner_documented`로 축약하고 secret이나 raw artifact를 포함하지
+않는다.
+
+Reviewer는 source revision·soak ID·UTC window와 artifact hash가 원본 runner, telemetry와 provider
+audit에 일치하는지 확인한다. resource limit이 실제 container/deployment에 적용됐는지, network
+interruption이 단순 synthetic sleep이 아닌지, PostgreSQL pool과 Redis maxmemory가 관측 대상과
+같은지 검토한다. 이 원본 review와 실제 장시간 실행 전에는 #66을 닫지 않는다.
+
 ## 병합 후 기준선
 
 [main CI run 33323532906](https://github.com/sangmu1126/PipeLens/actions/runs/33323532906)의
