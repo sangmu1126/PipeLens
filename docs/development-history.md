@@ -1078,6 +1078,13 @@ Nginx는 별도 PR로 분리했다.
   bundle과 delivery ID SHA-256만 결과에 보존한다.
 - 체크인 example과 46개 집중 테스트는 schema와 판정 경계만 증명한다. 실제 public hostname,
   browser/request artifact와 restricted audit review가 없으므로 #62는 열린 상태로 유지한다.
+- [PR #87](https://github.com/sangmu1126/PipeLens/pull/87)의 첫 head에서
+  [CI run 33592675206](https://github.com/sangmu1126/PipeLens/actions/runs/33592675206)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, Python 3.15 preview, repository secret scan, dashboard와 두
+  container build를 통과했다. [Dependency Review run 33592675031](https://github.com/sangmu1126/PipeLens/actions/runs/33592675031)과
+  [CodeQL run 33592675212](https://github.com/sangmu1126/PipeLens/actions/runs/33592675212)의 Python·
+  JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서의 회귀만 확인하며 실제
+  public hostname, browser login·logout 또는 signed webhook delivery를 증명하지 않는다.
 
 ## 현재까지의 검증 방식
 
