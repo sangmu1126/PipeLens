@@ -137,7 +137,8 @@ Callback URL은 `https://<host>/auth/github/callback`, Setup URL은
 설치하고 Setup URL로 돌아오는 흐름이므로 **Request user authorization during
 installation**은 끕니다.
 공개 ingress를 연결한 뒤에는 [HTTPS acceptance preflight](docs/https-acceptance.md)로 TLS,
-HSTS, redirect, readiness와 OAuth 시작 경계를 redacted JSON으로 확인합니다.
+HSTS, redirect, readiness와 OAuth 시작 경계를 확인하고, 같은 문서의 실제 E2E 증적 단계에서
+browser login·logout, forwarding과 signed webhook 결과를 redacted JSON으로 기록합니다.
 실제 App을 테스트 저장소에 설치한 뒤의 실패 run, PR 코멘트·Commit Check, 재전달, SLO와
 외부 fork 경계는 [GitHub App E2E 증적 절차](docs/github-app-acceptance.md)에 따라 별도로 기록합니다.
 

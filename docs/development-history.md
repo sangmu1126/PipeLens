@@ -1062,6 +1062,23 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서의 회귀만 확인하며 실제
   GitHub App 설치, 실패 run 게시 또는 외부 fork 처리를 증명하지 않는다.
 
+### 실제 HTTPS OAuth·webhook 증적 계약
+
+- #62용 read-only preflight는 TLS, redirect, header, readiness와 OAuth 시작을 확인하지만 실제
+  GitHub authorization callback, installation 선택, logout, reverse-proxy forwarding과 signed
+  webhook을 같은 형식으로 판정하지 못했다.
+- production credential을 CI에 넣지 않고 운영자가 GitHub 설정, browser와 ingress/app audit를
+  대조한 strict JSON을 검증하는 두 번째 단계 도구를 추가했다. public DNS HTTPS origin과 exact
+  callback/setup/webhook URL, acceptance window와 cross-stage chronology를 강제한다.
+- browser는 login→authorization→installation→dashboard→logout, 두 cookie의
+  Secure·HttpOnly·SameSite=Lax와 logout 뒤 session 무효화를 판정한다. forwarding 관측은 실제
+  browser navigation 안에서 `https`, exact host·application origin·redirect URI와 일치해야 한다.
+- webhook은 `workflow_run.completed`, signature 검증, persistence와 HTTP 202 응답 timeline을 받고
+  기본 10초 상한을 판정한다. OAuth/cookie/signature/delivery 원문 없이 redacted screenshot·request
+  bundle과 delivery ID SHA-256만 결과에 보존한다.
+- 체크인 example과 46개 집중 테스트는 schema와 판정 경계만 증명한다. 실제 public hostname,
+  browser/request artifact와 restricted audit review가 없으므로 #62는 열린 상태로 유지한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

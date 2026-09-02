@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-02**, 변경 전 기준 main commit `50ee318`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-02**, 변경 전 기준 main commit `c89e7ba`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -39,6 +39,7 @@
 | secret manager 증적 도구 | 준비됨 | inventory·least privilege·file 주입·rotation·unavailable 대응 JSON 판정 |
 | production startup 계약 | 통과 | HTTPS origin·GitHub App·PostgreSQL psycopg·Redis queue 필수 검증 |
 | HTTPS acceptance preflight | 준비됨 | TLS·redirect·HSTS·header·readiness·OAuth 시작 redacted JSON probe |
+| HTTPS OAuth·webhook 증적 도구 | 준비됨 | 실제 browser session·forwarding·signed webhook strict JSON 판정 |
 | GitHub App E2E 증적 도구 | 준비됨 | 실제 run URL·SLO·upsert·secret scan·fork 격리 strict JSON 판정 |
 | API v1 계약 | 통과 | versioned path, legacy deprecation signal과 committed OpenAPI drift gate 통과 |
 | 정적 보안 분석 | 통과 | Python·JavaScript/TypeScript CodeQL, open alert 0 |
@@ -513,6 +514,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] GitHub App 실제 run·게시·SLO·secret·fork의 redacted machine-readable evidence 도구
 - [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62)
 - [x] 공개 HTTPS 경계의 redacted machine-readable preflight 도구
+- [x] 실제 HTTPS OAuth·session·signed webhook의 redacted machine-readable evidence 도구
 - [x] `main` PR·필수 status check
 - [x] 미래 GitHub Release의 repository 불변성 설정
 - [ ] `immutable: true`인 차기 GitHub Release와 digest-pinned production 배포
