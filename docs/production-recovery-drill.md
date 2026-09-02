@@ -69,6 +69,39 @@ Verifier는 provider, database나 Docker에 접속하지 않고 1 MiB 이하 str
 유효하지만 기준을 어긴 관측은 `passed: false` JSON과 exit 1로 보존한다. unknown field, 역전·미래
 timestamp, 잘못된 hash·count와 URL 형태 identifier는 증적 자체 오류로 보고 출력하지 않는다.
 
+## 합성 live regression gate
+
+`ops/recovery/verify-live-restore.sh`는 CI에서 현재 Compose의 digest-pinned PostgreSQL 18과 Grafana
+13 image를 사용해 두 개별 restore 실행기의 Docker 경로를 검증한다.
+
+1. 임시 PostgreSQL source에 Alembic head를 적용하고 probe relation을 넣어 custom-format backup을
+   만든 뒤 새 volume에 복원한다.
+2. 임시 Grafana source에 provisioning content와 별도 persistent folder/dashboard를 만든 뒤 중지된
+   volume archive를 새 volume에 복원한다.
+3. PostgreSQL major·Alembic head·probe count와 Grafana version·dashboard·folder·datasource·anonymous
+   access policy를 실제 API와 database에서 확인한다.
+4. 성공과 실패 모두 source·target container, volume, backup과 합성 password를 정리한다.
+
+스크립트는 두 image가 `tag@sha256` 형식인지 Docker 호출 전에 검사하고, 기존 고정 이름 resource를
+발견하면 덮어쓰지 않는다. 로컬에서 같은 gate를 실행할 때는 다음과 같이 Compose image를 전달한다.
+
+```bash
+POSTGRES_IMAGE="$(docker compose config --format json | python -c '
+import json, sys
+print(json.load(sys.stdin)["services"]["postgres"]["image"])
+')" \
+GRAFANA_IMAGE="$(docker compose config --format json | python -c '
+import json, sys
+print(json.load(sys.stdin)["services"]["grafana"]["image"])
+')" \
+GRAFANA_VERSION=13.2.0 \
+  ops/recovery/verify-live-restore.sh
+```
+
+이 gate는 restore 실행기의 real Docker integration 회귀만 증명한다. 작은 합성 backup, 고정된 120초
+RTO와 60초 RPO를 사용하며 실제 production 규모, write freeze, 승인, source 보존 cutover·rollback,
+point of no return 또는 운영 artifact review를 증명하지 않는다.
+
 ## 증적과 보안 경계
 
 - 공개 가능: verifier output, byte·duration, RTO/RPO 결과, UTC timeline, boolean과 artifact SHA-256.

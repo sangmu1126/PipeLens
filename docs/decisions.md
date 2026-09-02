@@ -988,3 +988,20 @@
 - 관련: `ops/recovery/verify_drill_evidence.py`, `tests/test_recovery_drill_evidence.py`,
   [Production 통합 recovery drill](production-recovery-drill.md),
   [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).
+
+## D-066. Restore verifier의 Docker 경로를 합성 live CI로 검증
+
+- 결정: 현재 Compose에서 읽은 digest-pinned PostgreSQL 18·Grafana 13 image로 임시 source backup을
+  만들고, 두 restore verifier가 새 volume 복원·무결성 확인·cleanup을 실제 Docker에서 수행하는 단일
+  smoke를 backend CI에 둔다.
+- 이유: mock command 테스트는 argument·판정 계약에는 강하지만 image entrypoint, volume layout,
+  archive ownership, 동적 port와 Grafana API 동작의 drift를 찾지 못한다. 반면 production backup을
+  CI에 반입하면 secret·record·보존 정책 경계를 깨뜨린다.
+- 대안: 단위 테스트만 유지, production drill에서만 실행, backup fixture를 repository 또는 CI
+  artifact로 영구 보존, 통합 verifier에 가짜 cutover·rollback 관측을 넣어 통과.
+- 결과: 매 CI에서 합성 Alembic database와 persistent Grafana content를 실제로 backup/restore한다.
+  Image 형식을 pull 전에 검사하고 기존 resource를 덮어쓰지 않으며 임시 credential·backup·volume을
+  종료 시 삭제한다. 이는 restore integration 회귀일 뿐 #63의 규모·승인·cutover·rollback 증적이
+  아니므로 production 완료 경계는 유지한다.
+- 관련: `ops/recovery/verify-live-restore.sh`, `.github/workflows/ci.yml`,
+  `tests/test_live_recovery_smoke.py`, [Production 통합 recovery drill](production-recovery-drill.md).
