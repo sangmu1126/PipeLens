@@ -1123,6 +1123,13 @@ Nginx는 별도 PR로 분리했다.
   output·cutover·rollback audit는 SHA-256만 보존한다.
 - 체크인 example과 34개 집중 테스트는 통합 계약만 증명한다. 실제 production 규모 backup,
   cutover·rollback과 제한 원본 review가 없으므로 #63은 열린 상태로 유지한다.
+- [PR #89](https://github.com/sangmu1126/PipeLens/pull/89)의 첫 head에서
+  [CI run 33596255468](https://github.com/sangmu1126/PipeLens/actions/runs/33596255468)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, Python 3.15 preview, repository secret scan, dashboard와 두
+  container build를 통과했다. [Dependency Review run 33596255458](https://github.com/sangmu1126/PipeLens/actions/runs/33596255458)과
+  [CodeQL run 33596255529](https://github.com/sangmu1126/PipeLens/actions/runs/33596255529)의 Python·
+  JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서 회귀만 확인하며 실제
+  production backup, cutover·rollback 또는 제한 원본 review를 증명하지 않는다.
 
 ## 현재까지의 검증 방식
 
