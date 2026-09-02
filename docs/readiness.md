@@ -54,6 +54,10 @@
 
 최근 검증 실행:
 
+- [`통합 production recovery evidence PR #89`](https://github.com/sangmu1126/PipeLens/pull/89)
+- [통합 recovery evidence PR CI run 33596255468](https://github.com/sangmu1126/PipeLens/actions/runs/33596255468)
+- [통합 recovery evidence dependency review run 33596255458](https://github.com/sangmu1126/PipeLens/actions/runs/33596255458)
+- [통합 recovery evidence PR CodeQL run 33596255529](https://github.com/sangmu1126/PipeLens/actions/runs/33596255529)
 - [`production worker soak evidence PR #88`](https://github.com/sangmu1126/PipeLens/pull/88)
 - [production worker soak evidence PR CI run 33594698301](https://github.com/sangmu1126/PipeLens/actions/runs/33594698301)
 - [production worker soak dependency review run 33594698371](https://github.com/sangmu1126/PipeLens/actions/runs/33594698371)
