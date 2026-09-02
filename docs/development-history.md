@@ -1131,6 +1131,21 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서 회귀만 확인하며 실제
   production backup, cutover·rollback 또는 제한 원본 review를 증명하지 않는다.
 
+### PostgreSQL·Grafana restore 실행기의 live Docker 회귀
+
+- 개별 restore 실행기는 command runner와 HTTP getter를 mock한 단위 테스트가 있었지만, 현재 image의
+  entrypoint·volume layout·archive ownership과 Grafana API까지 실제 연결하는 CI 경로는 없었다.
+- `verify-live-restore.sh`가 Compose의 digest-pinned PostgreSQL 18/Grafana 13만 허용하고, 임시 source에
+  Alembic schema·probe relation과 provisioning/persistent Grafana content를 만든 뒤 실제 backup을
+  생성한다.
+- 두 backup을 각각 새 disposable volume에 복원해 PostgreSQL major·Alembic head·count, Grafana
+  version·dashboard·folder·datasource·anonymous policy를 검사한다. 고정 이름 resource가 이미 있으면
+  중단하고 trap에서 source/target container, volume, 임시 backup과 합성 password를 정리한다.
+- 2026-09-02 Docker Desktop 29.6.2 arm64에서 최종 스크립트를 실행해 약 23초에 두 restore와 cleanup을
+  통과했다. 관련 restore·통합 evidence·shell 계약 테스트 63개도 통과했다.
+- 이 smoke는 작은 합성 데이터와 임의 RTO/RPO만 사용하고 승인·cutover·rollback을 실행하지 않는다.
+  따라서 production 규모 실행과 제한 원본 review가 필요한 #63은 계속 열린 상태다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
