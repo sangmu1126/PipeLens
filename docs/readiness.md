@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-02**, 변경 전 기준 main commit `c89e7ba`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-02**, 변경 전 기준 main commit `c6de0f9`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -26,7 +26,7 @@
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | Worker replica drill | 통과 | CI와 로컬 4 replica·200 job, orphan 1개 복구와 60초/120초 SLO 검증 |
-| Worker soak evidence 도구 | 준비됨 | rate·burst 입력, percentile·throughput·SLO 달성률 JSON 출력 |
+| Worker soak evidence 도구 | 준비됨 | load·resource·provider fault·network·SLO·capacity strict JSON 판정 |
 | PostgreSQL runtime | 통과 | CI amd64·로컬 arm64에서 18.6, 17→18 dump/restore·Alembic·integration 검증 |
 | PostgreSQL 복원 증적 도구 | 준비됨 | 격리 18 volume 복원, RTO/RPO·checksum·Alembic·대표 count JSON 출력 |
 | Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2, 12→13 volume·provisioning·Viewer 검증 |
@@ -545,6 +545,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] Grafana 13 격리 volume 복원·machine-readable evidence 도구
 - [ ] [production Grafana volume backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
 - [ ] [production 조건의 worker replica soak/load test](https://github.com/sangmu1126/PipeLens/issues/66)
+- [x] production worker soak의 resource·provider·fault·capacity machine-readable evidence 도구
 - [x] worker arrival profile과 machine-readable capacity evidence 도구
 - [x] Alertmanager routing과 로컬 webhook 통합 검증
 - [x] Alertmanager production 채널의 redacted machine-readable evidence 도구

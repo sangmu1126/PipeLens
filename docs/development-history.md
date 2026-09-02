@@ -1086,6 +1086,23 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서의 회귀만 확인하며 실제
   public hostname, browser login·logout 또는 signed webhook delivery를 증명하지 않는다.
 
+### Production worker soak 통합 증적 계약
+
+- 기존 rate-shaped runner는 arrival profile, percentile, throughput, orphan recovery와 exactly-once를
+  출력하지만 #66의 CPU·memory·PostgreSQL pool·Redis limit, provider failure, network interruption과
+  capacity recommendation을 같은 실행으로 판정하지 못했다.
+- runner를 무거운 vendor/orchestrator에 결합하지 않고, 운영자가 runner·telemetry·provider audit를
+  정규화한 strict JSON verifier를 추가했다. 최소 1시간 load profile, replica/resource budget과
+  실제 관측 peak, GitHub·LLM latency·429·transient failure/retry를 대조한다.
+- worker termination, expired lease와 network interruption의 주입·복구 timeline을 각각 검증하고
+  기본 120초 이내 회복과 lost job 0을 요구한다. 전체 결과는 duplicate/lost 0, exactly-once, queue
+  drain, p95 60초/120초와 99% attainment를 함께 만족해야 한다.
+- capacity recommendation은 measured maximum 이하, tested arrival rate 이상, 20% headroom과 reviewer
+  승인을 요구한다. owner 원문은 출력하지 않고 runner·telemetry·provider audit SHA-256과 secret scan
+  count만 남긴다.
+- 체크인 example과 40개 집중 테스트는 계약·실패 판정만 증명한다. 실제 container limits, 장시간
+  traffic, network control과 제한 원본 review가 없으므로 #66은 열린 상태로 유지한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
