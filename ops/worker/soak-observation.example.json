@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "soak_id": "worker-soak-example-20250902",
+  "source_revision": "release-example",
+  "environment": "staging-example",
+  "started_at": "2025-09-02T02:00:00Z",
+  "completed_at": "2025-09-02T04:00:00Z",
+  "load_profile": {
+    "jobs": 180000,
+    "arrival_rate_per_second": 25,
+    "burst_size": 50,
+    "concurrency": 8,
+    "planned_duration_seconds": 7200
+  },
+  "resource_limits": {
+    "worker_replicas": 8,
+    "worker_cpu_cores_each": 1,
+    "worker_memory_mib_each": 512,
+    "postgres_pool_size_each": 8,
+    "postgres_max_connections": 100,
+    "redis_maxmemory_mib": 1024
+  },
+  "provider_profile": {
+    "github": {
+      "requests": 360000,
+      "latency_p50_seconds": 0.15,
+      "latency_p95_seconds": 0.8,
+      "rate_limit_responses": 12,
+      "transient_failures": 8,
+      "retry_successes": 20
+    },
+    "llm": {
+      "requests": 180000,
+      "latency_p50_seconds": 1.2,
+      "latency_p95_seconds": 4.5,
+      "rate_limit_responses": 20,
+      "transient_failures": 10,
+      "retry_successes": 30
+    }
+  },
+  "fault_injection": {
+    "worker_termination": {
+      "injected_at": "2025-09-02T02:30:00Z",
+      "recovered_at": "2025-09-02T02:30:45Z",
+      "workers": 1,
+      "lost_jobs": 0
+    },
+    "expired_lease": {
+      "injected_at": "2025-09-02T03:00:00Z",
+      "recovered_at": "2025-09-02T03:01:00Z",
+      "recovered_jobs": 1,
+      "lost_jobs": 0
+    },
+    "network_interruption": {
+      "injected_at": "2025-09-02T03:30:00Z",
+      "recovered_at": "2025-09-02T03:31:15Z",
+      "interruptions": 1,
+      "lost_jobs": 0,
+      "target": "redis"
+    }
+  },
+  "results": {
+    "completed_jobs": 180000,
+    "throughput_jobs_per_second": 25.4,
+    "start_latency_p95_seconds": 2.5,
+    "completion_latency_p95_seconds": 8.5,
+    "start_slo_attainment_percent": 99.99,
+    "completion_slo_attainment_percent": 99.95,
+    "duplicate_completions": 0,
+    "lost_jobs": 0,
+    "exactly_once": true,
+    "queue_drained": true
+  },
+  "resource_observation": {
+    "captured_at": "2025-09-02T03:59:50Z",
+    "worker_cpu_peak_percent": 72,
+    "worker_memory_peak_percent": 68,
+    "postgres_pool_peak_connections": 58,
+    "postgres_total_peak_connections": 66,
+    "redis_memory_peak_percent": 61
+  },
+  "capacity_recommendation": {
+    "max_sustained_rate_per_second": 40,
+    "recommended_rate_per_second": 30,
+    "recommended_worker_replicas": 8,
+    "headroom_percent": 25,
+    "limiting_resource": "postgres-connections",
+    "owner": "platform-capacity",
+    "reviewed": true
+  },
+  "artifacts": {
+    "runner_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "telemetry_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "provider_audit_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "secret_scan_matches": 0
+  }
+}
