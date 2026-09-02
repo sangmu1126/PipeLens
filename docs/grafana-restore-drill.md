@@ -93,6 +93,9 @@ location에 함께 보관한다.
 
 ## 추가 확인과 rollback
 
+PostgreSQL과 함께 실제 cutover·rollback하는 상위 실행은
+[Production 통합 recovery drill](production-recovery-drill.md)에 따라 같은 drill ID로 기록한다.
+
 JSON 성공 뒤에도 실제 browser rendering, panel query, alert·annotation, SSO와 network policy를
 확인한다. datasource URL은 일치 여부만으로 부족하므로 target Prometheus 연결과 대표 query도
 별도 검증한다.

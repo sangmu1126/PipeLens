@@ -32,6 +32,8 @@
 - [PostgreSQL 복원 증적 drill](postgres-restore-drill.md): 격리 복원, RTO/RPO·무결성 JSON 증적
 - [Grafana 13 업그레이드](grafana-13-upgrade.md): volume backup, unified storage migration과 rollback
 - [Grafana 복원 증적 drill](grafana-restore-drill.md): 격리 volume 복원, content·접근 정책 JSON 증적
+- [Production 통합 recovery drill](production-recovery-drill.md): PostgreSQL·Grafana 결과 결합,
+  cutover·rollback과 point-of-no-return 증적
 - [저장소 보호와 변경 절차](repository-governance.md): `main` PR·필수 check와 운영 규칙
 
 ## 기록 원칙
