@@ -134,6 +134,23 @@ jobs:
           print(json.load(sys.stdin)["services"]["postgres"]["image"])
           ')" \
             ops/postgres/verify-major-upgrade.sh
+      - name: Verify isolated PostgreSQL and Grafana recovery smoke
+        env:
+          GRAFANA_VERSION: 13.2.0
+        run: |
+          POSTGRES_IMAGE="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["postgres"]["image"])
+          ')" \
+          GRAFANA_IMAGE="$(docker compose config --format json | python -c '
+          import json
+          import sys
+
+          print(json.load(sys.stdin)["services"]["grafana"]["image"])
+          ')" \
+            ops/recovery/verify-live-restore.sh
       - name: Start Compose PostgreSQL service
         run: |
           postgres_image="$(docker compose config --format json | python -c '

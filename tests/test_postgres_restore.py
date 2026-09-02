@@ -15,6 +15,7 @@ from ops.postgres.verify_restore import (
     run_drill,
     sha256_file,
     validate_args,
+    wait_for_postgres,
 )
 
 PINNED_IMAGE = "postgres:18-alpine@sha256:" + "a" * 64
@@ -121,6 +122,23 @@ def test_validate_args_rejects_mutable_image_and_duplicate_relations(tmp_path: P
         validate_args(args)
 
 
+def test_wait_for_postgres_rejects_transient_init_server(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    commands: list[list[str]] = []
+
+    def fake_runner(command: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="temporary server ready\n", stderr="")
+
+    monkeypatch.setattr("ops.postgres.verify_restore.time.sleep", lambda _: None)
+
+    with pytest.raises(RuntimeError, match="did not finish initialization"):
+        wait_for_postgres("restore-target", "pipelens", "pipelens", fake_runner, attempts=1)
+
+    assert not any(command[1] == "exec" for command in commands)
+
+
 def test_run_drill_emits_redacted_evidence_and_cleans_target(tmp_path: Path) -> None:
     backup = tmp_path / "production.dump"
     password = tmp_path / "password"
@@ -170,6 +188,8 @@ def test_run_drill_emits_redacted_evidence_and_cleans_target(tmp_path: Path) -> 
             volumes.add(command[3])
         elif command[1:3] == ["run", "--detach"]:
             containers.add(command[command.index("--name") + 1])
+        elif command[1] == "logs":
+            stdout = "PostgreSQL init process complete; ready for start up.\n"
         elif command[1:3] == ["rm", "--force"]:
             containers.remove(command[3])
         elif command[1:4] == ["volume", "rm", "pipelens-postgres-restore-production-test-data"]:
