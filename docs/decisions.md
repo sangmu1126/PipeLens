@@ -970,3 +970,21 @@
 - 관련: `ops/worker/verify_replica_recovery.py`, `ops/worker/verify_soak_evidence.py`,
   `tests/test_worker_soak_evidence.py`, [worker drill](worker-replica-drill.md),
   [production soak #66](https://github.com/sangmu1126/PipeLens/issues/66).
+
+## D-065. Service별 restore output 위에 cutover·rollback 통합 증적을 둠
+
+- 결정: PostgreSQL과 Grafana 개별 verifier는 격리 restore·무결성 책임을 유지하고, 상위 strict JSON
+  verifier가 두 output SHA-256, 대표 규모·RTO/RPO, 승인된 cutover, 보존 source rollback과 point of
+  no return을 같은 drill window에서 판정한다.
+- 이유: 개별 restore 성공은 source로 돌아갈 수 있는지나 두 service가 같은 revision으로 복구됐는지
+  증명하지 않는다. 반대로 상위 도구가 backup을 직접 restore하면 이미 검증된 archive 안전성,
+  Alembic/content/access 검사를 중복하고 production resource를 잘못 선택할 위험이 커진다.
+- 대안: 두 JSON을 수동 첨부, production source에 in-place rollback, rollback 없는 restore-only 완료,
+  raw backup·audit를 repository artifact로 업로드.
+- 결과: representative minimum, service별 RTO·공통 RPO, source 보존, cutover 승인, rollback integrity와
+  client smoke를 요구한다. point of no return을 넘기면 reconciliation review 없이는 실패한다.
+  Approver와 resource 경로·credential은 출력하지 않고 제한 원본을 SHA-256으로 연결한다. 실제
+  production 규모 실행과 원본 review 전까지 example 통과만으로 #63을 닫지 않는다.
+- 관련: `ops/recovery/verify_drill_evidence.py`, `tests/test_recovery_drill_evidence.py`,
+  [Production 통합 recovery drill](production-recovery-drill.md),
+  [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).

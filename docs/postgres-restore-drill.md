@@ -90,6 +90,9 @@ JSON 성공만으로 service 복구가 끝난 것은 아니다. 다음을 같은
 
 ## Rollback과 point of no return
 
+두 service를 실제 cutover·rollback하는 상위 실행은
+[Production 통합 recovery drill](production-recovery-drill.md)에 따라 같은 drill ID로 기록한다.
+
 이 실행기는 격리 target을 production에 연결하지 않으므로 자체 point of no return은 없다. 실제
 cutover에서는 restored PostgreSQL 18에 API나 worker가 첫 쓰기를 수행하는 순간 source volume만으로
 무손실 rollback할 수 없게 된다. 그 전에 target을 폐기하면 source stack을 그대로 다시 열 수 있다.

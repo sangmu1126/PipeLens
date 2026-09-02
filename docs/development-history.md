@@ -1110,6 +1110,20 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서 회귀만 확인하며 실제
   장시간 load, resource limit, provider failure나 network interruption을 증명하지 않는다.
 
+### PostgreSQL·Grafana 통합 recovery와 rollback 증적 계약
+
+- 기존 개별 restore verifier는 격리 target에서 RTO/RPO와 integrity를 확인하지만, 두 결과가 같은
+  source revision/window인지, cutover 뒤 보존 source로 실제 rollback했는지 한 번에 판정하지 못했다.
+- 개별 도구를 중복 실행하지 않고 output SHA-256, representative minimum byte, backup/restore/recovery
+  duration, service별 RTO와 공통 RPO를 strict JSON으로 결합하는 상위 verifier를 추가했다.
+- 시간순 approval→cutover→rollback을 강제하고, 보존 PostgreSQL/Grafana source 사용, DB integrity,
+  Grafana content·access policy와 client smoke 재검증을 rollback RTO 안에 요구한다.
+- Point of no return 조건을 non-secret identifier로 기록한다. 조건을 넘긴 rollback은 변경분
+  reconciliation plan이 review되지 않으면 실패한다. Approver 원문은 boolean으로 축약하고 개별
+  output·cutover·rollback audit는 SHA-256만 보존한다.
+- 체크인 example과 34개 집중 테스트는 통합 계약만 증명한다. 실제 production 규모 backup,
+  cutover·rollback과 제한 원본 review가 없으므로 #63은 열린 상태로 유지한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
