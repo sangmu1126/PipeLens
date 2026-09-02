@@ -1102,6 +1102,13 @@ Nginx는 별도 PR로 분리했다.
   count만 남긴다.
 - 체크인 example과 40개 집중 테스트는 계약·실패 판정만 증명한다. 실제 container limits, 장시간
   traffic, network control과 제한 원본 review가 없으므로 #66은 열린 상태로 유지한다.
+- [PR #88](https://github.com/sangmu1126/PipeLens/pull/88)의 첫 head에서
+  [CI run 33594698301](https://github.com/sangmu1126/PipeLens/actions/runs/33594698301)은 Python 3.12
+  전체 테스트, Python 3.14 호환성, Python 3.15 preview, repository secret scan, dashboard와 두
+  container build를 통과했다. [Dependency Review run 33594698371](https://github.com/sangmu1126/PipeLens/actions/runs/33594698371)과
+  [CodeQL run 33594698619](https://github.com/sangmu1126/PipeLens/actions/runs/33594698619)의 Python·
+  JavaScript/TypeScript 분석도 성공했다. 이 공개 CI는 verifier와 문서 회귀만 확인하며 실제
+  장시간 load, resource limit, provider failure나 network interruption을 증명하지 않는다.
 
 ## 현재까지의 검증 방식
 

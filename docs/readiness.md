@@ -53,6 +53,10 @@
 
 최근 검증 실행:
 
+- [`production worker soak evidence PR #88`](https://github.com/sangmu1126/PipeLens/pull/88)
+- [production worker soak evidence PR CI run 33594698301](https://github.com/sangmu1126/PipeLens/actions/runs/33594698301)
+- [production worker soak dependency review run 33594698371](https://github.com/sangmu1126/PipeLens/actions/runs/33594698371)
+- [production worker soak PR CodeQL run 33594698619](https://github.com/sangmu1126/PipeLens/actions/runs/33594698619)
 - [`HTTPS E2E evidence PR #87`](https://github.com/sangmu1126/PipeLens/pull/87)
 - [HTTPS E2E evidence PR CI run 33592675206](https://github.com/sangmu1126/PipeLens/actions/runs/33592675206)
 - [HTTPS E2E evidence dependency review run 33592675031](https://github.com/sangmu1126/PipeLens/actions/runs/33592675031)
