@@ -53,6 +53,10 @@
 
 최근 검증 실행:
 
+- [`HTTPS E2E evidence PR #87`](https://github.com/sangmu1126/PipeLens/pull/87)
+- [HTTPS E2E evidence PR CI run 33592675206](https://github.com/sangmu1126/PipeLens/actions/runs/33592675206)
+- [HTTPS E2E evidence dependency review run 33592675031](https://github.com/sangmu1126/PipeLens/actions/runs/33592675031)
+- [HTTPS E2E evidence PR CodeQL run 33592675212](https://github.com/sangmu1126/PipeLens/actions/runs/33592675212)
 - [`GitHub App acceptance evidence PR #86`](https://github.com/sangmu1126/PipeLens/pull/86)
 - [GitHub App acceptance evidence PR CI run 33558346922](https://github.com/sangmu1126/PipeLens/actions/runs/33558346922)
 - [GitHub App acceptance evidence dependency review run 33558347165](https://github.com/sangmu1126/PipeLens/actions/runs/33558347165)
