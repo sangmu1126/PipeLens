@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "acceptance_id": "https-e2e-example-20250902",
+  "source_revision": "release-example",
+  "environment": "staging-example",
+  "origin": "https://pipelens.example.com",
+  "started_at": "2025-09-02T01:00:00Z",
+  "completed_at": "2025-09-02T01:10:00Z",
+  "preflight": {
+    "evidence_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "checked_at": "2025-09-02T01:00:10Z",
+    "origin": "https://pipelens.example.com",
+    "passed": true
+  },
+  "configured_urls": {
+    "oauth_callback": "https://pipelens.example.com/auth/github/callback",
+    "setup": "https://pipelens.example.com/github/setup",
+    "webhook": "https://pipelens.example.com/webhooks/github"
+  },
+  "browser_flow": {
+    "started_at": "2025-09-02T01:01:00Z",
+    "oauth_authorized_at": "2025-09-02T01:01:20Z",
+    "installation_selected_at": "2025-09-02T01:01:30Z",
+    "dashboard_loaded_at": "2025-09-02T01:01:40Z",
+    "logout_completed_at": "2025-09-02T01:02:00Z",
+    "captured_at": "2025-09-02T01:02:05Z",
+    "installation_count": 1,
+    "oauth_state_cookie": {
+      "secure": true,
+      "httponly": true,
+      "samesite": "lax"
+    },
+    "session_cookie": {
+      "secure": true,
+      "httponly": true,
+      "samesite": "lax"
+    },
+    "session_invalid_after_logout": true,
+    "screenshot_evidence_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "forwarding": {
+    "checked_at": "2025-09-02T01:01:25Z",
+    "observed_scheme": "https",
+    "observed_host": "pipelens.example.com",
+    "application_origin": "https://pipelens.example.com",
+    "oauth_redirect_uri": "https://pipelens.example.com/auth/github/callback",
+    "request_evidence_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "webhook": {
+    "event": "workflow_run",
+    "action": "completed",
+    "delivery_id_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "received_at": "2025-09-02T01:04:00Z",
+    "signature_verified_at": "2025-09-02T01:04:00.100Z",
+    "persisted_at": "2025-09-02T01:04:00.300Z",
+    "responded_at": "2025-09-02T01:04:00.500Z",
+    "signature_valid": true,
+    "response_status_code": 202,
+    "request_evidence_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+  }
+}
