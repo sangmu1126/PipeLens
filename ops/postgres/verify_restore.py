@@ -146,7 +146,15 @@ def wait_for_postgres(
     *,
     attempts: int = 90,
 ) -> None:
+    last_logs = ""
     for _ in range(attempts):
+        logs_result = runner(
+            ["docker", "logs", container], check=False, capture_output=True, text=True
+        )
+        last_logs = logs_result.stdout + logs_result.stderr
+        if "PostgreSQL init process complete; ready for start up." not in last_logs:
+            time.sleep(1)
+            continue
         result = runner(
             ["docker", "exec", container, "pg_isready", "-U", database_user, "-d", database],
             check=False,
@@ -156,10 +164,7 @@ def wait_for_postgres(
         if result.returncode == 0:
             return
         time.sleep(1)
-    logs = runner(
-        ["docker", "logs", container], check=False, capture_output=True, text=True
-    ).stdout
-    raise RuntimeError(f"PostgreSQL did not become ready: {logs[-2000:]}")
+    raise RuntimeError(f"PostgreSQL did not finish initialization: {last_logs[-2000:]}")
 
 
 def cleanup(container: str, volume: str, runner: CommandRunner) -> None:
@@ -244,7 +249,7 @@ def run_drill(
             text=True,
         )
         restore_started = time.monotonic()
-        runner(
+        restore_result = runner(
             [
                 "docker",
                 "exec",
@@ -259,10 +264,13 @@ def run_drill(
                 "--exit-on-error",
                 "/evidence/backup.dump",
             ],
-            check=True,
+            check=False,
             capture_output=True,
             text=True,
         )
+        if restore_result.returncode != 0:
+            detail = (restore_result.stderr or restore_result.stdout).strip()
+            raise RuntimeError(f"pg_restore failed: {detail[-2000:]}")
         restore_seconds = time.monotonic() - restore_started
 
         server_version_num = int(
