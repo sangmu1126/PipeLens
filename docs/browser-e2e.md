@@ -19,7 +19,8 @@ GitHub 운영 계정과 자격증명은 사용하지 않는다. `ops/browser_e2e
 6. logout 뒤 session cookie 삭제와 로그인 화면 복귀
 
 실제 `github.com`, production HTTPS, Secure cookie와 실제 GitHub App 설치는 검증하지 않는다.
-이 항목은 공개 환경의 P0 인수 테스트로 계속 관리한다.
+이 항목은 [공개 HTTPS acceptance](https-acceptance.md)의 실제 E2E 증적과 공개 환경 P0 인수
+테스트로 계속 관리한다.
 
 ## 로컬 실행
 

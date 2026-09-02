@@ -929,3 +929,24 @@
   `tests/test_github_app_acceptance_evidence.py`,
   [실제 GitHub App E2E 증적](github-app-acceptance.md),
   [GitHub App acceptance #61](https://github.com/sangmu1126/PipeLens/issues/61).
+
+## D-063. Public HTTPS preflight와 credential-bearing E2E의 수집·판정을 분리
+
+- 결정: 기존 read-only network preflight는 TLS·redirect·header·OAuth 시작 검증으로 유지하고,
+  실제 GitHub browser와 signed webhook 결과는 운영자가 strict JSON으로 정규화해 별도 검증한다.
+  public origin, endpoint, 상태·UTC timeline은 보존하되 screenshot/request와 delivery ID는 SHA-256만
+  입력한다.
+- 이유: verifier가 OAuth authorization code, cookie나 webhook secret을 받아 외부 흐름을 자동화하면
+  credential이 CI와 artifact에 유입되고 실제 계정·ingress 소유권도 침범한다. 반대로 screenshot
+  checklist만 두면 callback/setup/webhook URL, cookie flag, forwarded scheme·host와 HMAC timeline의
+  상호 일관성을 자동 판정할 수 없다.
+- 대안: preflight 성공을 #62 완료로 간주, production credential을 GitHub Actions에 주입한 browser
+  test, raw Playwright trace·delivery body 업로드, #61 GitHub App workflow 진단과 하나의 schema로 결합.
+- 결과: public DNS origin과 exact endpoint, login→logout chronology, cookie 보안, forwarding,
+  `workflow_run.completed` HMAC·202 응답을 검증한다. credential·query URL, IP/local host, unknown field와
+  raw 민감값용 필드를 거부한다. 실제 artifact와 private audit review 전까지 example 통과만으로
+  #62를 닫지 않으며 workflow 진단·게시 assertion은 #61에 남긴다.
+- 관련: `ops/acceptance/verify_https.py`,
+  `ops/acceptance/verify_https_e2e_evidence.py`, `tests/test_https_e2e_evidence.py`,
+  [공개 HTTPS acceptance](https-acceptance.md),
+  [public HTTPS acceptance #62](https://github.com/sangmu1126/PipeLens/issues/62).
