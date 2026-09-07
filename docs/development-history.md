@@ -1175,6 +1175,14 @@ Nginx는 별도 PR로 분리했다.
   통과했다. [Dependency Review run 34126016346](https://github.com/sangmu1126/PipeLens/actions/runs/34126016346)과
   [CodeQL run 34126016309](https://github.com/sangmu1126/PipeLens/actions/runs/34126016309)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
+- #98 병합 뒤 #97을 최신 main으로 rebase하고 운영 절차의 현재 image 예제와 health 기대값을 13.2.1로
+  맞췄다. Docker Desktop에서 13.2.1 live recovery와 전체 401개 테스트(`2 skipped`)를 통과했다.
+  [PR #97](https://github.com/sangmu1126/PipeLens/pull/97)의
+  [CI run 34130828628](https://github.com/sangmu1126/PipeLens/actions/runs/34130828628)은 실제
+  12.1.0→13.2.1 upgrade와 13.2.1 restore smoke를 포함한 모든 job을 통과했다.
+  [Dependency Review run 34130828593](https://github.com/sangmu1126/PipeLens/actions/runs/34130828593)과
+  [CodeQL run 34130828586](https://github.com/sangmu1126/PipeLens/actions/runs/34130828586)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
 
 ## 현재까지의 검증 방식
 
