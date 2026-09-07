@@ -1156,6 +1156,21 @@ Nginx는 별도 PR로 분리했다.
 - 이 smoke는 작은 합성 데이터와 임의 RTO/RPO만 사용하고 승인·cutover·rollback을 실행하지 않는다.
   따라서 production 규모 실행과 제한 원본 review가 필요한 #63은 계속 열린 상태다.
 
+### Grafana patch update의 CI version drift 제거
+
+- Dependabot PR #97은 Compose의 Grafana image를 13.2.0에서 13.2.1로 갱신했지만, backend CI의
+  major-upgrade와 live-recovery 단계는 기대 version을 각각 `13.2.0`으로 별도 고정하고 있었다.
+  새 Grafana가 정상 기동해도 `/api/health` version 비교가 계속 실패해 timeout에 도달하는 구조였다.
+- Compose image reference를 유일한 현재 version source로 정했다. 새 parser는
+  `grafana/grafana:MAJOR.MINOR.PATCH@sha256:DIGEST` 형식만 허용하고, CI가 추출한 version을 두 Docker
+  검증기에 전달한다. 따라서 tag와 digest 고정 정책을 유지하면서 patch update 때 기대값이 함께
+  이동한다. `latest`, digest 없는 image, 다른 repository와 잘못된 digest는 즉시 거부한다.
+- 2026-09-07 Docker Desktop에서 현재 13.2.0 image로 12.1.0→13.2.0 upgrade와 PostgreSQL/Grafana
+  live recovery를 통과했다. PR #97의 실제 13.2.1 digest로도 persistent database migration, 기존·probe
+  dashboard와 datasource 검증을 포함한 12.1.0→13.2.1 upgrade를 통과했다.
+- parser 회귀를 포함한 집중 테스트 23개, 전체 테스트 401개(`2 skipped`), Ruff와 workflow YAML
+  parsing이 통과했다. 공개 runner 결과는 이 변경의 PR CI에서 별도로 확인한다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
