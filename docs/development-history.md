@@ -1184,6 +1184,19 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34130828586](https://github.com/sangmu1126/PipeLens/actions/runs/34130828586)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### Ruff 0.16.6 유지보수
+
+- Dependabot PR #91을 최신 main으로 rebase해 개발 의존성의 Ruff 최소 버전만 0.16.5에서 0.16.6으로
+  올렸다. 설정이나 선택 규칙은 바꾸지 않았고, 기존 0.16.5 표기는 당시 검증 이력이므로 보존했다.
+- Python 3.14 로컬 가상환경에 실제 Ruff 0.16.6을 설치해 저장소 전체 lint와 전체 401개 테스트
+  (`2 skipped`)를 통과했다. 새 버전에서 추가 수정이나 예외 설정은 필요하지 않았다.
+- [PR #91](https://github.com/sangmu1126/PipeLens/pull/91)의
+  [CI run 34132487879](https://github.com/sangmu1126/PipeLens/actions/runs/34132487879)은 Ruff 0.16.6 lint,
+  backend와 dashboard, Python compatibility, 두 container build와 secret scan을 모두 통과했다.
+  [Dependency Review run 34132487875](https://github.com/sangmu1126/PipeLens/actions/runs/34132487875)과
+  [CodeQL run 34132487888](https://github.com/sangmu1126/PipeLens/actions/runs/34132487888)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
