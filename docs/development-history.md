@@ -1247,6 +1247,25 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34136040259](https://github.com/sangmu1126/PipeLens/actions/runs/34136040259)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### dashboard minor·patch 의존성 유지보수
+
+- Dependabot PR #93이 `@vitejs/plugin-react` 6.1.0→6.1.1,
+  `@testing-library/user-event` 14.6.6→14.6.7과 `@types/react-dom` lockfile 버전
+  19.2.5→19.2.7을 함께 갱신했다. package 선언과 lockfile의 해당 package metadata만 바뀌었으며
+  전이 의존성이나 application source 변경은 없었다.
+- Vite 설정은 `react()` 기본값만 사용하므로 plugin-react 6.1.1에서 바뀐 React Compiler 진단 logging과
+  experimental `builder.sharedPlugins` sourcemap 경로를 활성화하지 않는다. user-event는 실제 dashboard
+  상호작용 단위 테스트에서, react-dom type은 TypeScript production build에서 호환성을 확인했다.
+- Node 24.19.0과 npm 11.17.0에서 깨끗한 `npm ci`로 세 목표 버전이 설치됨을 확인했고 npm audit는
+  알려진 취약점 0개였다. Vitest 4개, Chromium OAuth·dashboard·logout E2E 1개와 Vite 8.2.2
+  production build가 모두 통과했다.
+- [PR #93](https://github.com/sangmu1126/PipeLens/pull/93)의
+  [CI run 34137314746](https://github.com/sangmu1126/PipeLens/actions/runs/34137314746)은 dashboard 단위·E2E·
+  production build와 두 container build, backend·Python compatibility·secret scan을 모두 통과했다.
+  [Dependency Review run 34137314716](https://github.com/sangmu1126/PipeLens/actions/runs/34137314716)과
+  [CodeQL run 34137314750](https://github.com/sangmu1126/PipeLens/actions/runs/34137314750)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
