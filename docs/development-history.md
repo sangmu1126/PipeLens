@@ -1266,6 +1266,26 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34137314750](https://github.com/sangmu1126/PipeLens/actions/runs/34137314750)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### Vitest 5 메이저 업데이트
+
+- Dependabot PR #94가 dashboard test runner를 Vitest 4.1.11에서 5.0.0으로 올렸다. application source와
+  test source는 바꾸지 않았고, Vitest 내부 package 통합에 따른 lockfile 전이 의존성 정리가 함께
+  반영됐다.
+- Vitest 5가 요구하는 Node `^22.12 || ^24 || >=26`과 Vite 6.4 이상 조건은 프로젝트의 Node
+  `^22.13 || ^24`, CI Node 22와 Vite 8.2.2가 충족한다. 저장소는 제거된 `sequential` option,
+  `test.each/for` title interpolation, Vitest `expect.poll`, browser·coverage·benchmark·reporter API를
+  사용하지 않는다. Playwright E2E의 `expect.poll`은 별도 `@playwright/test` API다.
+- Vitest 5의 mock 초기화 기본값 변경과 별개로 test setup은 매 test 뒤 `restoreAllMocks`와
+  `unstubAllGlobals`를 명시적으로 호출한다. 새 static test discovery로 4개 test가 수집됐고 같은
+  4개 test, Chromium OAuth·dashboard·logout E2E 1개와 TypeScript/Vite production build가 통과했다.
+  Node 24.19.0에서 실제 Vitest 5.0.0 설치와 npm audit 취약점 0개도 확인했다.
+- [PR #94](https://github.com/sangmu1126/PipeLens/pull/94)의
+  [CI run 34138014378](https://github.com/sangmu1126/PipeLens/actions/runs/34138014378)은 CI Node 22에서
+  dashboard 단위·E2E·production build, 두 container build와 전체 backend gate를 모두 통과했다.
+  [Dependency Review run 34138014467](https://github.com/sangmu1126/PipeLens/actions/runs/34138014467)과
+  [CodeQL run 34138014361](https://github.com/sangmu1126/PipeLens/actions/runs/34138014361)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
