@@ -114,14 +114,18 @@ jobs:
         env:
           GRAFANA_PREVIOUS_IMAGE: grafana/grafana:12.1.0@sha256:6ac590e7cabc2fbe8d7b8fc1ce9c9f0582177b334e0df9c927ebd9670469440f
           GRAFANA_PREVIOUS_VERSION: 12.1.0
-          GRAFANA_CURRENT_VERSION: 13.2.0
         run: |
-          GRAFANA_CURRENT_IMAGE="$(docker compose config --format json | python -c '
+          grafana_current_image="$(docker compose config --format json | python -c '
           import json
           import sys
 
           print(json.load(sys.stdin)["services"]["grafana"]["image"])
-          ')" \
+          ')"
+          grafana_current_version="$(
+            python -m ops.grafana.image_version "$grafana_current_image"
+          )"
+          GRAFANA_CURRENT_IMAGE="$grafana_current_image" \
+          GRAFANA_CURRENT_VERSION="$grafana_current_version" \
             ops/grafana/verify-major-upgrade.sh
       - name: Verify PostgreSQL 17 to 18 upgrade
         env:
@@ -135,21 +139,23 @@ jobs:
           ')" \
             ops/postgres/verify-major-upgrade.sh
       - name: Verify isolated PostgreSQL and Grafana recovery smoke
-        env:
-          GRAFANA_VERSION: 13.2.0
         run: |
-          POSTGRES_IMAGE="$(docker compose config --format json | python -c '
+          postgres_image="$(docker compose config --format json | python -c '
           import json
           import sys
 
           print(json.load(sys.stdin)["services"]["postgres"]["image"])
-          ')" \
-          GRAFANA_IMAGE="$(docker compose config --format json | python -c '
+          ')"
+          grafana_image="$(docker compose config --format json | python -c '
           import json
           import sys
 
           print(json.load(sys.stdin)["services"]["grafana"]["image"])
-          ')" \
+          ')"
+          grafana_version="$(python -m ops.grafana.image_version "$grafana_image")"
+          POSTGRES_IMAGE="$postgres_image" \
+          GRAFANA_IMAGE="$grafana_image" \
+          GRAFANA_VERSION="$grafana_version" \
             ops/recovery/verify-live-restore.sh
       - name: Start Compose PostgreSQL service
         run: |
