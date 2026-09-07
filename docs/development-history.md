@@ -1212,6 +1212,22 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34133176325](https://github.com/sangmu1126/PipeLens/actions/runs/34133176325)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### Python 3.14 slim base image digest 갱신
+
+- Dependabot PR #95가 API Dockerfile의 `python:3.14-slim` tag는 유지하고 manifest-list digest를
+  `656d12e…`에서 `cad9a2c…`로 갱신했다. application source와 build 절차는 바꾸지 않았다.
+- registry manifest에서 새 digest가 Python 3.14.7 slim-trixie이며 Linux amd64와 arm64를 포함함을
+  확인했다. Docker Desktop arm64에서 새 base로 API image를 build해 최종 architecture `arm64`,
+  runtime user `pipelens`, Python 3.14.7과 `/readyz` 성공을 확인했다.
+- Dockerfile pinning verifier, Ruff와 전체 401개 테스트(`2 skipped`)가 통과했고, 새 base build 중
+  Debian package upgrade 대상은 없었다.
+- [PR #95](https://github.com/sangmu1126/PipeLens/pull/95)의
+  [CI run 34135194391](https://github.com/sangmu1126/PipeLens/actions/runs/34135194391)은 amd64 API image
+  build·취약점 scan·SBOM·non-root runtime·readiness smoke와 전체 backend·dashboard gate를 통과했다.
+  [Dependency Review run 34135194359](https://github.com/sangmu1126/PipeLens/actions/runs/34135194359)과
+  [CodeQL run 34135194383](https://github.com/sangmu1126/PipeLens/actions/runs/34135194383)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
