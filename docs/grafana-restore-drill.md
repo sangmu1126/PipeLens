@@ -30,7 +30,7 @@ grafana_volume=<승인된-volume-name>
 docker run --rm --user 0 --entrypoint tar \
   --mount "type=volume,source=$grafana_volume,target=/source,readonly" \
   --mount "type=bind,source=/approved/backup,target=/backup" \
-  'grafana/grafana:13.2.0@sha256:<64-hex-digest>' \
+  'grafana/grafana:13.2.1@sha256:<64-hex-digest>' \
   -czf /backup/grafana-data.tgz -C /source .
 ```
 
@@ -59,8 +59,8 @@ provisioning과 별도 persistent probe를 함께 확인한다.
 
 ```bash
 .venv/bin/python ops/grafana/verify_restore.py \
-  --image 'grafana/grafana:13.2.0@sha256:<64-hex-digest>' \
-  --expected-version 13.2.0 \
+  --image 'grafana/grafana:13.2.1@sha256:<64-hex-digest>' \
+  --expected-version 13.2.1 \
   --backup /approved/backup/grafana-data.tgz \
   --admin-user '<server-admin-user>' \
   --admin-password-file /run/secrets/grafana-admin-password \
