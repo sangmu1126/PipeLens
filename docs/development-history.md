@@ -1197,6 +1197,21 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34132487888](https://github.com/sangmu1126/PipeLens/actions/runs/34132487888)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### psycopg 3.3.5 유지보수
+
+- Dependabot PR #92가 런타임 `psycopg[binary]` 최소 버전을 3.3.4에서 3.3.5로 올렸다. 테스트 fixture의
+  3.3.4 문자열은 과거 설치 실패 로그를 분류하는 입력이고 readiness의 표기도 당시 검증 이력이므로
+  현재 의존성 버전에 맞춰 바꾸지 않았다.
+- Python 3.14 arm64 로컬 가상환경에 psycopg와 psycopg-binary 3.3.5 wheel을 설치해 `binary` 구현이
+  선택됨을 확인했다. Ruff, 전체 401개 테스트(`2 skipped`)와 격리 PostgreSQL 18·Redis 통합 테스트
+  2개가 통과했으며 별도 application code 수정은 필요하지 않았다.
+- [PR #92](https://github.com/sangmu1126/PipeLens/pull/92)의
+  [CI run 34133176306](https://github.com/sangmu1126/PipeLens/actions/runs/34133176306)은 실제 PostgreSQL·
+  Redis integration, upgrade·recovery gate, backend와 dashboard, 두 container build와 compatibility를
+  모두 통과했다. [Dependency Review run 34133176304](https://github.com/sangmu1126/PipeLens/actions/runs/34133176304)과
+  [CodeQL run 34133176325](https://github.com/sangmu1126/PipeLens/actions/runs/34133176325)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
