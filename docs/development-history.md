@@ -1169,7 +1169,12 @@ Nginx는 별도 PR로 분리했다.
   live recovery를 통과했다. PR #97의 실제 13.2.1 digest로도 persistent database migration, 기존·probe
   dashboard와 datasource 검증을 포함한 12.1.0→13.2.1 upgrade를 통과했다.
 - parser 회귀를 포함한 집중 테스트 23개, 전체 테스트 401개(`2 skipped`), Ruff와 workflow YAML
-  parsing이 통과했다. 공개 runner 결과는 이 변경의 PR CI에서 별도로 확인한다.
+  parsing이 통과했다. [PR #98](https://github.com/sangmu1126/PipeLens/pull/98)의
+  [CI run 34126016313](https://github.com/sangmu1126/PipeLens/actions/runs/34126016313)은 변경된 두 Docker
+  gate를 포함한 backend와 dashboard, Python compatibility, 두 container build, secret scan을 모두
+  통과했다. [Dependency Review run 34126016346](https://github.com/sangmu1126/PipeLens/actions/runs/34126016346)과
+  [CodeQL run 34126016309](https://github.com/sangmu1126/PipeLens/actions/runs/34126016309)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
 
 ## 현재까지의 검증 방식
 
