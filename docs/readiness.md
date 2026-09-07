@@ -55,6 +55,10 @@
 
 최근 검증 실행:
 
+- [`live recovery smoke PR #90`](https://github.com/sangmu1126/PipeLens/pull/90)
+- [live recovery smoke 수정 후 PR CI run 33600426052](https://github.com/sangmu1126/PipeLens/actions/runs/33600426052)
+- [live recovery smoke dependency review run 33600426027](https://github.com/sangmu1126/PipeLens/actions/runs/33600426027)
+- [live recovery smoke PR CodeQL run 33600425991](https://github.com/sangmu1126/PipeLens/actions/runs/33600425991)
 - [`통합 production recovery evidence PR #89`](https://github.com/sangmu1126/PipeLens/pull/89)
 - [통합 recovery evidence PR CI run 33596255468](https://github.com/sangmu1126/PipeLens/actions/runs/33596255468)
 - [통합 recovery evidence dependency review run 33596255458](https://github.com/sangmu1126/PipeLens/actions/runs/33596255458)

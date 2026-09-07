@@ -1142,7 +1142,17 @@ Nginx는 별도 PR로 분리했다.
   version·dashboard·folder·datasource·anonymous policy를 검사한다. 고정 이름 resource가 이미 있으면
   중단하고 trap에서 source/target container, volume, 임시 backup과 합성 password를 정리한다.
 - 2026-09-02 Docker Desktop 29.6.2 arm64에서 최종 스크립트를 실행해 약 23초에 두 restore와 cleanup을
-  통과했다. 관련 restore·통합 evidence·shell 계약 테스트 63개도 통과했다.
+  통과했다. 관련 restore·통합 evidence·shell 계약 테스트 64개와 전체 396개 테스트도 통과했다.
+- [PR #90](https://github.com/sangmu1126/PipeLens/pull/90)의 첫
+  [CI run 33600088785](https://github.com/sangmu1126/PipeLens/actions/runs/33600088785)은 빠른 Linux
+  runner에서 PostgreSQL init의 임시 server `pg_isready`를 최종 readiness로 오인해 `pg_restore`가
+  실패했다. Restore 실행기를 최종 init 완료 로그와 readiness를 함께 요구하도록 고치고, 실패한
+  `pg_restore` stderr를 2,000자로 제한해 진단에 포함했다.
+- 수정 후 [CI run 33600426052](https://github.com/sangmu1126/PipeLens/actions/runs/33600426052)은 Linux
+  amd64에서 실제 PostgreSQL·Grafana backup/restore smoke를 포함한 backend와 나머지 CI job을 모두
+  통과했다. [Dependency Review run 33600426027](https://github.com/sangmu1126/PipeLens/actions/runs/33600426027)과
+  [CodeQL run 33600425991](https://github.com/sangmu1126/PipeLens/actions/runs/33600425991)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
 - 이 smoke는 작은 합성 데이터와 임의 RTO/RPO만 사용하고 승인·cutover·rollback을 실행하지 않는다.
   따라서 production 규모 실행과 제한 원본 review가 필요한 #63은 계속 열린 상태다.
 
