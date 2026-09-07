@@ -86,15 +86,18 @@ timestamp, 잘못된 hash·count와 URL 형태 identifier는 증적 자체 오�
 발견하면 덮어쓰지 않는다. 로컬에서 같은 gate를 실행할 때는 다음과 같이 Compose image를 전달한다.
 
 ```bash
-POSTGRES_IMAGE="$(docker compose config --format json | python -c '
+postgres_image="$(docker compose config --format json | python -c '
 import json, sys
 print(json.load(sys.stdin)["services"]["postgres"]["image"])
-')" \
-GRAFANA_IMAGE="$(docker compose config --format json | python -c '
+')"
+grafana_image="$(docker compose config --format json | python -c '
 import json, sys
 print(json.load(sys.stdin)["services"]["grafana"]["image"])
-')" \
-GRAFANA_VERSION=13.2.0 \
+')"
+grafana_version="$(python -m ops.grafana.image_version "$grafana_image")"
+POSTGRES_IMAGE="$postgres_image" \
+GRAFANA_IMAGE="$grafana_image" \
+GRAFANA_VERSION="$grafana_version" \
   ops/recovery/verify-live-restore.sh
 ```
 

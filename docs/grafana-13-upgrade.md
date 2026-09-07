@@ -13,7 +13,8 @@ storage migration 상태가 남는다.
   table을 읽는다. rollback은 업그레이드 전에 만든 database 또는 전체 volume backup을
   복원해야 한다.
 - Grafana 13.0.0의 Git Sync migration 결함은 13.0.1에서 수정됐다. PipeLens는 Git Sync
-  feature flag를 사용하지 않고 13.2.0으로 직접 전환하지만, backup 없이 major 전환하지 않는다.
+  feature flag를 사용하지 않고 현재 고정된 13.2.1로 직접 전환하지만, backup 없이 major 전환하지
+  않는다.
 - PipeLens는 외부 plugin, Image Renderer와 숫자 ID 기반 datasource API를 사용하지 않는다.
   Prometheus datasource는 고정 UID `prometheus`로 provision한다.
 - Compose의 익명 Viewer는 로컬 관측 편의를 위한 설정이다. 외부에 공개하는 production
@@ -60,7 +61,7 @@ curl --fail http://localhost:3001/api/dashboards/uid/pipelens-operations
 curl --fail http://localhost:3001/api/datasources/uid/prometheus
 ```
 
-health 응답의 version이 13.2.0이고 database가 `ok`인지, dashboard title과 8개 panel,
+health 응답의 version이 Compose image tag와 같고 database가 `ok`인지, dashboard title과 8개 panel,
 Prometheus datasource UID·URL이 유지되는지 확인한다. 익명 브라우저에서 dashboard가 로그인
 redirect 없이 열리는지와 실제 panel query도 확인한다. migration 오류가 있으면 서비스를
 열지 않고 backup에서 복구한다.
