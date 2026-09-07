@@ -1228,6 +1228,25 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34135194383](https://github.com/sangmu1126/PipeLens/actions/runs/34135194383)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### nginx-unprivileged dashboard base image digest 갱신
+
+- Dependabot PR #96이 dashboard runtime의 `nginxinc/nginx-unprivileged:1.31-alpine` tag는 유지하고
+  manifest-list digest를 `d9083fe…`에서 `aa8c908…`로 갱신했다. frontend source, Node build stage와
+  nginx 설정은 바꾸지 않았다.
+- registry manifest에서 새 digest가 Linux amd64와 arm64를 포함함을 확인했다. Docker Desktop arm64에서
+  dashboard image를 build해 최종 architecture `arm64`, runtime user `nginx`, nginx 1.31.5를 확인했다.
+  root page HTTP와 Content-Security-Policy, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`도 실제 container에서 검증했다.
+- `npm ci`는 알려진 취약점 0개였고 Vitest 4개와 TypeScript/Vite production build가 통과했다.
+  [PR #96](https://github.com/sangmu1126/PipeLens/pull/96)의
+  [CI run 34136040354](https://github.com/sangmu1126/PipeLens/actions/runs/34136040354)은 amd64 dashboard
+  build·취약점 scan·SBOM·non-root runtime·HTTP smoke와 전체 gate를 검증했다. 최초 backend job은
+  Prometheus image pull 중 외부 registry의 HTTP 500으로 실패했으나 실패 job만 재실행하자 같은
+  Prometheus 검증을 포함해 통과해 application 회귀가 아닌 일시적 인프라 오류로 판단했다.
+  [Dependency Review run 34136040249](https://github.com/sangmu1126/PipeLens/actions/runs/34136040249)과
+  [CodeQL run 34136040259](https://github.com/sangmu1126/PipeLens/actions/runs/34136040259)의 Python·
+  JavaScript/TypeScript 분석도 성공했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
