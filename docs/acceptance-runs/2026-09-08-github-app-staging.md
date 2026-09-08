@@ -29,7 +29,7 @@ repository에 보관하지 않았다.
 
 PipeLens의 `/auth/github/login`에서 시작한 실제 GitHub OAuth는 state cookie 검증, callback code
 교환과 dashboard redirect를 완료했다. 인증 직후 `/api/v1/me`와 `/api/v1/analyses`가 HTTP 200을
-반환했다. App 설치·repository selection 변경 webhook과 두 실패 run의 signed
+반환했다. App 설치·repository selection 변경 webhook과 세 실패 run의 signed
 `workflow_run.completed` webhook도 public ingress를 지나 API에서 204 또는 202로 처리됐다.
 
 초기 설치에서는 manifest의 `request_oauth_on_install`이 state cookie 없이 callback을 시작해
@@ -51,6 +51,23 @@ worker는 installation token을 만들고 실제 Actions log·run·job·workflow
 Check를 생성했다. 재전달 뒤 PostgreSQL의 해당 run 분석 행과 delivery는 각각 1개였고 worker는
 완료된 분석을 다시 실행하지 않았다.
 
+### 실제 dependency resolver 분류 재검증
+
+최초 fixture는 dependency failure 문구를 수동 출력해 게시 경로는 검증했지만 분류기가 runner의
+exit line을 핵심 오류로 선택해 category가 `unknown`이었다. acceptance repository의 fixture를
+존재하지 않는 `pip==0.0.0` version을 실제로 요청하도록 바꿨다. 외부 package code는 설치되지 않는다.
+
+- fixture revision: `acafd7179ca8767c04ee42d9572df1d6cbc96ff7`
+- [실패 run 34185336066](https://github.com/sangmu1126/PipeLens-acceptance/actions/runs/34185336066)
+- [PipeLens diagnosis Check](https://github.com/sangmu1126/PipeLens-acceptance/runs/101932484081)
+- category: `dependency_installation_failure`
+- confidence: `0.9`
+- queue wait: `0.006s`
+- analysis duration: `3.135s`
+- total latency: `3.141s`
+- webhook 재전달 뒤 Check 개수와 URL: `1`, 동일 URL
+- webhook delivery ID SHA-256: `386e325643397ef7abd254d45c6ea49dc7851619ceb30a16cd7c6e80dba4a281`
+
 ## PR failure와 comment
 
 - [실패 run 34184453918](https://github.com/sangmu1126/PipeLens-acceptance/actions/runs/34184453918)
@@ -69,13 +86,14 @@ run의 comment upsert 판정은 해당 marker 기준으로 1개다.
 
 ## Synthetic secret scan
 
-두 workflow는 실제 credential이 아닌 run ID 기반 token 모양의 seeded value를 log에 출력했다.
+세 run은 실제 credential이 아닌 run ID 기반 token 모양의 seeded value를 log에 출력했다.
 원문 대신 SHA-256만 기록한다.
 
 | Run | Seed SHA-256 | Persistence | PR comment | Commit Check | Provider request |
 | --- | --- | ---: | ---: | ---: | ---: |
 | `34184222277` | `b999230b9bfed07f2a429130c0f25706c5e5b16281b2bd6094cfea7c47e84df3` | 0 | 0 | 0 | 0 |
 | `34184453918` | `7db9ba0df1fee5bb1e7353127d50961c1a182b693e2710a2bffe0fd39e479d04` | 0 | 0 | 0 | 0 |
+| `34185336066` | `64752c4a6f3e45b519caac754bff48d80df1e62f0969c7a34610daec914910a7` | 0 | 0 | 0 | 0 |
 
 Provider match는 `PIPELENS_LLM_PROVIDER=none`인 staging에서 외부 provider request 자체가 0임을
 뜻한다. 실제 LLM provider redaction과 latency 증적은 이 실행 범위에 없다.
