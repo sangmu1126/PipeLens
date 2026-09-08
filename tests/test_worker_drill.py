@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from ops.worker.verify_replica_recovery import (
     DrillError,
     WorkTracker,
+    enqueue_jobs,
     parse_args,
     percentile,
     planned_arrival_seconds,
@@ -36,6 +39,7 @@ def test_worker_drill_rejects_heartbeat_that_cannot_renew_lease() -> None:
         (["--enqueue-rate-per-second", "-1"], "enqueue rate"),
         (["--jobs", "5", "--burst-size", "6"], "burst size"),
         (["--minimum-arrival-seconds", "-1"], "minimum arrival duration"),
+        (["--redis-recovery-timeout-seconds", "0"], "Redis recovery timeout"),
     ],
 )
 def test_worker_drill_rejects_invalid_load_shape(
@@ -128,6 +132,30 @@ def test_nearest_rank_percentiles_are_deterministic() -> None:
 def test_nearest_rank_percentile_rejects_empty_samples() -> None:
     with pytest.raises(DrillError, match="requires samples"):
         percentile([], 95)
+
+
+@pytest.mark.asyncio
+async def test_enqueue_accepts_idempotent_duplicate_after_uncertain_redis_call() -> None:
+    args = parse_args(
+        [
+            "--jobs",
+            "1",
+            "--heartbeat-seconds",
+            "0.001",
+            "--redis-recovery-timeout-seconds",
+            "1",
+        ]
+    )
+    producer = MagicMock()
+    producer.enqueue = AsyncMock(
+        side_effect=[RedisConnectionError("offline"), False]
+    )
+    tracker = WorkTracker(expected=1, processing_seconds=0)
+
+    await enqueue_jobs(args, producer, tracker, stop_offset=1)
+
+    assert producer.enqueue.await_count == 2
+    assert set(tracker.enqueued_at) == {1_000_000}
 
 
 @pytest.mark.asyncio

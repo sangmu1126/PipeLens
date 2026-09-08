@@ -1,7 +1,9 @@
+import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from prometheus_client import generate_latest
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from pipelens.metrics import Metrics
 from pipelens.models import AnalysisRequest, AnalysisStatus
@@ -72,3 +74,54 @@ async def test_worker_renews_lease_and_records_orphan_recovery() -> None:
     queue.recover_orphaned.assert_awaited_once()
     output = generate_latest(metrics.registry).decode()
     assert "pipelens_queue_recovered_total 2.0" in output
+
+
+@pytest.mark.asyncio
+async def test_worker_retries_redis_failure_during_startup() -> None:
+    queue = MagicMock()
+    queue.heartbeat = AsyncMock(side_effect=[RedisConnectionError("offline"), None])
+    queue.recover_orphaned = AsyncMock(return_value=0)
+    worker = AnalysisWorker(
+        MagicMock(), queue, MagicMock(), Metrics(), max_attempts=3, heartbeat_seconds=0.001
+    )
+    processed = asyncio.Event()
+
+    async def process_once() -> bool:
+        processed.set()
+        await asyncio.sleep(60)
+        return False
+
+    worker.process_next = AsyncMock(side_effect=process_once)
+    await worker.start()
+    await asyncio.wait_for(processed.wait(), timeout=1)
+    await worker.stop()
+
+    assert queue.heartbeat.await_count >= 2
+
+
+@pytest.mark.asyncio
+async def test_worker_retries_redis_failure_while_processing() -> None:
+    queue = MagicMock()
+    queue.heartbeat = AsyncMock()
+    queue.recover_orphaned = AsyncMock(return_value=0)
+    worker = AnalysisWorker(
+        MagicMock(), queue, MagicMock(), Metrics(), max_attempts=3, heartbeat_seconds=0.001
+    )
+    recovered = asyncio.Event()
+    attempts = 0
+
+    async def process_after_failure() -> bool:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise RedisConnectionError("offline")
+        recovered.set()
+        await asyncio.sleep(60)
+        return False
+
+    worker.process_next = AsyncMock(side_effect=process_after_failure)
+    await worker.start()
+    await asyncio.wait_for(recovered.wait(), timeout=1)
+    await worker.stop()
+
+    assert worker.process_next.await_count >= 2
