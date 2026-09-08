@@ -1298,6 +1298,18 @@ Nginx는 별도 PR로 분리했다.
   이 판단을 D-067로 기록하고 root·개발 문서 index와 readiness에서 추적성 문서로 연결했으며,
   readiness 기준 시점과 현재 test·Vitest·Grafana 버전도 2026-09-08 상태로 갱신했다.
 
+### 실제 staging 준비 중 dashboard webhook ingress 보완
+
+- Docker Desktop에서 API, worker, PostgreSQL 18, Redis 8.2, Prometheus 3.13.2,
+  Alertmanager 0.33.1, Grafana 13.2.1과 dashboard 전체 Compose stack을 새로 build·기동했다.
+  migration 완료 뒤 API `/readyz`의 database·queue `ok`와 다섯 공개 service HTTP 200을 확인했다.
+- 공개 staging origin을 준비하면서 dashboard nginx가 `/auth/`와 `/github/`는 API로 전달하지만
+  `/webhooks/github`는 SPA fallback으로 처리하는 누락을 발견했다. `/webhooks/` reverse proxy를
+  추가하고 설정 회귀 test로 고정했다.
+- 이 변경은 공개 endpoint의 routing 전제만 복구한다. 실제 GitHub signed delivery, OAuth browser
+  흐름과 TLS evidence는 외부 staging 연결 뒤 별도로 수집하며 로컬 성공을 #61·#62 완료로 간주하지
+  않는다. 판단은 D-068에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
