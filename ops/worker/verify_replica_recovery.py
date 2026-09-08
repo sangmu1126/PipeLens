@@ -81,6 +81,16 @@ def percentile(values: list[float], percentage: int) -> float:
     return ordered[ceil(len(ordered) * percentage / 100) - 1]
 
 
+def planned_arrival_seconds(args: argparse.Namespace) -> float:
+    """Return the time from the first shaped batch to the final batch start."""
+    if not args.enqueue_rate_per_second or args.jobs <= 2:
+        return 0.0
+    burst_size = args.burst_size or 1
+    shaped_jobs = args.jobs - 1  # The abandoned recovery probe is enqueued separately.
+    batches = ceil(shaped_jobs / burst_size)
+    return max(0.0, (batches - 1) * burst_size / args.enqueue_rate_per_second)
+
+
 def validate_args(args: argparse.Namespace) -> None:
     positive_values = {
         "jobs": args.jobs,
@@ -103,6 +113,14 @@ def validate_args(args: argparse.Namespace) -> None:
         raise DrillError("enqueue rate must not be negative")
     if args.burst_size < 0 or args.burst_size > args.jobs:
         raise DrillError("burst size must be zero or no greater than jobs")
+    if args.minimum_arrival_seconds < 0:
+        raise DrillError("minimum arrival duration must not be negative")
+    planned_arrival = planned_arrival_seconds(args)
+    if args.minimum_arrival_seconds and planned_arrival < args.minimum_arrival_seconds:
+        raise DrillError(
+            "planned arrival duration is shorter than the required minimum: "
+            f"{planned_arrival:.3f}s < {args.minimum_arrival_seconds:.3f}s"
+        )
 
 
 async def wait_until_acknowledged(queue: RedisAnalysisQueue, timeout: float = 5) -> None:
@@ -206,6 +224,11 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
         if args.jobs > 1:
             await enqueue_jobs(args, producer, tracker, start_offset=1)
         enqueue_seconds = time.monotonic() - enqueue_started
+        if enqueue_seconds < args.minimum_arrival_seconds:
+            raise DrillError(
+                "observed arrival duration is shorter than the required minimum: "
+                f"{enqueue_seconds:.3f}s < {args.minimum_arrival_seconds:.3f}s"
+            )
         async with asyncio.timeout(args.completion_slo_seconds):
             await tracker.completed.wait()
         await wait_until_acknowledged(producer)
@@ -277,6 +300,7 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
             "burst_size": args.burst_size or (1 if args.enqueue_rate_per_second else args.jobs),
             "synthetic_processing_seconds": args.processing_seconds,
             "enqueue_seconds": round(enqueue_seconds, 3),
+            "planned_arrival_seconds": round(planned_arrival_seconds(args), 3),
             "observed_seconds": round(observed_seconds, 3),
             "throughput_jobs_per_second": round(args.jobs / observed_seconds, 3),
             "processed_per_replica": dict(sorted(tracker.worker_counts.items())),
@@ -325,6 +349,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--start-slo-seconds", type=float, default=60)
     parser.add_argument("--completion-slo-seconds", type=float, default=120)
     parser.add_argument("--recovery-grace-seconds", type=float, default=5)
+    parser.add_argument("--minimum-arrival-seconds", type=float, default=0)
     parser.add_argument("--output", type=Path)
     return parser.parse_args(argv)
 

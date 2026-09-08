@@ -63,6 +63,7 @@ python -m ops.worker.verify_replica_recovery \
   --processing-seconds 0.25 \
   --lease-seconds 60 \
   --heartbeat-seconds 15 \
+  --minimum-arrival-seconds 3600 \
   --output /approved-evidence/worker-soak.json
 ```
 
@@ -70,6 +71,11 @@ rate를 지정하고 burst를 생략하면 job을 하나씩 일정하게 주입�
 즉시 넣고 누적 평균 rate에 맞춰 다음 batch를 기다린다. orphan 한 건을 먼저 claim하고 replica를
 시작한 뒤 나머지 arrival stream을 주입하므로 앞쪽 job에 인위적인 enqueue 대기 시간이 더해지지
 않는다.
+
+`--minimum-arrival-seconds`는 별도로 먼저 enqueue하는 orphan probe를 제외하고 마지막 shaped batch가
+시작되는 시각을 계산한다. `jobs / rate`만으로 duration을 가정하면 마지막 burst 뒤 대기 시간이 없는
+만큼 실제 arrival window가 짧아진다. 계획값이 최소보다 짧으면 Redis 연결 전에 거부하고, 실행 뒤
+실측 enqueue duration도 같은 최소값 이상인지 다시 확인한다.
 
 ## 해석과 운영 경계
 
