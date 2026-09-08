@@ -1018,3 +1018,17 @@
   함께 갱신한다.
 - 관련: [MVP 요구사항 추적성](requirements-traceability.md),
   [검증 및 운영 준비 현황](readiness.md).
+
+## D-068. Dashboard ingress가 GitHub webhook을 API로 명시적으로 전달
+
+- 결정: dashboard nginx의 `/webhooks/` 경로를 OAuth·GitHub App 경로와 동일하게 API service로
+  reverse proxy하고, 정적 SPA fallback보다 앞선 명시적 location으로 유지한다.
+- 이유: 공개 origin 하나에서 dashboard와 API를 제공할 때 callback과 setup은 전달되지만 webhook이
+  SPA fallback으로 들어가면 GitHub는 성공 HTML을 받아도 delivery가 저장·enqueue되지 않는다.
+- 대안: 외부 ingress에서만 `/webhooks/github`를 별도 routing, API port를 직접 공개, 운영 문서에
+  수동 설정만 추가.
+- 결과: Compose dashboard endpoint를 그대로 staging ingress에 연결해도 signed webhook body와
+  GitHub header가 API endpoint에 도달한다. 설정 회귀는 backend test에서 검사하며 실제 TLS·HMAC
+  delivery acceptance는 여전히 #62에서 수행한다.
+- 관련: `frontend/nginx.conf`, `tests/test_security.py`,
+  [공개 HTTPS acceptance](https-acceptance.md).
