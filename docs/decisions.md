@@ -1032,3 +1032,18 @@
   delivery acceptance는 여전히 #62에서 수행한다.
 - 관련: `frontend/nginx.conf`, `tests/test_security.py`,
   [공개 HTTPS acceptance](https-acceptance.md).
+
+## D-069. Container access log에서 query string을 수집하지 않음
+
+- 결정: dashboard nginx access log는 `$request_method`, `$uri`, protocol, status, body size와 user
+  agent만 기록하고 query·referrer는 제외한다. API container의 Uvicorn access log는 비활성화하고
+  application metric과 명시적 구조화 log를 운영 관측의 기준으로 사용한다.
+- 이유: 실제 OAuth callback 검증에서 기본 nginx와 Uvicorn access log가 authorization code와 signed
+  state를 포함한 전체 request target을 기록했다. 1회용 code라도 log aggregator·support bundle로
+  복제되면 불필요한 credential 노출면이 된다.
+- 대안: callback 경로만 access log 제외, logging filter로 query key redaction, 운영 ingress에서만
+  query 제거.
+- 결과: path·status 기반 진단은 유지하면서 OAuth code/state와 향후 query credential이 container
+  stdout에 들어가지 않는다. 외부 ingress와 CDN도 같은 redaction을 별도로 확인해야 한다.
+- 관련: `frontend/nginx.conf`, `Dockerfile`, `tests/test_security.py`,
+  [공개 HTTPS acceptance](https-acceptance.md).
