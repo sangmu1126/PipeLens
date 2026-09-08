@@ -2,15 +2,15 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-08**, 변경 전 기준 main commit `71b16d9`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-09**, 변경 전 기준 main commit `84a8338`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-11·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
 | 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | Python 3.14.6 로컬 401 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 401개와 진단 평가 13/13 |
+| 백엔드 테스트 | 통과 | Python 3.14.6 로컬 412 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 412개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 5에서 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
@@ -28,6 +28,7 @@
 | Redis runtime | 통과 | redis-py 8.1.0 RESP3와 Redis 8.2.9 Extended queue 통합 검증 |
 | Worker replica drill | 통과 | CI와 로컬 4 replica·200 job, orphan 1개 복구와 60초/120초 SLO 검증 |
 | Worker soak evidence 도구 | 준비됨 | load·resource·provider fault·network·SLO·capacity strict JSON 판정 |
+| Launch worker soak/load | 통과 | 3,601초·3,605 jobs, SLO 100%, worker·lease·Redis fault 손실 0, 5 jobs/s capacity |
 | PostgreSQL runtime | 통과 | CI amd64·로컬 arm64에서 18.6, 17→18 dump/restore·Alembic·integration 검증 |
 | PostgreSQL 복원 증적 도구 | 준비됨 | 격리 18 volume 복원, RTO/RPO·checksum·Alembic·대표 count JSON 출력 |
 | Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2.1, 12→13 volume·provisioning·Viewer 검증 |
@@ -487,10 +488,11 @@ repository strict evidence로 완료했다.
 
 [#63 production 규모 PostgreSQL·Grafana 복원 드릴](https://github.com/sangmu1126/PipeLens/issues/63)은
 [launch 규모 strict evidence](acceptance-runs/2026-09-08-recovery-scale/README.md)로 완료했다.
+[#66 production 조건 worker soak/load](https://github.com/sangmu1126/PipeLens/issues/66)도
+[1시간 strict evidence](acceptance-runs/2026-09-09-worker-soak/README.md)로 완료했다.
 
 1. [#64 Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
 2. [#65 production secret manager와 credential rotation](https://github.com/sangmu1126/PipeLens/issues/65)
-3. [#66 production 조건 worker soak/load와 SLO](https://github.com/sangmu1126/PipeLens/issues/66)
 
 여섯 항목은 모두
 [`v0.2.0 Production readiness`](https://github.com/sangmu1126/PipeLens/milestone/1)
@@ -535,8 +537,9 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
   `observability`, `python`, `react`, `typescript`
 - repository homepage: 공개 HTTPS 배포 전이므로 의도적으로 비어 있음
 
-P0/P1 항목은 issue #61–#66으로 분리해 milestone에 연결했다. 각 issue는 실제 외부 환경,
-완료 조건과 저장해야 할 증적을 명시하며 repository에서 재현 가능한 합성 검증과 구분한다.
+P0/P1 항목은 issue #61–#66으로 분리해 milestone에 연결했다. #61·#63·#66은 승인된 acceptance
+증적으로 완료했고, 나머지는 실제 외부 환경, 완료 조건과 저장해야 할 증적을 명시하며 repository에서
+재현 가능한 합성 검증과 구분한다.
 P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness 완료율과 독립적으로
 추적한다.
 
@@ -574,11 +577,11 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
 - [x] Grafana 13 격리 volume 복원·machine-readable evidence 도구
 - [x] [launch 대표 규모 Grafana volume backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
-- [ ] [production 조건의 worker replica soak/load test](https://github.com/sangmu1126/PipeLens/issues/66)
+- [x] [production 조건의 worker replica soak/load test](https://github.com/sangmu1126/PipeLens/issues/66)
 - [x] production worker soak의 resource·provider·fault·capacity machine-readable evidence 도구
 - [x] worker arrival profile과 machine-readable capacity evidence 도구
 - [x] Alertmanager routing과 로컬 webhook 통합 검증
 - [x] Alertmanager production 채널의 redacted machine-readable evidence 도구
 - [ ] [Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
 - [x] [외부 fork 공격 입력 검증](https://github.com/sangmu1126/PipeLens/issues/61)
-- [ ] [부하 상태에서 시작 60초·완료 120초 SLO 검증](https://github.com/sangmu1126/PipeLens/issues/66)
+- [x] [부하 상태에서 시작 60초·완료 120초 SLO 검증](https://github.com/sangmu1126/PipeLens/issues/66)

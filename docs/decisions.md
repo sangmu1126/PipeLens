@@ -1117,3 +1117,24 @@
 - 관련: [scale recovery evidence](acceptance-runs/2026-09-08-recovery-scale/README.md),
   [Production 통합 recovery drill](production-recovery-drill.md),
   [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).
+
+## D-074. Worker launch capacity는 1시간 합성 arrival와 실제 datastore fault로 승인
+
+- 결정: 실제 사용자 traffic이 없는 현재 단계에는 1 job/s, burst 4, logical worker 4개와 3,600초를
+  production-representative baseline으로 사용한다. worker cgroup, PostgreSQL 실연결 pool, Redis
+  maxmemory, controlled HTTP provider latency·429·503과 실제 container/network fault를 같은 실행
+  window에 결합한다.
+- 이유: 사용자가 생길 때까지 기다리면 worker lease·Redis reconnect와 capacity 위험을 검증하지
+  못한다. 반대로 CI 200-job burst나 sleep만으로는 duration, datastore limit과 실제 network 오류를
+  증명하지 못한다. 첫 두 실행이 각각 짧은 arrival 계산과 Redis 단절 시 process 종료 결함을 실제로
+  찾아냈으므로 실패를 거부하고 수정 source에서 전체 시간을 다시 측정하는 기준을 유지한다.
+- 대안: 운영 traffic 전까지 #66 보류, 첫 실행의 host wall clock을 duration으로 인정, network fault를
+  별도 probe에만 주입, 5 jobs/s 성공을 포화 최대치로 외삽, 실제 credential을 사용하는 외부 provider
+  부하 발생.
+- 결과: 3,605건·3,601.127초, SLO 100%, duplicate/lost 0, worker·lease·network fault 회복과 resource
+  ceiling을 strict evidence로 승인했다. 검증 상한 5 jobs/s보다 20% 낮은 4 jobs/s를 launch 권장으로
+  둔다. 이는 한 cgroup의 in-process replica와 controlled provider 모델이므로 운영 30일 또는 실제
+  peak 1 job/s 초과 시 replica별 container와 실제 provider 분포로 재검증한다.
+- 관련: [worker soak acceptance](acceptance-runs/2026-09-09-worker-soak/README.md),
+  `src/pipelens/worker.py`, `ops/worker/verify_replica_recovery.py`,
+  [production worker soak #66](https://github.com/sangmu1126/PipeLens/issues/66).
