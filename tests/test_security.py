@@ -47,3 +47,13 @@ def test_dashboard_server_defines_security_headers() -> None:
         "X-Frame-Options",
     ):
         assert f"add_header {header}" in configuration
+
+
+def test_dashboard_server_proxies_github_webhooks_to_api() -> None:
+    configuration = Path("frontend/nginx.conf").read_text()
+
+    webhook_location = configuration.split("location /webhooks/ {", 1)[1].split(
+        "}", 1
+    )[0]
+
+    assert "proxy_pass http://api:8000;" in webhook_location
