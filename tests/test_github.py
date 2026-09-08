@@ -77,6 +77,113 @@ async def test_repository_context_uses_pr_files_and_workflow_at_head_sha() -> No
 
 
 @pytest.mark.asyncio
+async def test_repository_context_recovers_omitted_external_fork_pr() -> None:
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(str(request.url))
+        path = request.url.path
+        if path.endswith("/actions/runs/124"):
+            return httpx.Response(
+                200,
+                json={
+                    "event": "pull_request",
+                    "workflow_id": 7,
+                    "head_branch": "feature/fork-failure",
+                    "head_sha": "abc124",
+                    "head_repository": {
+                        "id": 2,
+                        "full_name": "contributor/widgets",
+                    },
+                    "pull_requests": [],
+                },
+            )
+        if path.endswith("/pulls"):
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "number": 56,
+                        "head": {
+                            "sha": "abc124",
+                            "repo": {"id": 2, "full_name": "contributor/widgets"},
+                        },
+                        "base": {
+                            "sha": "base124",
+                            "repo": {"id": 1, "full_name": "acme/widgets"},
+                        },
+                    }
+                ],
+            )
+        if path.endswith("/pulls/56/files"):
+            return httpx.Response(
+                200,
+                json=[{"filename": "fork.py", "status": "modified", "patch": "+broken"}],
+            )
+        if path.endswith("/actions/workflows/7"):
+            return httpx.Response(200, json={"path": ".github/workflows/ci.yml"})
+        if path.endswith("/contents/.github/workflows/ci.yml"):
+            return httpx.Response(200, text="name: CI")
+        return httpx.Response(404)
+
+    github = GitHubClient(None, None, 1024, transport=httpx.MockTransport(handler))
+
+    context = await github.repository_context("acme/widgets", 124, "abc124", "token")
+
+    assert context.pull_request_number == 56
+    assert context.trust_level is TrustLevel.UNTRUSTED_FORK
+    assert context.baseline_sha == "base124"
+    assert context.changed_files[0].filename == "fork.py"
+    assert any(
+        "/pulls?" in url
+        and "state=all" in url
+        and "head=contributor%3Afeature%2Ffork-failure" in url
+        for url in requested
+    )
+
+
+@pytest.mark.asyncio
+async def test_repository_context_rejects_mismatched_external_fork_pr() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+        if path.endswith("/actions/runs/125"):
+            return httpx.Response(
+                200,
+                json={
+                    "event": "pull_request",
+                    "head_branch": "feature/fork-failure",
+                    "head_sha": "abc125",
+                    "head_repository": {"full_name": "contributor/widgets"},
+                    "pull_requests": [],
+                },
+            )
+        if path.endswith("/pulls"):
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "number": 57,
+                        "head": {
+                            "sha": "different-sha",
+                            "repo": {"full_name": "contributor/widgets"},
+                        },
+                        "base": {"repo": {"full_name": "acme/widgets"}},
+                    }
+                ],
+            )
+        if path.endswith("/commits/abc125"):
+            return httpx.Response(200, json={"files": []})
+        return httpx.Response(404)
+
+    github = GitHubClient(None, None, 1024, transport=httpx.MockTransport(handler))
+
+    context = await github.repository_context("acme/widgets", 125, "abc125", "token")
+
+    assert context.pull_request_number is None
+    assert context.trust_level is TrustLevel.UNTRUSTED_FORK
+
+
+@pytest.mark.asyncio
 async def test_github_user_oauth_and_installation_pagination() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/login/oauth/access_token":

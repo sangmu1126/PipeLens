@@ -202,6 +202,9 @@ class GitHubClient:
             )
             run_response.raise_for_status()
             run = run_response.json()
+            run = await self._resolve_external_pull_request(
+                client, repository, head_sha, headers, run
+            )
 
             changed_files, baseline_sha = await self._changed_files(
                 client, repository, head_sha, headers, run
@@ -219,6 +222,57 @@ class GitHubClient:
             trust_level=self._trust_level(repository, run),
             baseline_sha=baseline_sha,
         )
+
+    async def _resolve_external_pull_request(
+        self,
+        client: httpx.AsyncClient,
+        repository: str,
+        head_sha: str,
+        headers: dict[str, str],
+        run: dict,
+    ) -> dict:
+        """Recover a fork PR that GitHub omitted from workflow_run.pull_requests."""
+        if (
+            run.get("pull_requests")
+            or run.get("event") != "pull_request"
+            or self._trust_level(repository, run) is not TrustLevel.UNTRUSTED_FORK
+        ):
+            return run
+
+        head_repository = run.get("head_repository") or {}
+        head_full_name = head_repository.get("full_name")
+        head_branch = run.get("head_branch")
+        if not isinstance(head_full_name, str) or not isinstance(head_branch, str):
+            return run
+        head_owner, separator, _ = head_full_name.partition("/")
+        if not separator or not head_owner or not head_branch:
+            return run
+
+        response = await self._request(
+            client,
+            "GET",
+            f"{self.api_url}/repos/{repository}/pulls",
+            headers=headers,
+            params={"state": "all", "head": f"{head_owner}:{head_branch}", "per_page": 100},
+        )
+        response.raise_for_status()
+        matches = []
+        for pull_request in response.json():
+            head = pull_request.get("head") or {}
+            base = pull_request.get("base") or {}
+            candidate_head_repository = head.get("repo") or {}
+            candidate_base_repository = base.get("repo") or {}
+            if (
+                head.get("sha") == head_sha
+                and candidate_head_repository.get("full_name", "").casefold()
+                == head_full_name.casefold()
+                and candidate_base_repository.get("full_name", "").casefold()
+                == repository.casefold()
+            ):
+                matches.append(pull_request)
+        if len(matches) != 1:
+            return run
+        return {**run, "pull_requests": matches}
 
     @staticmethod
     def _trust_level(repository: str, run: dict) -> TrustLevel:
