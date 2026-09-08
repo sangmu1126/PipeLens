@@ -1399,6 +1399,31 @@ Nginx는 별도 PR로 분리했다.
   이는 현재 launch capacity에는 production-representative지만 실제 사용자 payload 분포는 아니므로,
   운영 30일 또는 peak 증가 시 기준을 재산정한다. 판단은 D-073에 기록했다.
 
+### Launch 대표 worker soak/load와 Redis 단절 복구
+
+- 실제 사용자 traffic 전 launch profile을 1 job/s, burst 4, logical worker 4개와 최소 3,600초로
+  고정했다. Docker Desktop arm64의 격리 Redis 128 MiB, PostgreSQL max 50, 실제 pool connection
+  20개와 worker 합계 1 CPU/512 MiB를 적용했다.
+- 첫 실행은 3,601 jobs가 마지막 burst 뒤 대기 시간을 만들지 않아 arrival가 3,596.013초에
+  끝났다. SLO·정확한 1회 처리는 통과했지만 1시간 기준보다 3.727초 짧아 폐기했다. orphan probe와
+  burst 경계를 계산하는 계획·실측 최소 duration gate를 추가했다.
+- 3,605 jobs로 바로잡은 두 번째 실행에서는 실제 Redis network disconnect가 producer timeout을
+  전파해 runner를 exit 1로 종료시켰다. worker의 startup·processing queue 오류 재시도와 producer의
+  60초 idempotent enqueue 회복을 구현하고 단위·전체 412 tests(`2 skipped`)로 검증했다.
+- 수정 source `c196462`의 세 번째 실행은 container 기준 3,601.127초, arrival 3,600.011초 동안
+  3,605건을 1.001 jobs/s로 모두 처리했다. 시작 p95 0.003초, 완료 p95 0.262초, 두 SLO 달성률
+  100%, duplicate/lost 0과 queue drain을 확인했다.
+- SIGKILL worker와 expired lease 한 건은 51.507초, Redis network interruption은 감지부터
+  21.196초에 회복했다. provider별 loopback TCP 429·503도 모두 retry로 회복했고 worker CPU 2.25%,
+  memory 12.20%, PostgreSQL 29/50 connections, Redis maxmemory 1.264536%가 peak였다.
+- 같은 제한의 5 jobs/s capacity 실행은 5.123 jobs/s, 시작 p95 1.032초, 완료 p95 1.286초와
+  exactly-once·drain을 통과했다. 측정하지 않은 포화점을 외삽하지 않고 검증 상한 5, launch 권장
+  4 jobs/s와 20% headroom으로 승인했다.
+- 성공 원본·SHA-256·strict `passed: true`, 두 실패와 pool 준비 중 인증 오류까지
+  [2026-09-09 worker soak 기록](acceptance-runs/2026-09-09-worker-soak/README.md)에 보존했다. 한
+  container 안의 네 worker와 controlled provider라는 경계를 명시하고 운영 30일 또는 1 job/s 초과
+  시 실제 replica container·payload·provider 분포로 재실행한다. 판단은 D-074에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -1423,7 +1448,6 @@ Nginx는 별도 PR로 분리했다.
 
 - 실제 OpenAI 호출의 품질·token·비용 결과
 - production HTTPS 환경의 OAuth callback과 webhook 수신; 임시 Quick Tunnel 결과만 존재
-- 장시간·고동시성 부하에서 60초/120초 SLO 달성률
 
 이 항목은 완료로 간주하지 않으며 [검증 및 운영 준비 현황](readiness.md)에서 후속 작업으로
 관리한다.

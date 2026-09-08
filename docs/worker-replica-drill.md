@@ -150,7 +150,7 @@ Strict JSON은 임의 필드와 URL 형태 resource identifier를 거부한다. 
 Reviewer는 source revision·soak ID·UTC window와 artifact hash가 원본 runner, telemetry와 provider
 audit에 일치하는지 확인한다. resource limit이 실제 container/deployment에 적용됐는지, network
 interruption이 단순 synthetic sleep이 아닌지, PostgreSQL pool과 Redis maxmemory가 관측 대상과
-같은지 검토한다. 이 원본 review와 실제 장시간 실행 전에는 #66을 닫지 않는다.
+같은지 검토한다. #66은 이 원본 review와 실제 장시간 실행을 모두 통과한 뒤에만 닫는다.
 
 ## 병합 후 기준선
 
@@ -176,6 +176,23 @@ queue drain도 통과했다.
 복구했다. p95 시작 0.008초, p95 완료 0.039초, 관측 throughput 21.698 jobs/s, 두 SLO 달성률
 100%와 exactly-once·queue drain을 확인했다. 이 짧은 결과는 도구 검증 기준선이며 #66의 production
 capacity evidence가 아니다.
+
+## Launch worker soak acceptance
+
+2026-09-09에는 Docker Desktop arm64 격리 환경에서 1 job/s, burst 4, logical replica 4개와
+최소 3,600초를 적용했다. 수정 source `c196462`에서 3,605건을 arrival 3,600.011초 동안 모두
+처리했고 시작 p95 0.003초, 완료 p95 0.262초, 두 SLO 달성률 100%, duplicate/lost 0과 queue
+drain을 확인했다.
+
+worker SIGKILL·expired lease와 Redis container network disconnect를 실제로 주입했으며 모두 120초
+안에 손실 없이 회복했다. PostgreSQL pool 실연결 20개, server max 50, Redis maxmemory 128 MiB와
+worker 1 CPU/512 MiB cgroup을 적용했다. 5 jobs/s capacity 실행도 SLO 100%와 5.123 jobs/s를
+기록해 launch 권장 4 jobs/s, 검증 상한 대비 20% headroom을 승인했다.
+
+상세 결과와 첫 두 실패, in-process replica·controlled provider 경계는
+[worker soak acceptance 기록](acceptance-runs/2026-09-09-worker-soak/README.md)에 있다. strict
+verifier의 9개 check가 모두 `true`이므로 현재 launch model의 #66 조건은 완료했다. 실제 운영 30일
+또는 1 job/s 초과 시 실제 replica container, payload와 provider 분포로 다시 실행한다.
 
 ## 로컬 arm64 재검증
 

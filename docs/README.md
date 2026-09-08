@@ -1,7 +1,7 @@
 # PipeLens 개발 문서
 
 이 디렉터리는 `README.md`의 사용자용 설명을 보완하는 개발·운영 기록이다. 문서의 기준
-시점은 **2026-09-08**, 기준 브랜치는 `main`이다.
+시점은 **2026-09-09**, 기준 브랜치는 `main`이다.
 
 ## 문서 구성
 
@@ -17,6 +17,8 @@
 - [GHCR 보존 정책](ghcr-retention.md): 정식 image·attestation 영구 보존과 월별 감사
 - [Worker replica drill](worker-replica-drill.md): Redis 회귀 부하와 production soak·resource·provider
   fault 증적 검증
+  - [2026-09-09 worker soak acceptance](acceptance-runs/2026-09-09-worker-soak/README.md):
+    1시간 arrival, 제한 자원, provider fault, worker·lease·network 복구와 capacity 판정
 - [Alertmanager](alertmanager.md): Prometheus alert routing, webhook 통합 검증과 운영 채널 경계
 - [Alertmanager production 채널 증적](alertmanager-channel-drill.md): 실채널 정책·rotation·retry와
   latency의 redacted JSON 검증
@@ -55,5 +57,5 @@
 ## 현재 한 줄 상태
 
 MVP 요구 기능, 자동화된 로컬·CI 검증, `main` 보호와 서명 image release·보존 정책은 구현됐다.
-실제 GitHub App의 OAuth·branch·PR·외부 fork와 launch 대표 규모 recovery는 검증했다. 안정 도메인의
-production HTTPS 배포와 나머지 외부 운영 인수는 아직 남아 있다.
+실제 GitHub App의 OAuth·branch·PR·외부 fork, launch 대표 규모 recovery와 worker soak/load를
+검증했다. 안정 도메인의 production HTTPS 배포와 나머지 외부 운영 인수는 아직 남아 있다.
