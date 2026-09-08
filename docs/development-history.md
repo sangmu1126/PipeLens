@@ -1286,6 +1286,18 @@ Nginx는 별도 PR로 분리했다.
   [CodeQL run 34138014361](https://github.com/sangmu1126/PipeLens/actions/runs/34138014361)의 Python·
   JavaScript/TypeScript 분석도 성공했다.
 
+### MVP 요구사항 추적성 감사
+
+- 최초 프로젝트 명세의 FR-01~FR-11과 보안·성능·신뢰성·관측성 요구를 현재 source, 자동 test와
+  외부 acceptance issue에 대조했다. 모든 MVP 기능 요구는 구현·자동 검증 근거가 있었고 새 미구현
+  제품 기능은 발견되지 않았다.
+- mock·합성 검증과 실제 서비스 완료를 구분하기 위해 [요구사항 추적성 문서](requirements-traceability.md)를
+  추가했다. GitHub App·공개 HTTPS·production recovery·Alertmanager channel·secret manager·worker
+  soak는 verifier가 준비됐더라도 실제 외부 증적 전에는 완료로 표시하지 않는다.
+- Python 3.14.6에서 전체 401개 test(`2 skipped`)와 13개 진단 fixture 100%를 다시 통과시켰다.
+  이 판단을 D-067로 기록하고 root·개발 문서 index와 readiness에서 추적성 문서로 연결했으며,
+  readiness 기준 시점과 현재 test·Vitest·Grafana 버전도 2026-09-08 상태로 갱신했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

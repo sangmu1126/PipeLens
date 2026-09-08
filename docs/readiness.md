@@ -2,16 +2,17 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-02**, 변경 전 기준 main commit `f5d4a3f`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-08**, 변경 전 기준 main commit `71b16d9`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
+| MVP 요구사항 추적성 | 완료 | FR-01~FR-11·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
 | 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 130 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 단위·API 132개와 진단 평가 13/13 |
+| 백엔드 테스트 | 통과 | Python 3.14.6 로컬 401 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 401개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
-| 대시보드 테스트 | 통과 | Vitest 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
+| 대시보드 테스트 | 통과 | Vitest 5에서 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
 | Dockerfile base image | 통과 | Python·Node·Nginx multi-platform digest 고정과 CI 정책 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI·로컬에서 Nginx 기동 후 내부 8080 HTTP smoke test |
@@ -29,7 +30,7 @@
 | Worker soak evidence 도구 | 준비됨 | load·resource·provider fault·network·SLO·capacity strict JSON 판정 |
 | PostgreSQL runtime | 통과 | CI amd64·로컬 arm64에서 18.6, 17→18 dump/restore·Alembic·integration 검증 |
 | PostgreSQL 복원 증적 도구 | 준비됨 | 격리 18 volume 복원, RTO/RPO·checksum·Alembic·대표 count JSON 출력 |
-| Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2, 12→13 volume·provisioning·Viewer 검증 |
+| Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2.1, 12→13 volume·provisioning·Viewer 검증 |
 | Grafana 복원 증적 도구 | 준비됨 | 안전한 archive, 격리 13 volume, content·접근 정책·RTO/RPO JSON 출력 |
 | 통합 recovery 증적 도구 | 준비됨 | PostgreSQL·Grafana output, cutover·rollback·point-of-no-return 판정 |
 | 합성 live recovery smoke | 통과 | 실제 Docker backup·격리 restore, Alembic·Grafana persistent content와 cleanup 검증 |
