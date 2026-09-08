@@ -1378,6 +1378,27 @@ Nginx는 별도 PR로 분리했다.
   [machine-readable evidence](acceptance-runs/2026-09-08-github-app-consolidated.json)에 보존했다.
   이로써 #61은 완료하지만 Quick Tunnel의 production HTTPS 실패와 #62는 그대로 남는다.
 
+### Launch 대표 규모 PostgreSQL·Grafana recovery 완료
+
+- 실제 운영 트래픽이 없는 launch 단계의 대표 기준을 분석 100,000건, feedback 10,000건,
+  사용자·installation 각 1,000건으로 정의했다. 난수성 진단 payload를 사용해 비압축 PostgreSQL
+  custom backup이 최소 256 MiB를 넘게 하고, Grafana에는 provisioned·persistent content와 128 MiB
+  persistent payload를 함께 넣었다.
+- PostgreSQL 18 backup 470,664,637 bytes를 5.766초에 만들고 새 volume에 7.610초, 전체 12.886초로
+  복원했다. database 637,859,519 bytes, Alembic `20260829_0009`와 네 대표 count를 확인했다.
+- Grafana 13 backup 155,808,250 bytes를 5.511초에 만들고 archive 2.699초, 전체 6.627초로 복원했다.
+  provisioned·SQLite persistent dashboard, folder, datasource와 anonymous disabled 정책을 확인했다.
+- 복원 target에서는 read-only smoke만 수행해 point of no return인 첫 write를 넘지 않았다. 두 target을
+  중지하고 보존 PostgreSQL·Grafana source를 재기동해 count, content와 access policy를 5.933초 안에
+  재검증했다. strict 통합 verifier의 여섯 check가 모두 `true`였다.
+- 첫 시도는 `docker exec -i` 누락 때문에 0건 복원을 verifier가 거부했다. 두 번째는 Grafana source
+  재시작 때 동적 port가 바뀌었지만 이전 주소를 사용해 rollback smoke가 중단됐다. 재시작 뒤 port를
+  재조회해 최종 실행을 통과했으며, 실패 실행의 결과를 성공 증적에 섞지 않았다.
+- 기준·수치·redacted 원문과 실패 판단은
+  [2026-09-08 scale recovery evidence](acceptance-runs/2026-09-08-recovery-scale/README.md)에 보존했다.
+  이는 현재 launch capacity에는 production-representative지만 실제 사용자 payload 분포는 아니므로,
+  운영 30일 또는 peak 증가 시 기준을 재산정한다. 판단은 D-073에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
