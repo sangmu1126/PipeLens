@@ -1098,3 +1098,22 @@
 - 관련: [strict GitHub App evidence](acceptance-runs/2026-09-08-github-app-consolidated.json),
   [실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md),
   [GitHub App E2E 절차](github-app-acceptance.md).
+
+## D-073. 실제 트래픽 전 recovery 기준을 launch capacity 모델로 고정
+
+- 결정: 운영 사용자가 없는 현재 단계에는 예상 하루 처리량 100,000 analysis, 10,000 feedback,
+  1,000 user/installation과 난수성 payload를 production-representative source로 사용한다. PostgreSQL
+  custom backup 256 MiB, Grafana stopped-volume archive 128 MiB를 최소로 하고 900초/300초 RTO,
+  공통 300초 RPO와 rollback 300초를 적용한다.
+- 이유: 실제 사용자 traffic을 기다리면 복원 경로와 용량 위험을 검증하지 못한다. 반대로 작은 CI
+  fixture나 고압축 반복 문자열은 disk·I/O와 restore duration을 대표하지 않는다. 난수성 payload와
+  실제 schema/content를 함께 쓰면 현재 launch capacity에 대한 보수적 baseline을 즉시 측정할 수 있다.
+- 대안: production traffic이 생길 때까지 #63 보류, 현재 live staging 9건만 backup, 예제의 임의 5 GiB
+  기준 채택, target에 쓰기 후 reconciliation을 포함한 destructive cutover.
+- 결과: PostgreSQL backup 470.7 MB·recovery 12.886초, Grafana backup 155.8 MB·recovery 6.627초,
+  보존 source rollback 5.933초로 목표를 충족했다. Target에는 read-only smoke만 수행해 첫 write라는
+  point of no return을 넘지 않았다. 운영 30일 또는 peak가 모델을 넘으면 실제 분포로 최소값과 목표를
+  다시 산정하고 drill을 반복한다.
+- 관련: [scale recovery evidence](acceptance-runs/2026-09-08-recovery-scale/README.md),
+  [Production 통합 recovery drill](production-recovery-drill.md),
+  [production restore #63](https://github.com/sangmu1126/PipeLens/issues/63).

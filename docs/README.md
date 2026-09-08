@@ -40,6 +40,8 @@
 - [Grafana 복원 증적 drill](grafana-restore-drill.md): 격리 volume 복원, content·접근 정책 JSON 증적
 - [Production 통합 recovery drill](production-recovery-drill.md): PostgreSQL·Grafana 결과 결합,
   cutover·rollback과 point-of-no-return 증적
+  - [2026-09-08 scale recovery evidence](acceptance-runs/2026-09-08-recovery-scale/README.md):
+    launch 대표 규모의 실제 PostgreSQL 18·Grafana 13 복원, read-only cutover와 source rollback
 - [저장소 보호와 변경 절차](repository-governance.md): `main` PR·필수 check와 운영 규칙
 
 ## 기록 원칙
@@ -53,5 +55,5 @@
 ## 현재 한 줄 상태
 
 MVP 요구 기능, 자동화된 로컬·CI 검증, `main` 보호와 서명 image release·보존 정책은 구현됐다.
-실제 GitHub App staging의 OAuth·branch·PR 실패 게시와 재전달은 검증했으며, 외부 fork와 production
-HTTPS 배포는 아직 남아 있다.
+실제 GitHub App의 OAuth·branch·PR·외부 fork와 launch 대표 규모 recovery는 검증했다. 안정 도메인의
+production HTTPS 배포와 나머지 외부 운영 인수는 아직 남아 있다.

@@ -37,7 +37,7 @@
 | --- | --- | --- | --- |
 | 보안 | HMAC webhook, encrypted OAuth token, installation 접근 격리, LLM 전 마스킹, untrusted fork 격리, production fail-closed 설정 | `tests/test_webhook.py`, `tests/test_auth.py`, `tests/test_sanitizer.py`, `tests/test_security.py`, `tests/test_pipeline.py`, CodeQL·secret scan·dependency review | 실제 GitHub 경계 완료. production HTTPS [#62](https://github.com/sangmu1126/PipeLens/issues/62), secret manager [#65](https://github.com/sangmu1126/PipeLens/issues/65) |
 | 성능 | 비동기 queue·worker, run dedupe, 시작 60초·완료 120초 SLO 기록 | `tests/test_queue.py`, `tests/test_worker.py`, `tests/test_worker_drill.py`, CI 200-job replica drill | production resource·provider latency 장시간 soak [#66](https://github.com/sangmu1126/PipeLens/issues/66) |
-| 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, `tests/test_queue.py`, `tests/test_pipeline.py`, PostgreSQL·Redis integration | 실제 provider·network fault #66, production backup/restore [#63](https://github.com/sangmu1126/PipeLens/issues/63) |
+| 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, `tests/test_queue.py`, `tests/test_pipeline.py`, PostgreSQL·Redis integration, [launch 규모 recovery](acceptance-runs/2026-09-08-recovery-scale/README.md) | 실제 provider·network fault #66; 운영량 증가 시 recovery 기준 재산정 |
 | 관측성 | 성공·지연·범주·LLM token/cost·feedback·redaction·queue·SLO Prometheus 지표와 Grafana dashboard | `tests/test_metrics.py`, `tests/test_pipeline.py`, `tests/test_feedback_api.py`, Prometheus rule·Grafana provisioning CI | 실제 incident receiver와 acknowledgement [#64](https://github.com/sangmu1126/PipeLens/issues/64) |
 
 ## 서비스 완료를 막는 외부 인수 조건
@@ -46,7 +46,7 @@
 | --- | --- | --- |
 | P0 완료 | [#61 실제 GitHub App E2E](https://github.com/sangmu1126/PipeLens/issues/61) | [strict evidence](acceptance-runs/2026-09-08-github-app-consolidated.json): 실제 PR·branch 실패, comment·check upsert, SLO, secret·fork 격리 |
 | P0 | [#62 공개 HTTPS OAuth·webhook](https://github.com/sangmu1126/PipeLens/issues/62) | TLS·HSTS, secure session, callback·forwarding, signed webhook |
-| P1 | [#63 production 규모 recovery](https://github.com/sangmu1126/PipeLens/issues/63) | PostgreSQL·Grafana 규모, RTO/RPO, cutover·rollback |
+| P1 완료 | [#63 production 규모 recovery](https://github.com/sangmu1126/PipeLens/issues/63) | [strict evidence](acceptance-runs/2026-09-08-recovery-scale/evidence.json): launch 대표 규모 PostgreSQL·Grafana RTO/RPO, read-only cutover·보존 source rollback |
 | P1 | [#64 Alertmanager 실채널](https://github.com/sangmu1126/PipeLens/issues/64) | firing·resolved, grouping·dedupe·inhibition, rotation·retry |
 | P1 | [#65 secret manager](https://github.com/sangmu1126/PipeLens/issues/65) | workload identity, file injection, Fernet·외부 credential rotation |
 | P1 | [#66 production worker soak](https://github.com/sangmu1126/PipeLens/issues/66) | 1시간 이상 resource·provider·fault telemetry와 capacity 승인 |

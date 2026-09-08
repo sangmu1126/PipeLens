@@ -34,6 +34,7 @@
 | Grafana 복원 증적 도구 | 준비됨 | 안전한 archive, 격리 13 volume, content·접근 정책·RTO/RPO JSON 출력 |
 | 통합 recovery 증적 도구 | 준비됨 | PostgreSQL·Grafana output, cutover·rollback·point-of-no-return 판정 |
 | 합성 live recovery smoke | 통과 | 실제 Docker backup·격리 restore, Alembic·Grafana persistent content와 cleanup 검증 |
+| launch 규모 recovery drill | 통과 | PostgreSQL 470.7 MB·Grafana 155.8 MB backup, 격리 restore와 보존 source rollback 5.933초 |
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
@@ -50,7 +51,7 @@
 | dependency 변경 gate | 통과 | PR에서 runtime·development의 신규 moderate 이상 취약점 차단 |
 | 공개 보안 접수 | 설정됨 | private vulnerability reporting, Dependabot alerts·security updates, SECURITY policy |
 | 공개 기여 정책 | 설정됨 | 기여 가이드, issue/PR template와 Contributor Covenant 2.1 행동강령 |
-| 실제 GitHub App E2E | 미검증 | 공개 HTTPS·App credentials가 필요한 외부 검증 |
+| 실제 GitHub App E2E | 통과 | 단일 공개 repository의 branch·PR·외부 fork strict evidence |
 | production 배포 | 미완료 | 서명 image는 있으나 공개 HTTPS·TLS·backup과 실제 service 배포 없음 |
 | `main` 보호 | 설정됨 | PR, strict CI 6개·Dependency Review 1개·CodeQL 2개, 관리자 적용 |
 
@@ -484,10 +485,12 @@ repository strict evidence로 완료했다.
 
 ### P1 — 운영 신뢰성
 
-1. [#63 production 규모 PostgreSQL·Grafana 복원 드릴](https://github.com/sangmu1126/PipeLens/issues/63)
-2. [#64 Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
-3. [#65 production secret manager와 credential rotation](https://github.com/sangmu1126/PipeLens/issues/65)
-4. [#66 production 조건 worker soak/load와 SLO](https://github.com/sangmu1126/PipeLens/issues/66)
+[#63 production 규모 PostgreSQL·Grafana 복원 드릴](https://github.com/sangmu1126/PipeLens/issues/63)은
+[launch 규모 strict evidence](acceptance-runs/2026-09-08-recovery-scale/README.md)로 완료했다.
+
+1. [#64 Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
+2. [#65 production secret manager와 credential rotation](https://github.com/sangmu1126/PipeLens/issues/65)
+3. [#66 production 조건 worker soak/load와 SLO](https://github.com/sangmu1126/PipeLens/issues/66)
 
 여섯 항목은 모두
 [`v0.2.0 Production readiness`](https://github.com/sangmu1126/PipeLens/milestone/1)
@@ -539,7 +542,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 
 ## 7. 운영 전 체크리스트
 
-- [ ] [GitHub App 실제 설치와 E2E 증적](https://github.com/sangmu1126/PipeLens/issues/61)
+- [x] [GitHub App 실제 설치와 E2E 증적](https://github.com/sangmu1126/PipeLens/issues/61)
 - [x] GitHub App 실제 run·게시·SLO·secret·fork의 redacted machine-readable evidence 도구
 - [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62)
 - [x] 공개 HTTPS 경계의 redacted machine-readable preflight 도구
@@ -565,12 +568,12 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [ ] [production secret manager·workload identity 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [x] PostgreSQL 18 격리 복원·machine-readable evidence 도구
-- [ ] [production 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
+- [x] [launch 대표 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
 - [x] PostgreSQL·Grafana cutover·rollback 통합 machine-readable evidence 도구
 - [x] PostgreSQL 18·Grafana 13 실제 Docker backup/restore 합성 CI smoke
 - [x] Grafana 12→13 합성 persistent-volume migration CI drill
 - [x] Grafana 13 격리 volume 복원·machine-readable evidence 도구
-- [ ] [production Grafana volume backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
+- [x] [launch 대표 규모 Grafana volume backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
 - [ ] [production 조건의 worker replica soak/load test](https://github.com/sangmu1126/PipeLens/issues/66)
 - [x] production worker soak의 resource·provider·fault·capacity machine-readable evidence 도구
 - [x] worker arrival profile과 machine-readable capacity evidence 도구
