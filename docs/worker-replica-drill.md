@@ -77,6 +77,12 @@ rate를 지정하고 burst를 생략하면 job을 하나씩 일정하게 주입�
 만큼 실제 arrival window가 짧아진다. 계획값이 최소보다 짧으면 Redis 연결 전에 거부하고, 실행 뒤
 실측 enqueue duration도 같은 최소값 이상인지 다시 확인한다.
 
+worker는 Redis가 시작 시점 또는 dequeue 중 일시적으로 끊기면 heartbeat 주기로 연결을 다시
+시도한다. rate-shaped producer도 `--redis-recovery-timeout-seconds`(기본 60초) 동안 enqueue를
+재시도한다. 응답 timeout 전에 Redis가 Lua enqueue를 반영했을 수 있으므로 재접속 뒤 같은 run의
+dedupe 응답은 성공으로 간주한다. 이 처리는 전달 여부가 불명확한 요청을 새 ID로 다시 만들어
+중복 처리하는 대신 기존 idempotency key를 그대로 사용한다.
+
 ## 해석과 운영 경계
 
 - 60초/120초는 제품 기본 SLO와 같은 절대 상한이다. 합성 pipeline은 각 job에 10ms만 사용하므로

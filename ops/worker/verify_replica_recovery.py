@@ -14,6 +14,8 @@ from math import ceil
 from pathlib import Path
 from typing import Any
 
+from redis.exceptions import RedisError
+
 from pipelens.metrics import Metrics
 from pipelens.models import AnalysisRequest
 from pipelens.queue import RedisAnalysisQueue
@@ -115,6 +117,8 @@ def validate_args(args: argparse.Namespace) -> None:
         raise DrillError("burst size must be zero or no greater than jobs")
     if args.minimum_arrival_seconds < 0:
         raise DrillError("minimum arrival duration must not be negative")
+    if args.redis_recovery_timeout_seconds <= 0:
+        raise DrillError("Redis recovery timeout must be positive")
     planned_arrival = planned_arrival_seconds(args)
     if args.minimum_arrival_seconds and planned_arrival < args.minimum_arrival_seconds:
         raise DrillError(
@@ -144,14 +148,30 @@ async def enqueue_jobs(
     ):
         run_id = 1_000_000 + offset
         tracker.enqueued_at[run_id] = time.monotonic()
-        created = await producer.enqueue(
-            AnalysisRequest(
-                run_id=run_id,
-                repository="pipelens/replica-drill",
-                installation_id=1,
-                head_sha=f"{offset:040x}",
-            )
+        request = AnalysisRequest(
+            run_id=run_id,
+            repository="pipelens/replica-drill",
+            installation_id=1,
+            head_sha=f"{offset:040x}",
         )
+        deadline = time.monotonic() + args.redis_recovery_timeout_seconds
+        uncertain_delivery = False
+        while True:
+            try:
+                created = await producer.enqueue(request)
+            except RedisError as error:
+                uncertain_delivery = True
+                if time.monotonic() >= deadline:
+                    raise DrillError(
+                        f"Redis did not recover while enqueueing synthetic run {run_id}"
+                    ) from error
+                await asyncio.sleep(min(args.heartbeat_seconds, 1.0))
+                continue
+            break
+        # A timed-out EVAL can commit server-side. Its idempotency key makes a
+        # duplicate response after reconnect proof that the uncertain call landed.
+        if not created and uncertain_delivery:
+            created = True
         if not created:
             raise DrillError(f"duplicate enqueue for synthetic run {run_id}")
         if (
@@ -350,6 +370,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--completion-slo-seconds", type=float, default=120)
     parser.add_argument("--recovery-grace-seconds", type=float, default=5)
     parser.add_argument("--minimum-arrival-seconds", type=float, default=0)
+    parser.add_argument("--redis-recovery-timeout-seconds", type=float, default=60)
     parser.add_argument("--output", type=Path)
     return parser.parse_args(argv)
 

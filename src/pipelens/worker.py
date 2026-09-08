@@ -3,6 +3,7 @@ import logging
 from contextlib import suppress
 
 from prometheus_client import start_http_server
+from redis.exceptions import RedisError
 
 from pipelens.bootstrap import create_runtime
 from pipelens.config import Settings, get_settings
@@ -45,13 +46,30 @@ class AnalysisWorker:
                 await self._task
 
     async def run(self) -> None:
-        await self._maintain_queue_once()
+        while True:
+            try:
+                await self._maintain_queue_once()
+            except RedisError:
+                logger.exception(
+                    "queue unavailable during worker startup; retrying in %.1fs",
+                    self.heartbeat_seconds,
+                )
+                await asyncio.sleep(self.heartbeat_seconds)
+            else:
+                break
         maintenance_task = asyncio.create_task(
             self._maintain_queue(), name="pipelens-queue-maintenance"
         )
         try:
             while True:
-                await self.process_next()
+                try:
+                    await self.process_next()
+                except RedisError:
+                    logger.exception(
+                        "queue operation failed; retrying in %.1fs",
+                        self.heartbeat_seconds,
+                    )
+                    await asyncio.sleep(self.heartbeat_seconds)
         finally:
             maintenance_task.cancel()
             with suppress(asyncio.CancelledError):
