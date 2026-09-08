@@ -1310,6 +1310,18 @@ Nginx는 별도 PR로 분리했다.
   흐름과 TLS evidence는 외부 staging 연결 뒤 별도로 수집하며 로컬 성공을 #61·#62 완료로 간주하지
   않는다. 판단은 D-068에 기록했다.
 
+### 실제 OAuth staging에서 access log query 노출 차단
+
+- 임시 public HTTPS staging에 실제 GitHub App을 최소 권한으로 설치하고 PipeLens login endpoint에서
+  OAuth를 시작했다. state cookie 검증, callback code 교환, dashboard redirect와 인증된 `/api/v1/me`
+  응답은 정상 완료됐다.
+- 이 과정에서 dashboard nginx와 API Uvicorn의 기본 access log가 callback query의 OAuth code와
+  signed state를 그대로 기록함을 발견했다. 해당 code는 이미 한 번 교환됐지만 credential 성격의
+  query를 수집하는 것 자체를 결함으로 판단했다.
+- nginx는 query와 referrer를 제외한 method·path·status 중심 형식으로 바꾸고, Uvicorn access log는
+  끈다. application metric과 명시적 log는 유지한다. 회귀 test가 nginx 형식에 request URI·args·
+  referrer가 없고 API image command에 `--no-access-log`가 있음을 검사한다. 판단은 D-069에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
