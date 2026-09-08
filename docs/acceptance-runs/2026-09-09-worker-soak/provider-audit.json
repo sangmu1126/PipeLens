@@ -1,0 +1,23 @@
+{
+  "profiles": {
+    "github": {
+      "latency_p50_seconds": 0.159,
+      "latency_p95_seconds": 0.313,
+      "logical_requests": 20,
+      "rate_limit_responses": 1,
+      "requests": 22,
+      "retry_successes": 2,
+      "transient_failures": 1
+    },
+    "llm": {
+      "latency_p50_seconds": 1.21,
+      "latency_p95_seconds": 2.422,
+      "logical_requests": 20,
+      "rate_limit_responses": 1,
+      "requests": 22,
+      "retry_successes": 2,
+      "transient_failures": 1
+    }
+  },
+  "schema_version": 1
+}
