@@ -57,3 +57,19 @@ def test_dashboard_server_proxies_github_webhooks_to_api() -> None:
     )[0]
 
     assert "proxy_pass http://api:8000;" in webhook_location
+
+
+def test_container_access_logs_do_not_record_query_strings() -> None:
+    nginx_configuration = Path("frontend/nginx.conf").read_text()
+    api_dockerfile = Path("Dockerfile").read_text()
+
+    log_format = nginx_configuration.split("log_format pipelens", 1)[1].split(";", 1)[0]
+
+    assert "$uri" in log_format
+    assert "$request_uri" not in log_format
+    assert "$request " not in log_format
+    assert "$args" not in log_format
+    assert "$query_string" not in log_format
+    assert "$http_referer" not in log_format
+    assert "access_log /var/log/nginx/access.log pipelens;" in nginx_configuration
+    assert '"--no-access-log"' in api_dockerfile
