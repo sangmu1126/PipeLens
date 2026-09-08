@@ -9,6 +9,7 @@ from ops.worker.verify_replica_recovery import (
     WorkTracker,
     parse_args,
     percentile,
+    planned_arrival_seconds,
     validate_args,
 )
 
@@ -34,6 +35,7 @@ def test_worker_drill_rejects_heartbeat_that_cannot_renew_lease() -> None:
     [
         (["--enqueue-rate-per-second", "-1"], "enqueue rate"),
         (["--jobs", "5", "--burst-size", "6"], "burst size"),
+        (["--minimum-arrival-seconds", "-1"], "minimum arrival duration"),
     ],
 )
 def test_worker_drill_rejects_invalid_load_shape(
@@ -66,6 +68,53 @@ def test_worker_drill_parses_rate_shape_and_evidence_output(tmp_path) -> None:
     assert args.burst_size == 50
     assert args.processing_seconds == 0.25
     assert args.output == output
+
+
+def test_planned_arrival_duration_accounts_for_recovery_probe_and_final_burst() -> None:
+    short = parse_args(
+        [
+            "--jobs",
+            "3601",
+            "--enqueue-rate-per-second",
+            "1",
+            "--burst-size",
+            "4",
+        ]
+    )
+    exact = parse_args(
+        [
+            "--jobs",
+            "3605",
+            "--enqueue-rate-per-second",
+            "1",
+            "--burst-size",
+            "4",
+            "--minimum-arrival-seconds",
+            "3600",
+        ]
+    )
+
+    assert planned_arrival_seconds(short) == 3596
+    assert planned_arrival_seconds(exact) == 3600
+    validate_args(exact)
+
+
+def test_worker_drill_rejects_profile_shorter_than_required_arrival_duration() -> None:
+    args = parse_args(
+        [
+            "--jobs",
+            "3601",
+            "--enqueue-rate-per-second",
+            "1",
+            "--burst-size",
+            "4",
+            "--minimum-arrival-seconds",
+            "3600",
+        ]
+    )
+
+    with pytest.raises(DrillError, match=r"3596\.000s < 3600\.000s"):
+        validate_args(args)
 
 
 def test_nearest_rank_percentiles_are_deterministic() -> None:
