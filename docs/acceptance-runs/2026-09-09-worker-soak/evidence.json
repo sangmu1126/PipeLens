@@ -1,0 +1,129 @@
+{
+  "artifacts": {
+    "provider_audit_sha256": "ba4f687856bc27ba2c74bbaf65c2c68e29c09e9a3fb8f9b2b57d8ddb6ffe5f89",
+    "runner_sha256": "ecaa2189f0eed0d864a9ed60e879915fd3c005a1e0a613f8a1ceb926ea3babf6",
+    "secret_scan_matches": 0,
+    "telemetry_sha256": "c6cd7135035c0c04e40be538e8c19e5a5c027aed9d89d7afff09b93ae79fa2b1"
+  },
+  "capacity_recommendation": {
+    "headroom_percent": 20.0,
+    "limiting_resource": "tested-rate-ceiling",
+    "max_sustained_rate_per_second": 5.0,
+    "owner_documented": true,
+    "recommended_rate_per_second": 4.0,
+    "recommended_worker_replicas": 4,
+    "reviewed": true
+  },
+  "checked_at": "2026-09-08T16:56:14.687452Z",
+  "checks": {
+    "analysis_slo": true,
+    "artifact_secret_scan": true,
+    "capacity_recommendation": true,
+    "exactly_once_and_drained": true,
+    "faults_recovered": true,
+    "production_duration": true,
+    "provider_failures_exercised": true,
+    "resource_headroom": true,
+    "resource_limits_consistent": true
+  },
+  "environment": "local-production-representative",
+  "fault_injection": {
+    "expired_lease": {
+      "lost_jobs": 0,
+      "recovered_jobs": 1,
+      "recovery_seconds": 51.507,
+      "timeline": {
+        "injected_at": "2026-09-08T15:47:41.271625Z",
+        "recovered_at": "2026-09-08T15:48:32.778877Z"
+      }
+    },
+    "network_interruption": {
+      "interruptions": 1,
+      "lost_jobs": 0,
+      "recovery_seconds": 21.196,
+      "target": "redis-network-path",
+      "timeline": {
+        "injected_at": "2026-09-08T15:49:15.256547Z",
+        "recovered_at": "2026-09-08T15:49:36.452391Z"
+      }
+    },
+    "worker_termination": {
+      "lost_jobs": 0,
+      "recovery_seconds": 51.507,
+      "timeline": {
+        "injected_at": "2026-09-08T15:47:41.271625Z",
+        "recovered_at": "2026-09-08T15:48:32.778877Z"
+      },
+      "workers": 1
+    }
+  },
+  "input_sha256": "19d20224df0e34a75fa210e3a8cc48340282ce677f16934676f546e7147d2c42",
+  "load_profile": {
+    "arrival_rate_per_second": 1.0,
+    "burst_size": 4,
+    "concurrency": 4,
+    "jobs": 3605,
+    "planned_duration_seconds": 3600.0
+  },
+  "passed": true,
+  "provider_profile": {
+    "github": {
+      "latency_p50_seconds": 0.159,
+      "latency_p95_seconds": 0.313,
+      "rate_limit_responses": 1,
+      "requests": 22,
+      "retry_successes": 2,
+      "transient_failures": 1
+    },
+    "llm": {
+      "latency_p50_seconds": 1.21,
+      "latency_p95_seconds": 2.422,
+      "rate_limit_responses": 1,
+      "requests": 22,
+      "retry_successes": 2,
+      "transient_failures": 1
+    }
+  },
+  "resource_limits": {
+    "postgres_max_connections": 50,
+    "postgres_pool_size_each": 5,
+    "redis_maxmemory_mib": 128.0,
+    "worker_cpu_cores_each": 0.25,
+    "worker_memory_mib_each": 128.0,
+    "worker_replicas": 4
+  },
+  "resource_observation": {
+    "captured_at": "2026-09-08T16:45:55.565618Z",
+    "postgres_pool_peak_connections": 20,
+    "postgres_total_peak_connections": 29,
+    "redis_memory_peak_percent": 1.264536,
+    "worker_cpu_peak_percent": 2.25,
+    "worker_memory_peak_percent": 12.2
+  },
+  "results": {
+    "completed_jobs": 3605,
+    "completion_latency_p95_seconds": 0.262,
+    "completion_slo_attainment_percent": 100.0,
+    "duplicate_completions": 0,
+    "exactly_once": true,
+    "lost_jobs": 0,
+    "queue_drained": true,
+    "start_latency_p95_seconds": 0.003,
+    "start_slo_attainment_percent": 100.0,
+    "throughput_jobs_per_second": 1.001
+  },
+  "schema_version": 1,
+  "soak_id": "worker-soak-20260909-r3",
+  "soak_window": {
+    "completed_at": "2026-09-08T16:46:00.508847Z",
+    "observed_duration_seconds": 3601.127,
+    "started_at": "2026-09-08T15:45:59.381905Z"
+  },
+  "source_revision": "c19646280e478ff6933e68e2c18afb3ca9b0b557",
+  "thresholds": {
+    "maximum_fault_recovery_seconds": 120,
+    "maximum_resource_utilization_percent": 90,
+    "minimum_duration_seconds": 3600,
+    "minimum_slo_attainment_percent": 99
+  }
+}

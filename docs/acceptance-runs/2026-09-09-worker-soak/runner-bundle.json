@@ -1,0 +1,148 @@
+{
+  "approved_plan": {
+    "arrival_rate_per_second": 1,
+    "burst_size": 4,
+    "capacity_rate_per_second": 5,
+    "completion_slo_seconds": 120,
+    "concurrency": 4,
+    "planned_duration_seconds": 3600,
+    "start_slo_seconds": 60
+  },
+  "capacity_result": {
+    "burst_size": 20,
+    "checked_at": "2026-09-08T15:50:29.299498+00:00",
+    "completion_latency_seconds": {
+      "p50": 0.768,
+      "p95": 1.286,
+      "p99": 1.292
+    },
+    "completion_slo_attainment_percent": 100.0,
+    "completion_slo_seconds": 120.0,
+    "enqueue_rate_per_second": 5.0,
+    "enqueue_seconds": 116.02,
+    "exactly_once": true,
+    "jobs": 601,
+    "max_completion_seconds": 30.322,
+    "max_start_seconds": 30.069,
+    "observed_seconds": 117.303,
+    "orphan_recovery_seconds": 30.069,
+    "planned_arrival_seconds": 116.0,
+    "processed_per_replica": {
+      "replica-1": 150,
+      "replica-2": 150,
+      "replica-3": 151,
+      "replica-4": 150
+    },
+    "queue_drained": true,
+    "recovered_jobs": 1,
+    "replicas": 4,
+    "schema_version": 1,
+    "start_latency_seconds": {
+      "p50": 0.513,
+      "p95": 1.032,
+      "p99": 1.036
+    },
+    "start_slo_attainment_percent": 100.0,
+    "start_slo_seconds": 60.0,
+    "synthetic_processing_seconds": 0.25,
+    "throughput_jobs_per_second": 5.123
+  },
+  "container_window": {
+    "exit_code": 0,
+    "finished_at": "2026-09-08T16:46:00.508847091Z",
+    "started_at": "2026-09-08T15:45:59.381905549Z"
+  },
+  "fault_results": {
+    "network_interruption": {
+      "dedupe_members": 0,
+      "interrupted_at": "2026-09-08T15:49:15.256547+00:00",
+      "interruptions": 1,
+      "lost_jobs": 0,
+      "pending_jobs": 0,
+      "recovered_at": "2026-09-08T15:49:36.452391+00:00",
+      "schema_version": 1,
+      "target": "redis-network-path"
+    },
+    "termination_and_expired_lease": {
+      "dedupe_members": 0,
+      "expired_leases": 1,
+      "injected_at": "2026-09-08T15:47:41.271625+00:00",
+      "lost_jobs": 0,
+      "pending_jobs": 0,
+      "recovered_at": "2026-09-08T15:48:32.778877+00:00",
+      "recovered_jobs": 1,
+      "schema_version": 1,
+      "terminated_containers": 1
+    }
+  },
+  "platform": {
+    "architecture": "arm64",
+    "docker_engine": "29.6.2",
+    "host": "Docker Desktop",
+    "os": "linux"
+  },
+  "primary_result": {
+    "burst_size": 4,
+    "checked_at": "2026-09-08T15:46:00.198968+00:00",
+    "completion_latency_seconds": {
+      "p50": 0.255,
+      "p95": 0.262,
+      "p99": 0.264
+    },
+    "completion_slo_attainment_percent": 100.0,
+    "completion_slo_seconds": 120.0,
+    "enqueue_rate_per_second": 1.0,
+    "enqueue_seconds": 3600.011,
+    "exactly_once": true,
+    "jobs": 3605,
+    "max_completion_seconds": 30.337,
+    "max_start_seconds": 30.08,
+    "observed_seconds": 3600.266,
+    "orphan_recovery_seconds": 30.08,
+    "planned_arrival_seconds": 3600.0,
+    "processed_per_replica": {
+      "replica-1": 901,
+      "replica-2": 901,
+      "replica-3": 902,
+      "replica-4": 901
+    },
+    "queue_drained": true,
+    "recovered_jobs": 1,
+    "replicas": 4,
+    "schema_version": 1,
+    "start_latency_seconds": {
+      "p50": 0.001,
+      "p95": 0.003,
+      "p99": 0.004
+    },
+    "start_slo_attainment_percent": 100.0,
+    "start_slo_seconds": 60.0,
+    "synthetic_processing_seconds": 0.25,
+    "throughput_jobs_per_second": 1.001
+  },
+  "runner_image": {
+    "id": "sha256:904c9722d7b2ca93bdd2821c24970d02672e0d9ac8922baea7191d5717731dc3",
+    "python": "3.14"
+  },
+  "runtime_limits": {
+    "logical_worker_replicas": 4,
+    "per_replica_budget_share": {
+      "cpu_cores": 0.25,
+      "memory_mib": 128
+    },
+    "postgres_max_connections": 50,
+    "postgres_pool_model": {
+      "connections_per_replica": 5,
+      "connections_total": 20,
+      "implementation": "one isolated pool emulator container"
+    },
+    "redis_maxmemory_mib": 128,
+    "worker_process_container": {
+      "cpu_cores": 1,
+      "memory_mib": 512
+    }
+  },
+  "schema_version": 1,
+  "soak_id": "worker-soak-20260909-r3",
+  "source_revision": "c19646280e478ff6933e68e2c18afb3ca9b0b557"
+}

@@ -1,0 +1,4478 @@
+{
+  "interval_seconds": 10,
+  "peaks": {
+    "postgres_total_connections": 29,
+    "redis_memory_percent": 1.264536,
+    "runner_cpu_percent": 2.25,
+    "runner_memory_percent": 12.2
+  },
+  "samples": [
+    {
+      "captured_at": "2026-09-08T15:46:18.166725+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.39,
+          "memory_percent": 11.72
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231962
+    },
+    {
+      "captured_at": "2026-09-08T15:46:33.445699+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.0,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237589
+    },
+    {
+      "captured_at": "2026-09-08T15:46:48.701603+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.1,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.86,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231188
+    },
+    {
+      "captured_at": "2026-09-08T15:47:03.972095+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.9,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233542
+    },
+    {
+      "captured_at": "2026-09-08T15:47:19.230628+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.09,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.45,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237214
+    },
+    {
+      "captured_at": "2026-09-08T15:47:34.497240+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.15,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.98,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230437
+    },
+    {
+      "captured_at": "2026-09-08T15:47:49.754392+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.02,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.06,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237434
+    },
+    {
+      "captured_at": "2026-09-08T15:48:05.061788+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.94,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.53,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.2389
+    },
+    {
+      "captured_at": "2026-09-08T15:48:20.315637+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.96,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.43,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232302
+    },
+    {
+      "captured_at": "2026-09-08T15:48:35.556695+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.98,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.14,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236755
+    },
+    {
+      "captured_at": "2026-09-08T15:48:50.832158+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.05,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.24,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.243496
+    },
+    {
+      "captured_at": "2026-09-08T15:49:06.080514+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.8,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.05,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.41,
+          "memory_percent": 11.71
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235521
+    },
+    {
+      "captured_at": "2026-09-08T15:49:21.371972+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.75,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.07,
+          "memory_percent": 11.82
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236075
+    },
+    {
+      "captured_at": "2026-09-08T15:49:36.646312+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.96,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.23,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.248413
+    },
+    {
+      "captured_at": "2026-09-08T15:49:51.905624+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.96,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228285
+    },
+    {
+      "captured_at": "2026-09-08T15:50:07.186234+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.02,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.4,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232386
+    },
+    {
+      "captured_at": "2026-09-08T15:50:22.472351+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.14,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.19,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236099
+    },
+    {
+      "captured_at": "2026-09-08T15:50:37.719428+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.09,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.44,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.255107
+    },
+    {
+      "captured_at": "2026-09-08T15:50:52.939912+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.65,
+          "memory_percent": 5.95
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.88,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.261401
+    },
+    {
+      "captured_at": "2026-09-08T15:51:08.182276+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.76,
+          "memory_percent": 5.99
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.33,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.252836
+    },
+    {
+      "captured_at": "2026-09-08T15:51:23.454808+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.45,
+          "memory_percent": 6.07
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.31,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.254147
+    },
+    {
+      "captured_at": "2026-09-08T15:51:38.734657+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 5.95
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 11.9
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.257759
+    },
+    {
+      "captured_at": "2026-09-08T15:51:54.009646+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.93,
+          "memory_percent": 5.95
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 11.92
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.260823
+    },
+    {
+      "captured_at": "2026-09-08T15:52:09.292853+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 6.07
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 11.95
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.264536
+    },
+    {
+      "captured_at": "2026-09-08T15:52:24.583218+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 6.07
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.08,
+          "memory_percent": 12.02
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.248562
+    },
+    {
+      "captured_at": "2026-09-08T15:52:39.882497+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.93,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.35,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228493
+    },
+    {
+      "captured_at": "2026-09-08T15:52:55.160799+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.1,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.03,
+          "memory_percent": 12.02
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23238
+    },
+    {
+      "captured_at": "2026-09-08T15:53:10.436596+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.26,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234716
+    },
+    {
+      "captured_at": "2026-09-08T15:53:25.696811+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.03,
+          "memory_percent": 11.7
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.31,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.37,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229513
+    },
+    {
+      "captured_at": "2026-09-08T15:53:40.977947+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.26,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.8,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23359
+    },
+    {
+      "captured_at": "2026-09-08T15:53:56.197276+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.37,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227683
+    },
+    {
+      "captured_at": "2026-09-08T15:54:11.503552+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.34,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.45,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230001
+    },
+    {
+      "captured_at": "2026-09-08T15:54:26.770022+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.22,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234591
+    },
+    {
+      "captured_at": "2026-09-08T15:54:42.077326+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.4,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227814
+    },
+    {
+      "captured_at": "2026-09-08T15:54:57.388232+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.46,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.13,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231921
+    },
+    {
+      "captured_at": "2026-09-08T15:55:12.691085+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.07,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235759
+    },
+    {
+      "captured_at": "2026-09-08T15:55:27.924627+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.49,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.31,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238066
+    },
+    {
+      "captured_at": "2026-09-08T15:55:43.224565+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.41,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231211
+    },
+    {
+      "captured_at": "2026-09-08T15:55:58.538566+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.72,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.03
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235199
+    },
+    {
+      "captured_at": "2026-09-08T15:56:13.839525+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.34,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227933
+    },
+    {
+      "captured_at": "2026-09-08T15:56:29.121361+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.37,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.68,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232016
+    },
+    {
+      "captured_at": "2026-09-08T15:56:44.480770+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.81,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235688
+    },
+    {
+      "captured_at": "2026-09-08T15:56:59.774780+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.15,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.62,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237983
+    },
+    {
+      "captured_at": "2026-09-08T15:57:15.075207+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.24,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231235
+    },
+    {
+      "captured_at": "2026-09-08T15:57:30.351338+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.24,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235032
+    },
+    {
+      "captured_at": "2026-09-08T15:57:45.654249+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.36,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.6,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227778
+    },
+    {
+      "captured_at": "2026-09-08T15:58:00.974052+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.26,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.19,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23204
+    },
+    {
+      "captured_at": "2026-09-08T15:58:16.275552+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.3,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.52,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235557
+    },
+    {
+      "captured_at": "2026-09-08T15:58:31.561719+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.19,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.15,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237983
+    },
+    {
+      "captured_at": "2026-09-08T15:58:46.851281+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233518
+    },
+    {
+      "captured_at": "2026-09-08T15:59:02.149552+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.4,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237857
+    },
+    {
+      "captured_at": "2026-09-08T15:59:17.461072+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.26,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.68,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230681
+    },
+    {
+      "captured_at": "2026-09-08T15:59:32.761737+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.31,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.82,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234877
+    },
+    {
+      "captured_at": "2026-09-08T15:59:48.078019+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.99,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.3,
+          "memory_percent": 12.04
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237726
+    },
+    {
+      "captured_at": "2026-09-08T16:00:03.345934+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.12,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229578
+    },
+    {
+      "captured_at": "2026-09-08T16:00:18.627294+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.37,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234186
+    },
+    {
+      "captured_at": "2026-09-08T16:00:33.895219+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.31,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237857
+    },
+    {
+      "captured_at": "2026-09-08T16:00:49.184657+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.55,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.01,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23111
+    },
+    {
+      "captured_at": "2026-09-08T16:01:04.471173+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.56,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.85,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234853
+    },
+    {
+      "captured_at": "2026-09-08T16:01:19.746180+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.53,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236647
+    },
+    {
+      "captured_at": "2026-09-08T16:01:35.000859+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.45,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.3,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23015
+    },
+    {
+      "captured_at": "2026-09-08T16:01:50.221320+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.36,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.55,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234019
+    },
+    {
+      "captured_at": "2026-09-08T16:02:05.492070+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.0,
+          "memory_percent": 12.05
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237702
+    },
+    {
+      "captured_at": "2026-09-08T16:02:20.765587+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.53,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.1,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230919
+    },
+    {
+      "captured_at": "2026-09-08T16:02:36.060086+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.43,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234388
+    },
+    {
+      "captured_at": "2026-09-08T16:02:51.345775+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.4,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.79,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236492
+    },
+    {
+      "captured_at": "2026-09-08T16:03:06.657240+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.85,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.24,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.03,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230085
+    },
+    {
+      "captured_at": "2026-09-08T16:03:21.933260+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.35,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234055
+    },
+    {
+      "captured_at": "2026-09-08T16:03:37.215952+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.06,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.77,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237702
+    },
+    {
+      "captured_at": "2026-09-08T16:03:52.483088+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.47,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.05,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233697
+    },
+    {
+      "captured_at": "2026-09-08T16:04:07.787300+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.06,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.6,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.2353
+    },
+    {
+      "captured_at": "2026-09-08T16:04:23.062043+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.67,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228386
+    },
+    {
+      "captured_at": "2026-09-08T16:04:38.342624+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.92,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.44,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231331
+    },
+    {
+      "captured_at": "2026-09-08T16:04:53.660598+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.18,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236224
+    },
+    {
+      "captured_at": "2026-09-08T16:05:08.956373+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.06,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.14,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229763
+    },
+    {
+      "captured_at": "2026-09-08T16:05:24.264690+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.92,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233053
+    },
+    {
+      "captured_at": "2026-09-08T16:05:39.559476+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.67,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.06
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.2353
+    },
+    {
+      "captured_at": "2026-09-08T16:05:54.856085+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.35,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228368
+    },
+    {
+      "captured_at": "2026-09-08T16:06:10.162969+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.97,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232529
+    },
+    {
+      "captured_at": "2026-09-08T16:06:25.440519+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.36,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23601
+    },
+    {
+      "captured_at": "2026-09-08T16:06:40.716302+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.09,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.03,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229596
+    },
+    {
+      "captured_at": "2026-09-08T16:06:56.002374+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231652
+    },
+    {
+      "captured_at": "2026-09-08T16:07:11.313463+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.02,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.2353
+    },
+    {
+      "captured_at": "2026-09-08T16:07:26.604791+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.3,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228619
+    },
+    {
+      "captured_at": "2026-09-08T16:07:41.915536+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.2,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.22,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232529
+    },
+    {
+      "captured_at": "2026-09-08T16:07:57.228509+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.34,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.77,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236677
+    },
+    {
+      "captured_at": "2026-09-08T16:08:12.527785+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.07,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.85,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229644
+    },
+    {
+      "captured_at": "2026-09-08T16:08:27.825881+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.24,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231545
+    },
+    {
+      "captured_at": "2026-09-08T16:08:43.130205+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.56,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.74,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23747
+    },
+    {
+      "captured_at": "2026-09-08T16:08:58.420060+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.51,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.37,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231337
+    },
+    {
+      "captured_at": "2026-09-08T16:09:13.717435+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235199
+    },
+    {
+      "captured_at": "2026-09-08T16:09:29.006120+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.21,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.1,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227778
+    },
+    {
+      "captured_at": "2026-09-08T16:09:44.292396+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.28,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.67,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232195
+    },
+    {
+      "captured_at": "2026-09-08T16:09:59.592532+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.33,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.0,
+          "memory_percent": 12.07
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233822
+    },
+    {
+      "captured_at": "2026-09-08T16:10:14.888753+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.19,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238227
+    },
+    {
+      "captured_at": "2026-09-08T16:10:30.177995+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.34,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23136
+    },
+    {
+      "captured_at": "2026-09-08T16:10:45.475586+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.62,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235223
+    },
+    {
+      "captured_at": "2026-09-08T16:11:00.770990+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.09,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227945
+    },
+    {
+      "captured_at": "2026-09-08T16:11:16.044178+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.02,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 2.19,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.52,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231217
+    },
+    {
+      "captured_at": "2026-09-08T16:11:31.334931+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234347
+    },
+    {
+      "captured_at": "2026-09-08T16:11:46.552345+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.97,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.62,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.0,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23806
+    },
+    {
+      "captured_at": "2026-09-08T16:12:01.799273+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.44,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231277
+    },
+    {
+      "captured_at": "2026-09-08T16:12:17.075895+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.06,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235032
+    },
+    {
+      "captured_at": "2026-09-08T16:12:32.364726+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.02,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.45,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.03,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227778
+    },
+    {
+      "captured_at": "2026-09-08T16:12:47.638423+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.25,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.55,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230401
+    },
+    {
+      "captured_at": "2026-09-08T16:13:02.926077+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.02,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.45,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.25,
+          "memory_percent": 12.08
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234365
+    },
+    {
+      "captured_at": "2026-09-08T16:13:18.207766+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.4,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.27,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238036
+    },
+    {
+      "captured_at": "2026-09-08T16:13:33.502119+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.67,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231277
+    },
+    {
+      "captured_at": "2026-09-08T16:13:48.794069+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.09,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237869
+    },
+    {
+      "captured_at": "2026-09-08T16:14:04.074632+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.25,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.45,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230216
+    },
+    {
+      "captured_at": "2026-09-08T16:14:19.369193+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.42,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232821
+    },
+    {
+      "captured_at": "2026-09-08T16:14:34.654083+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.44,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236701
+    },
+    {
+      "captured_at": "2026-09-08T16:14:49.952032+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.58,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229787
+    },
+    {
+      "captured_at": "2026-09-08T16:15:05.201031+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.46,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.83,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234198
+    },
+    {
+      "captured_at": "2026-09-08T16:15:20.492394+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.28,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.54,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237869
+    },
+    {
+      "captured_at": "2026-09-08T16:15:35.781704+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.4,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.45,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228911
+    },
+    {
+      "captured_at": "2026-09-08T16:15:51.066703+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.68,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233155
+    },
+    {
+      "captured_at": "2026-09-08T16:16:06.288389+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.05,
+          "memory_percent": 11.67
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.61,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236725
+    },
+    {
+      "captured_at": "2026-09-08T16:16:21.559106+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.34,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230276
+    },
+    {
+      "captured_at": "2026-09-08T16:16:36.786967+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.46,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.07,
+          "memory_percent": 12.09
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234198
+    },
+    {
+      "captured_at": "2026-09-08T16:16:52.100666+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.47,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.26,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236892
+    },
+    {
+      "captured_at": "2026-09-08T16:17:07.408447+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.09,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229423
+    },
+    {
+      "captured_at": "2026-09-08T16:17:22.696948+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.46,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233196
+    },
+    {
+      "captured_at": "2026-09-08T16:17:38.014022+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236534
+    },
+    {
+      "captured_at": "2026-09-08T16:17:53.293094+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.17,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.58,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228887
+    },
+    {
+      "captured_at": "2026-09-08T16:18:08.605770+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.33,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 2.25,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234031
+    },
+    {
+      "captured_at": "2026-09-08T16:18:23.899310+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.01,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.12,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235658
+    },
+    {
+      "captured_at": "2026-09-08T16:18:39.196095+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.88,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229244
+    },
+    {
+      "captured_at": "2026-09-08T16:18:54.487718+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.13,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235366
+    },
+    {
+      "captured_at": "2026-09-08T16:19:09.783380+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.44,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228452
+    },
+    {
+      "captured_at": "2026-09-08T16:19:25.094986+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.22,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.06,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232696
+    },
+    {
+      "captured_at": "2026-09-08T16:19:40.402907+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.22,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.68,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236224
+    },
+    {
+      "captured_at": "2026-09-08T16:19:55.694981+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.14,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237828
+    },
+    {
+      "captured_at": "2026-09-08T16:20:10.968849+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.4,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.24,
+          "memory_percent": 12.1
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231861
+    },
+    {
+      "captured_at": "2026-09-08T16:20:26.271241+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.02,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.44,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235533
+    },
+    {
+      "captured_at": "2026-09-08T16:20:41.555124+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.35,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.15,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228809
+    },
+    {
+      "captured_at": "2026-09-08T16:20:56.856967+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.54,
+          "memory_percent": 5.95
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.73,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232696
+    },
+    {
+      "captured_at": "2026-09-08T16:21:12.153730+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.51,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.41,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235223
+    },
+    {
+      "captured_at": "2026-09-08T16:21:27.450071+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.37,
+          "memory_percent": 5.95
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.26,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237106
+    },
+    {
+      "captured_at": "2026-09-08T16:21:42.737077+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.57,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231611
+    },
+    {
+      "captured_at": "2026-09-08T16:21:57.999553+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.29,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235366
+    },
+    {
+      "captured_at": "2026-09-08T16:22:13.270959+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.41,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.59,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227421
+    },
+    {
+      "captured_at": "2026-09-08T16:22:28.588999+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.47,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.51,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232529
+    },
+    {
+      "captured_at": "2026-09-08T16:22:43.883008+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.31,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.11
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234657
+    },
+    {
+      "captured_at": "2026-09-08T16:22:59.186117+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.63,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.32,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238328
+    },
+    {
+      "captured_at": "2026-09-08T16:23:14.473510+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.39,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.27,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231611
+    },
+    {
+      "captured_at": "2026-09-08T16:23:29.757484+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.23,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236033
+    },
+    {
+      "captured_at": "2026-09-08T16:23:45.080995+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.33,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.74,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23136
+    },
+    {
+      "captured_at": "2026-09-08T16:24:00.388378+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.17,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.01,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235199
+    },
+    {
+      "captured_at": "2026-09-08T16:24:15.707736+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.12,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.45,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23685
+    },
+    {
+      "captured_at": "2026-09-08T16:24:31.006603+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.58,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230079
+    },
+    {
+      "captured_at": "2026-09-08T16:24:46.297438+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.01,
+          "memory_percent": 11.73
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.39,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234531
+    },
+    {
+      "captured_at": "2026-09-08T16:25:01.594224+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238036
+    },
+    {
+      "captured_at": "2026-09-08T16:25:16.890974+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.22,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.0,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231444
+    },
+    {
+      "captured_at": "2026-09-08T16:25:32.171467+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.4,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234388
+    },
+    {
+      "captured_at": "2026-09-08T16:25:47.456501+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.26,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237327
+    },
+    {
+      "captured_at": "2026-09-08T16:26:02.750077+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.59,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.52,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230633
+    },
+    {
+      "captured_at": "2026-09-08T16:26:18.038368+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.16,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.4,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234365
+    },
+    {
+      "captured_at": "2026-09-08T16:26:33.328627+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.49,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.57,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238036
+    },
+    {
+      "captured_at": "2026-09-08T16:26:48.628447+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.06,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.17,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231277
+    },
+    {
+      "captured_at": "2026-09-08T16:27:03.931552+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.14,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.52,
+          "memory_percent": 12.12
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233655
+    },
+    {
+      "captured_at": "2026-09-08T16:27:19.228629+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.98,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23716
+    },
+    {
+      "captured_at": "2026-09-08T16:27:34.517611+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.46,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.0,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230526
+    },
+    {
+      "captured_at": "2026-09-08T16:27:49.799911+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.0,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.29,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234365
+    },
+    {
+      "captured_at": "2026-09-08T16:28:05.104296+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.43,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.92,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23806
+    },
+    {
+      "captured_at": "2026-09-08T16:28:20.406319+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.95,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.61,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231647
+    },
+    {
+      "captured_at": "2026-09-08T16:28:35.704291+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.31,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235849
+    },
+    {
+      "captured_at": "2026-09-08T16:28:50.985597+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.04,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228952
+    },
+    {
+      "captured_at": "2026-09-08T16:29:06.280003+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.07,
+          "memory_percent": 11.7
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.45,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232886
+    },
+    {
+      "captured_at": "2026-09-08T16:29:21.584750+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 0.87,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236701
+    },
+    {
+      "captured_at": "2026-09-08T16:29:36.882397+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.39,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.0,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230276
+    },
+    {
+      "captured_at": "2026-09-08T16:29:52.172025+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.07,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233387
+    },
+    {
+      "captured_at": "2026-09-08T16:30:07.462775+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.15,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.52,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235825
+    },
+    {
+      "captured_at": "2026-09-08T16:30:22.747949+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.19,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.23,
+          "memory_percent": 12.13
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228952
+    },
+    {
+      "captured_at": "2026-09-08T16:30:38.042645+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.21,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233363
+    },
+    {
+      "captured_at": "2026-09-08T16:30:53.355385+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236701
+    },
+    {
+      "captured_at": "2026-09-08T16:31:08.651921+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.84,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230276
+    },
+    {
+      "captured_at": "2026-09-08T16:31:23.950073+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.5,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232111
+    },
+    {
+      "captured_at": "2026-09-08T16:31:39.259474+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.18,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235658
+    },
+    {
+      "captured_at": "2026-09-08T16:31:54.521823+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.57,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229286
+    },
+    {
+      "captured_at": "2026-09-08T16:32:09.727337+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.17,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.52,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23322
+    },
+    {
+      "captured_at": "2026-09-08T16:32:24.999499+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.28,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.67,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237059
+    },
+    {
+      "captured_at": "2026-09-08T16:32:40.312005+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.19,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.89,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230121
+    },
+    {
+      "captured_at": "2026-09-08T16:32:55.605901+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.14,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.77,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231986
+    },
+    {
+      "captured_at": "2026-09-08T16:33:10.900476+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.59,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.23,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.2357
+    },
+    {
+      "captured_at": "2026-09-08T16:33:26.168931+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.08,
+          "memory_percent": 11.72
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.29,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.11,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.22931
+    },
+    {
+      "captured_at": "2026-09-08T16:33:41.451596+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.39,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.14,
+          "memory_percent": 12.14
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23539
+    },
+    {
+      "captured_at": "2026-09-08T16:33:56.730695+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.3,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.02,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228285
+    },
+    {
+      "captured_at": "2026-09-08T16:34:12.028983+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.44,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.44,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231885
+    },
+    {
+      "captured_at": "2026-09-08T16:34:27.321364+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.25,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.56,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234156
+    },
+    {
+      "captured_at": "2026-09-08T16:34:42.541800+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.59,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.0,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238561
+    },
+    {
+      "captured_at": "2026-09-08T16:34:57.852168+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.22,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.56,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231861
+    },
+    {
+      "captured_at": "2026-09-08T16:35:13.165641+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.35,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.08,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235533
+    },
+    {
+      "captured_at": "2026-09-08T16:35:28.463987+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.25,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.46,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228809
+    },
+    {
+      "captured_at": "2026-09-08T16:35:43.750369+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.28,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230651
+    },
+    {
+      "captured_at": "2026-09-08T16:35:59.041490+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.66,
+          "memory_percent": 5.94
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23468
+    },
+    {
+      "captured_at": "2026-09-08T16:36:14.340714+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.59,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.58,
+          "memory_percent": 12.15
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.23837
+    },
+    {
+      "captured_at": "2026-09-08T16:36:29.634235+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.42,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231694
+    },
+    {
+      "captured_at": "2026-09-08T16:36:44.933306+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.3,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.04,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235366
+    },
+    {
+      "captured_at": "2026-09-08T16:37:00.252585+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.98,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228642
+    },
+    {
+      "captured_at": "2026-09-08T16:37:15.560897+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.31,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.0,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230818
+    },
+    {
+      "captured_at": "2026-09-08T16:37:30.871125+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.44,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234657
+    },
+    {
+      "captured_at": "2026-09-08T16:37:46.156600+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.29,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.26,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238537
+    },
+    {
+      "captured_at": "2026-09-08T16:38:01.456074+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.07,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.93,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231694
+    },
+    {
+      "captured_at": "2026-09-08T16:38:16.755849+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.02,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.14,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.53,
+          "memory_percent": 12.2
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236033
+    },
+    {
+      "captured_at": "2026-09-08T16:38:32.040895+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.22,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.22993
+    },
+    {
+      "captured_at": "2026-09-08T16:38:47.357630+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.28,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.231933
+    },
+    {
+      "captured_at": "2026-09-08T16:39:02.646921+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.44,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.49,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237381
+    },
+    {
+      "captured_at": "2026-09-08T16:39:17.872894+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.48,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230109
+    },
+    {
+      "captured_at": "2026-09-08T16:39:33.163069+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.3,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.95,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234353
+    },
+    {
+      "captured_at": "2026-09-08T16:39:48.429111+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.48,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.238203
+    },
+    {
+      "captured_at": "2026-09-08T16:40:03.736455+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.24,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.22,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229233
+    },
+    {
+      "captured_at": "2026-09-08T16:40:19.040924+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.5,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233155
+    },
+    {
+      "captured_at": "2026-09-08T16:40:34.336857+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.58,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.33,
+          "memory_percent": 12.16
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236147
+    },
+    {
+      "captured_at": "2026-09-08T16:40:49.651007+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.53,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.26,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230681
+    },
+    {
+      "captured_at": "2026-09-08T16:41:04.911600+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.39,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.96,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234436
+    },
+    {
+      "captured_at": "2026-09-08T16:41:20.220013+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.63,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237226
+    },
+    {
+      "captured_at": "2026-09-08T16:41:35.518269+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.43,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229066
+    },
+    {
+      "captured_at": "2026-09-08T16:41:50.825889+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.49,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.46,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233685
+    },
+    {
+      "captured_at": "2026-09-08T16:42:06.107170+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.34,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.53,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.237202
+    },
+    {
+      "captured_at": "2026-09-08T16:42:21.403560+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.21,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.23,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.230514
+    },
+    {
+      "captured_at": "2026-09-08T16:42:36.651809+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.29,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.24,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.234519
+    },
+    {
+      "captured_at": "2026-09-08T16:42:51.926012+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.23,
+          "memory_percent": 6.06
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.54,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235992
+    },
+    {
+      "captured_at": "2026-09-08T16:43:07.220337+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 1.04,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.29,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.07,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229566
+    },
+    {
+      "captured_at": "2026-09-08T16:43:22.517725+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.64,
+          "memory_percent": 5.93
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.58,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233685
+    },
+    {
+      "captured_at": "2026-09-08T16:43:37.828831+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.44,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.34,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.228774
+    },
+    {
+      "captured_at": "2026-09-08T16:43:53.138338+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.28,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.07,
+          "memory_percent": 12.17
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233351
+    },
+    {
+      "captured_at": "2026-09-08T16:44:08.440328+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.27,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.08,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236701
+    },
+    {
+      "captured_at": "2026-09-08T16:44:23.734845+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.14,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.13,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.22788
+    },
+    {
+      "captured_at": "2026-09-08T16:44:39.029688+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.47,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.5,
+          "memory_percent": 12.19
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.232165
+    },
+    {
+      "captured_at": "2026-09-08T16:44:54.329385+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.38,
+          "memory_percent": 6.18
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.47,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.235878
+    },
+    {
+      "captured_at": "2026-09-08T16:45:09.661750+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.21,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.51,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.229441
+    },
+    {
+      "captured_at": "2026-09-08T16:45:24.959838+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.32,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 1.06,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.233351
+    },
+    {
+      "captured_at": "2026-09-08T16:45:40.250050+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.0,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.59,
+          "memory_percent": 6.05
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.93,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.236689
+    },
+    {
+      "captured_at": "2026-09-08T16:45:55.565618+00:00",
+      "containers": {
+        "pipelens-soak-postgres": {
+          "cpu_percent": 0.01,
+          "memory_percent": 11.65
+        },
+        "pipelens-soak-redis": {
+          "cpu_percent": 1.68,
+          "memory_percent": 5.92
+        },
+        "pipelens-soak-runner-3": {
+          "cpu_percent": 0.42,
+          "memory_percent": 12.18
+        }
+      },
+      "postgres_total_connections": 29,
+      "redis_memory_percent": 1.227868
+    }
+  ],
+  "schema_version": 1,
+  "source": "docker-stats-postgres-pg-stat-activity-redis-info"
+}

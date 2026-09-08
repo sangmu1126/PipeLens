@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "soak_id": "worker-soak-20260909-r3",
+  "source_revision": "c19646280e478ff6933e68e2c18afb3ca9b0b557",
+  "environment": "local-production-representative",
+  "started_at": "2026-09-08T15:45:59.381905Z",
+  "completed_at": "2026-09-08T16:46:00.508847Z",
+  "load_profile": {
+    "jobs": 3605,
+    "arrival_rate_per_second": 1,
+    "burst_size": 4,
+    "concurrency": 4,
+    "planned_duration_seconds": 3600
+  },
+  "resource_limits": {
+    "worker_replicas": 4,
+    "worker_cpu_cores_each": 0.25,
+    "worker_memory_mib_each": 128,
+    "postgres_pool_size_each": 5,
+    "postgres_max_connections": 50,
+    "redis_maxmemory_mib": 128
+  },
+  "provider_profile": {
+    "github": {
+      "requests": 22,
+      "latency_p50_seconds": 0.159,
+      "latency_p95_seconds": 0.313,
+      "rate_limit_responses": 1,
+      "transient_failures": 1,
+      "retry_successes": 2
+    },
+    "llm": {
+      "requests": 22,
+      "latency_p50_seconds": 1.21,
+      "latency_p95_seconds": 2.422,
+      "rate_limit_responses": 1,
+      "transient_failures": 1,
+      "retry_successes": 2
+    }
+  },
+  "fault_injection": {
+    "worker_termination": {
+      "injected_at": "2026-09-08T15:47:41.271625Z",
+      "recovered_at": "2026-09-08T15:48:32.778877Z",
+      "workers": 1,
+      "lost_jobs": 0
+    },
+    "expired_lease": {
+      "injected_at": "2026-09-08T15:47:41.271625Z",
+      "recovered_at": "2026-09-08T15:48:32.778877Z",
+      "recovered_jobs": 1,
+      "lost_jobs": 0
+    },
+    "network_interruption": {
+      "injected_at": "2026-09-08T15:49:15.256547Z",
+      "recovered_at": "2026-09-08T15:49:36.452391Z",
+      "interruptions": 1,
+      "lost_jobs": 0,
+      "target": "redis-network-path"
+    }
+  },
+  "results": {
+    "completed_jobs": 3605,
+    "throughput_jobs_per_second": 1.001,
+    "start_latency_p95_seconds": 0.003,
+    "completion_latency_p95_seconds": 0.262,
+    "start_slo_attainment_percent": 100,
+    "completion_slo_attainment_percent": 100,
+    "duplicate_completions": 0,
+    "lost_jobs": 0,
+    "exactly_once": true,
+    "queue_drained": true
+  },
+  "resource_observation": {
+    "captured_at": "2026-09-08T16:45:55.565618Z",
+    "worker_cpu_peak_percent": 2.25,
+    "worker_memory_peak_percent": 12.2,
+    "postgres_pool_peak_connections": 20,
+    "postgres_total_peak_connections": 29,
+    "redis_memory_peak_percent": 1.264536
+  },
+  "capacity_recommendation": {
+    "max_sustained_rate_per_second": 5,
+    "recommended_rate_per_second": 4,
+    "recommended_worker_replicas": 4,
+    "headroom_percent": 20,
+    "limiting_resource": "tested-rate-ceiling",
+    "owner": "project-maintainer",
+    "reviewed": true
+  },
+  "artifacts": {
+    "runner_sha256": "ecaa2189f0eed0d864a9ed60e879915fd3c005a1e0a613f8a1ceb926ea3babf6",
+    "telemetry_sha256": "c6cd7135035c0c04e40be538e8c19e5a5c027aed9d89d7afff09b93ae79fa2b1",
+    "provider_audit_sha256": "ba4f687856bc27ba2c74bbaf65c2c68e29c09e9a3fb8f9b2b57d8ddb6ffe5f89",
+    "secret_scan_matches": 0
+  }
+}
