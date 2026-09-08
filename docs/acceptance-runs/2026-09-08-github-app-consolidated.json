@@ -1,0 +1,109 @@
+{
+  "acceptance_id": "github-app-staging-20260908-consolidated",
+  "acceptance_window": {
+    "completed_at": "2026-09-08T04:56:37Z",
+    "started_at": "2026-09-08T04:34:36Z"
+  },
+  "branch_run": {
+    "check_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/runs/101941870900",
+    "completion_seconds": 3.0,
+    "run_id": 34188599863,
+    "run_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/actions/runs/34188599863",
+    "start_seconds": 0.0,
+    "timeline": {
+      "analysis_completed_at": "2026-09-08T04:53:45Z",
+      "analysis_started_at": "2026-09-08T04:53:42Z",
+      "published_at": "2026-09-08T04:53:45Z",
+      "webhook_recorded_at": "2026-09-08T04:53:42Z",
+      "workflow_failed_at": "2026-09-08T04:53:41Z"
+    },
+    "workflow_conclusion": "failure"
+  },
+  "checked_at": "2026-09-08T04:58:35.034414Z",
+  "checks": {
+    "branch_check_idempotent": true,
+    "branch_completion_slo": true,
+    "branch_start_slo": true,
+    "branch_workflow_failed": true,
+    "external_fork_isolated": true,
+    "least_privilege_permissions": true,
+    "pr_comment_idempotent": true,
+    "pr_completion_slo": true,
+    "pr_content_complete": true,
+    "pr_start_slo": true,
+    "pr_workflow_failed": true,
+    "seeded_secret_absent": true
+  },
+  "environment": "docker-desktop-quick-tunnel-staging",
+  "external_fork": {
+    "commit_check_publications": 0,
+    "llm_invocations": 0,
+    "pull_request_number": 1,
+    "run_id": 34187478447,
+    "run_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/actions/runs/34187478447",
+    "timeline": {
+      "processed_at": "2026-09-08T04:34:50Z",
+      "webhook_recorded_at": "2026-09-08T04:34:46Z"
+    },
+    "warning_comment_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/1#issuecomment-5579290723"
+  },
+  "input_sha256": "a6601fb3e7c28e9955a3bf3636fa6e8e05fc473b09b2c8ed138fa33ba129b5af",
+  "installation_id": 159934172,
+  "passed": true,
+  "permissions": {
+    "actions": "read",
+    "checks": "write",
+    "contents": "read",
+    "metadata": "read",
+    "pull_requests": "write"
+  },
+  "pr_run": {
+    "comment_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/2#issuecomment-5579464380",
+    "completion_seconds": 3.0,
+    "evidence_present": true,
+    "pull_request_number": 2,
+    "related_files_present": true,
+    "run_id": 34188667637,
+    "run_link_present": true,
+    "run_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/actions/runs/34188667637",
+    "start_seconds": 0.0,
+    "timeline": {
+      "analysis_completed_at": "2026-09-08T04:54:54Z",
+      "analysis_started_at": "2026-09-08T04:54:51Z",
+      "published_at": "2026-09-08T04:54:54Z",
+      "webhook_recorded_at": "2026-09-08T04:54:51Z",
+      "workflow_failed_at": "2026-09-08T04:54:50Z"
+    },
+    "workflow_conclusion": "failure"
+  },
+  "redelivery": {
+    "branch_check": {
+      "count_after": 1,
+      "count_before": 1,
+      "initial_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/runs/101941870900",
+      "redelivered_at": "2026-09-08T04:54:22Z",
+      "redelivery_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/runs/101941870900"
+    },
+    "pr_comment": {
+      "count_after": 1,
+      "count_before": 1,
+      "initial_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/2#issuecomment-5579464380",
+      "redelivered_at": "2026-09-08T04:55:32Z",
+      "redelivery_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/2#issuecomment-5579464380"
+    }
+  },
+  "repository_url": "https://github.com/sangmu1126/PipeLens-external-fork-acceptance",
+  "schema_version": 1,
+  "seeded_secret_scan": {
+    "checked_at": "2026-09-08T04:56:37Z",
+    "persistence_matches": 0,
+    "provider_request_matches": 0,
+    "published_matches": 0,
+    "seeded_secret_sha256": "b1ddcabe0e6197a1731d9ca599f04a557e0c79f2a2698de27d6d62ad7942c88b"
+  },
+  "source_revision": "external-fork-pr-context-bdee0bc",
+  "threshold_seconds": {
+    "analysis_completion": 120,
+    "analysis_start": 60
+  }
+}

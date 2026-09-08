@@ -1080,3 +1080,21 @@
   조회가 모호하거나 SHA·repository가 다르면 게시하지 않는 fail-closed 경계를 유지한다.
 - 관련: `src/pipelens/github.py`, `tests/test_github.py`,
   [2026-09-08 실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md).
+
+## D-072. GitHub App acceptance를 단일 repository strict evidence로 완료
+
+- 결정: 공개 acceptance base 하나에서 trusted branch·trusted PR·organization fork PR을 실행하고,
+  게시·redelivery·secret scan·provider bypass를 schema v1 verifier의 단일 결과로 묶어 #61 완료
+  근거로 사용한다.
+- 이유: 앞선 실제 run은 모든 개별 조건을 충족했지만 trusted 실행과 fork 실행의 base repository가
+  달라 strict verifier의 same-repository 상관관계를 통과할 수 없었다. 실행별 성공 기록만으로 issue를
+  닫으면 run·게시 URL이 같은 installation 경계를 가리키는지 기계적으로 검증하지 못한다.
+- 대안: 서로 다른 repository 결과를 허용하도록 verifier 완화, 수동 문서만으로 #61 종료, private
+  fixture를 public으로 전환, 실제 token과 raw log를 증적에 포함.
+- 결과: branch run 34188599863, PR run 34188667637, fork run 34187478447을 같은 base에 묶었다.
+  60초/120초 SLO, comment·Check upsert, 최소 권한, 합성 secret 무노출과 fork LLM·Check 0을 포함한
+  12개 check가 모두 통과했다. Redacted output만 repository에 보존하고 disposable secret과 branch는
+  폐기한다. 이는 #61을 완료하지만 production TLS·ingress인 #62를 대체하지 않는다.
+- 관련: [strict GitHub App evidence](acceptance-runs/2026-09-08-github-app-consolidated.json),
+  [실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md),
+  [GitHub App E2E 절차](github-app-acceptance.md).

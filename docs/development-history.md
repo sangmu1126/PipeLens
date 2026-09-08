@@ -1360,6 +1360,24 @@ Nginx는 별도 PR로 분리했다.
 - 이 실행으로 #61의 개별 외부-fork 조건은 충족했지만 trusted run과 다른 base repository를 사용해
   strict acceptance JSON의 단일 repository 계약과 승인된 제한 원본 review는 아직 남겨 뒀다.
 
+### 단일 repository GitHub App strict acceptance 완료
+
+- 공개 `PipeLens-external-fork-acceptance` main에 `acceptance/**` push와 main 대상 PR에서만 실행되는
+  안전한 fixture를 두었다. Repository 밖 disposable Actions seed에서 합성 token을 만들고 SHA-256만
+  출력한 뒤, 외부 package code를 실행하지 않는 `pip==0.0.0` resolver failure를 발생시켰다.
+- PR을 열기 전에 trusted branch run 34188599863을 실행해 Commit Check 101941870900을 만들었고,
+  같은 SHA의 trusted PR #2에서 run 34188667637과 근거·관련 파일·run link를 가진 comment
+  5579464380을 만들었다. 시작 latency는 둘 다 초 단위 0.0초, 완료 latency는 3.0초였다.
+- 두 delivery를 각각 재전달한 뒤 Check와 comment는 동일 URL 한 개로 유지됐다. 합성 secret
+  fingerprint `b1ddcabe0e6197a1731d9ca599f04a557e0c79f2a2698de27d6d62ad7942c88b`의 publication,
+  persistence, provider request exact match는 모두 0이었다.
+- 실제 organization fork run 34187478447의 경고 comment, LLM invocation 0과 PipeLens Commit Check
+  0을 같은 base repository 관측에 결합했다. `verify_github_app_evidence`의 최소 권한·failure·SLO·
+  게시 내용·upsert·secret·fork 격리 12개 check가 모두 `true`, 최종 `passed: true`였다.
+- 판단은 D-072에, 공개 가능한 결과는
+  [machine-readable evidence](acceptance-runs/2026-09-08-github-app-consolidated.json)에 보존했다.
+  이로써 #61은 완료하지만 Quick Tunnel의 production HTTPS 실패와 #62는 그대로 남는다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

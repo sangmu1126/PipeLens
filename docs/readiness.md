@@ -463,16 +463,19 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 2026-09-08에는 [실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md)으로
 OAuth, signed webhook, branch Commit Check, PR comment, webhook 재전달, seeded-secret scan과 실제
 외부-fork 격리를 통과했다. 외부 fork에서는 provider 활성 상태의 LLM 호출과 PipeLens Commit Check가
-0이었고 경고 comment 한 개가 재전달 뒤 같은 URL로 유지됐다. 임시 Quick Tunnel의 production HTTPS
-preflight, 단일 repository strict acceptance JSON과 승인된 제한 원본 review는 통과하지 않았으므로
-#61·#62는 열린 상태로 유지한다.
+0이었고 경고 comment 한 개가 재전달 뒤 같은 URL로 유지됐다. 이어 같은 공개 repository의 trusted
+branch·PR과 외부 fork를 [strict evidence](acceptance-runs/2026-09-08-github-app-consolidated.json)로
+묶어 12개 check와 `passed: true`를 확인했으므로 #61은 완료했다. 임시 Quick Tunnel의 production
+HTTPS preflight는 통과하지 않았으므로 #62는 열린 상태로 유지한다.
 
 ## 5. 남은 작업 우선순위
 
 ### P0 — 서비스 완료 조건
 
-1. [#61 실제 GitHub App E2E 인수 테스트](https://github.com/sangmu1126/PipeLens/issues/61)
-2. [#62 공개 HTTPS OAuth·webhook 검증](https://github.com/sangmu1126/PipeLens/issues/62)
+[#61 실제 GitHub App E2E 인수 테스트](https://github.com/sangmu1126/PipeLens/issues/61)는 단일
+repository strict evidence로 완료했다.
+
+1. [#62 공개 HTTPS OAuth·webhook 검증](https://github.com/sangmu1126/PipeLens/issues/62)
 
 ### P1 — 릴리스와 공급망
 
