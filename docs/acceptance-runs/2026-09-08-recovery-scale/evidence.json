@@ -1,0 +1,92 @@
+{
+  "artifacts": {
+    "cutover_audit_sha256": "8bf2e80705d297c63129f27c7b75a879fae11e9083435dd46a1d39fed83ebbdf",
+    "reviewed": true,
+    "rollback_audit_sha256": "a8e6fc021412aa0d192c77bf05e2b4fc89b301996d91b1761550e2a0b919628b",
+    "secret_scan_matches": 0
+  },
+  "checked_at": "2026-09-08T05:51:01.095525Z",
+  "checks": {
+    "artifacts_reviewed_and_clean": true,
+    "cutover_approved": true,
+    "grafana_recovery": true,
+    "point_of_no_return_controlled": true,
+    "postgres_recovery": true,
+    "rollback_verified": true
+  },
+  "cutover": {
+    "approved": true,
+    "approver_documented": true,
+    "timeline": {
+      "approved_at": "2026-09-08T05:50:54.917700Z",
+      "completed_at": "2026-09-08T05:50:55.053548Z",
+      "started_at": "2026-09-08T05:50:54.917700Z"
+    }
+  },
+  "drill_id": "staging-scale-20260908",
+  "drill_window": {
+    "completed_at": "2026-09-08T05:51:01.009405Z",
+    "started_at": "2026-09-08T05:49:58.820735Z"
+  },
+  "environment": "isolated-staging-scale",
+  "grafana": {
+    "backup_bytes": 155808250,
+    "backup_duration_seconds": 5.511,
+    "evidence_sha256": "000e2fbfe5f6c0f5b12d59e914414ec5e724d3f61cc2faa0aa005ee43f548554",
+    "integrity_checks_passed": true,
+    "observed_rpo_seconds": 0.0,
+    "recovery_seconds": 6.627,
+    "representative_minimum_bytes": 134217728,
+    "restore_duration_seconds": 2.699,
+    "source_preserved": true,
+    "timeline": {
+      "backup_created_at": "2026-09-08T05:50:34.008169Z",
+      "restore_started_at": "2026-09-08T05:50:47.781995Z",
+      "validated_at": "2026-09-08T05:50:54.887884Z",
+      "write_freeze_at": "2026-09-08T05:50:21.406086Z"
+    }
+  },
+  "input_sha256": "07561fa1901b701bfd9ee2c40f33067b6f7dc9dacf47e923155244ee4198b7ff",
+  "objectives_seconds": {
+    "grafana_rto": 300.0,
+    "postgres_rto": 900.0,
+    "rollback_rto": 300.0,
+    "rpo": 300.0
+  },
+  "passed": true,
+  "postgres": {
+    "backup_bytes": 470664637,
+    "backup_duration_seconds": 5.766,
+    "evidence_sha256": "da83d924bf6d9cda4b612457dae429b461521fa189412d169388c551061aa86b",
+    "integrity_checks_passed": true,
+    "observed_rpo_seconds": 0.0,
+    "recovery_seconds": 12.886,
+    "representative_minimum_bytes": 268435456,
+    "restore_duration_seconds": 7.61,
+    "source_preserved": true,
+    "timeline": {
+      "backup_created_at": "2026-09-08T05:50:16.631270Z",
+      "restore_started_at": "2026-09-08T05:50:34.063013Z",
+      "validated_at": "2026-09-08T05:50:47.759580Z",
+      "write_freeze_at": "2026-09-08T05:50:10.594096Z"
+    }
+  },
+  "rollback": {
+    "client_smoke_verified": true,
+    "crossed_point_of_no_return": false,
+    "duration_seconds": 5.933,
+    "grafana_access_policy_verified": true,
+    "grafana_content_verified": true,
+    "point_of_no_return_condition": "first-post-cutover-write",
+    "postgres_integrity_verified": true,
+    "reconciliation_plan_reviewed": false,
+    "timeline": {
+      "completed_at": "2026-09-08T05:51:01.009405Z",
+      "initiated_at": "2026-09-08T05:50:55.076506Z"
+    },
+    "used_preserved_grafana_source": true,
+    "used_preserved_postgres_source": true
+  },
+  "schema_version": 1,
+  "source_revision": "871a52d33e48c3fd644f0898c287ad9b5d35cea9"
+}

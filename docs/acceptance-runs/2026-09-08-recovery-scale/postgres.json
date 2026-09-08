@@ -1,0 +1,57 @@
+{
+  "backup": {
+    "bytes": 470664637,
+    "duration_seconds": 5.766,
+    "sha256": "58a6aadc96c0ba3b763831b0702181e9d8068a50cdef7b20004d09dc2bbc2856"
+  },
+  "checked_at": "2026-09-08T05:50:47.667800+00:00",
+  "integrity": {
+    "alembic_heads": [
+      "20260829_0009"
+    ],
+    "backup_list_readable": true,
+    "representative_counts": {
+      "analyses": {
+        "actual": 100000,
+        "met": true,
+        "minimum": 100000
+      },
+      "analysis_feedback": {
+        "actual": 10000,
+        "met": true,
+        "minimum": 10000
+      },
+      "github_users": {
+        "actual": 1000,
+        "met": true,
+        "minimum": 1000
+      },
+      "user_installations": {
+        "actual": 1000,
+        "met": true,
+        "minimum": 1000
+      }
+    }
+  },
+  "objectives_seconds": {
+    "rpo": 300.0,
+    "rto": 900.0
+  },
+  "restore": {
+    "database_bytes": 637859519,
+    "duration_seconds": 7.61,
+    "image": "postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2",
+    "observed_rpo_seconds": 0.0,
+    "postgres_major": 18,
+    "recovery_duration_seconds": 12.886,
+    "rpo_met": true,
+    "rto_met": true
+  },
+  "schema_version": 1,
+  "source": {
+    "backup_created_at": "2026-09-08T05:50:16.631270+00:00",
+    "revision": "871a52d33e48c3fd644f0898c287ad9b5d35cea9",
+    "write_freeze_at": "2026-09-08T05:50:10.594096+00:00"
+  },
+  "target_preserved": true
+}

@@ -1,0 +1,67 @@
+{
+  "backup": {
+    "bytes": 155808250,
+    "database_bytes": 1638400,
+    "duration_seconds": 5.511,
+    "member_count": 678,
+    "sha256": "6f9fcbf96961e8f2c5896ea920099e042f9a1e0adb36c8bb843ca360bd42ad75",
+    "uncompressed_bytes": 186494602
+  },
+  "checked_at": "2026-09-08T05:50:54.847740+00:00",
+  "integrity": {
+    "access_policy": {
+      "anonymous_admin_denied": true,
+      "anonymous_dashboard_allowed": false,
+      "anonymous_enabled": false,
+      "anonymous_role": "disabled"
+    },
+    "dashboards": {
+      "pipelens-operations": {
+        "present": true,
+        "provisioned": true,
+        "title_met": true
+      },
+      "scale-dashboard": {
+        "present": true,
+        "provisioned": false,
+        "title_met": true
+      }
+    },
+    "database": "ok",
+    "datasources": {
+      "prometheus": {
+        "present": true,
+        "type_met": true,
+        "url_met": true
+      }
+    },
+    "folders": {
+      "scale-folder": {
+        "present": true,
+        "title_met": true
+      }
+    },
+    "provisioning_mounted": true
+  },
+  "objectives_seconds": {
+    "rpo": 300.0,
+    "rto": 300.0
+  },
+  "restore": {
+    "duration_seconds": 2.699,
+    "grafana_version": "13.2.1",
+    "image": "grafana/grafana:13.2.1@sha256:f772d434e8fab0049deb2b1b30abd43342bcfca1537614aa8d36080232cf4283",
+    "migrated_database_bytes": 1638400,
+    "observed_rpo_seconds": 0.0,
+    "recovery_duration_seconds": 6.627,
+    "rpo_met": true,
+    "rto_met": true
+  },
+  "schema_version": 1,
+  "source": {
+    "backup_created_at": "2026-09-08T05:50:34.008169+00:00",
+    "revision": "871a52d33e48c3fd644f0898c287ad9b5d35cea9",
+    "write_freeze_at": "2026-09-08T05:50:21.406086+00:00"
+  },
+  "target_preserved": true
+}
