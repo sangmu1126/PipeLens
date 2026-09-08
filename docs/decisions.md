@@ -1063,3 +1063,20 @@
 - 관련: [2026-09-08 실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md),
   [실제 GitHub App E2E 증적](github-app-acceptance.md),
   [공개 HTTPS acceptance](https-acceptance.md).
+
+## D-071. 비어 있는 fork workflow_run PR 연결을 검증된 head 검색으로 복구
+
+- 결정: `pull_request`에서 시작한 외부 fork workflow run인데 GitHub의 `pull_requests`가 비어 있으면
+  `head=<owner>:<branch>`로 base repository의 PR을 조회한다. 반환값 중 head SHA·head repository·
+  base repository가 모두 run과 일치하는 항목이 정확히 하나일 때만 PR 컨텍스트로 사용한다.
+- 이유: 실제 cross-repository run에서 GitHub는 외부 `head_repository`를 제공해 trust level은
+  `untrusted_fork`로 판정할 수 있었지만 `pull_requests: []`를 반환했다. LLM·Commit Check 차단은
+  동작했으나 PR 번호가 없어 외부-fork 경고 comment 계약을 지키지 못했다. commit-to-PR API도 해당
+  fork SHA에서 빈 배열을 반환했다.
+- 대안: 경고 comment를 포기, branch 이름만으로 첫 PR 채택, fork SHA에 Commit Check 게시, webhook
+  payload의 PR 배열이 채워질 때까지 GitHub 동작에 의존.
+- 결과: 실제 fork PR run 34187478447에서 경고 comment 한 개를 게시했고 재전달 뒤 같은 URL을
+  유지했다. OpenAI provider 활성 상태에서도 호출 0, model metadata 0, PipeLens Commit Check 0이었다.
+  조회가 모호하거나 SHA·repository가 다르면 게시하지 않는 fail-closed 경계를 유지한다.
+- 관련: `src/pipelens/github.py`, `tests/test_github.py`,
+  [2026-09-08 실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md).

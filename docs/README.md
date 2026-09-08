@@ -28,7 +28,7 @@
 - [실제 GitHub App E2E 증적](github-app-acceptance.md): PR·branch 실패 게시, 재전달, SLO와
   fork·secret 경계를 검증하는 외부 인수 절차
   - [2026-09-08 실제 staging 실행](acceptance-runs/2026-09-08-github-app-staging.md): 실제 OAuth·
-    signed webhook·PR comment·Commit Check와 남은 외부 경계
+    signed webhook·PR comment·Commit Check·외부-fork 격리와 남은 외부 경계
 - [공개 HTTPS acceptance](https-acceptance.md): TLS preflight와 실제 OAuth·session·signed webhook
   증적 절차
 - [로컬 Docker 검증](local-docker-validation.md): arm64 major-upgrade·routing·worker·image 증적

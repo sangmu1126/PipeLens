@@ -1341,6 +1341,25 @@ Nginx는 별도 PR로 분리했다.
   34185336066을 실행했다. `dependency_installation_failure`, confidence 0.9, total 3.141초를 확인했고
   재전달 뒤 Check 1개와 동일 URL, seeded-secret exact match 0을 다시 검증했다.
 
+### 실제 외부-fork 격리와 누락된 PR 컨텍스트 복구
+
+- 개인 계정의 공개 최소 fixture를 `NewJeanSe` 조직으로 실제 fork하고 cross-repository PR #1에서
+  존재하지 않는 `pip==0.0.0` resolver failure를 실행했다. GitHub은 head owner가 다른 실제 PR로
+  표시했고 PipeLens는 이를 `untrusted_fork`로 저장했다.
+- OpenAI provider를 무효 canary key로 활성화한 상태에서도 run 34187050893의 `model_name`과
+  `prompt_version`은 비어 있었고 worker의 OpenAI request log match는 0이었다. fork SHA에는 GitHub
+  Actions 자체 Check만 있었으며 PipeLens Check와 PR comment는 모두 0이었다.
+- Comment 0은 의도한 전체 격리가 아니라 계약 위반이었다. 실제 run API가 `event: pull_request`에도
+  `pull_requests: []`를 반환해 PR 번호를 잃은 것이 원인이었다. head owner·branch PR 검색 결과를
+  head SHA와 양쪽 repository로 검증하고 정확히 하나일 때만 채택하도록 수정했으며, 불일치 결과를
+  거부하는 회귀 테스트를 추가했다. 판단은 D-071에 기록했다.
+- 수정 이미지의 run 34187478447은 3.398초에 완료됐고 외부-fork 경고와 run marker가 있는
+  [comment](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/1#issuecomment-5579290723)
+  한 개를 만들었다. OpenAI 요청과 PipeLens Check는 0이었고, webhook 재전달 뒤 분석 행과 comment는
+  각각 한 개 및 동일 URL로 유지됐다.
+- 이 실행으로 #61의 개별 외부-fork 조건은 충족했지만 trusted run과 다른 base repository를 사용해
+  strict acceptance JSON의 단일 repository 계약과 승인된 제한 원본 review는 아직 남겨 뒀다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -1361,9 +1380,8 @@ Nginx는 별도 PR로 분리했다.
 
 ## 아직 기록할 수 없는 것
 
-다음은 코드나 자동화는 존재하지만 실제 외부 환경 결과가 아직 저장소 이력에 없다.
+다음은 코드나 자동화는 존재하지만 완료 가능한 실제 외부 환경 결과가 아직 저장소 이력에 없다.
 
-- 실제 외부 fork workflow에 대한 무부작용 경계
 - 실제 OpenAI 호출의 품질·token·비용 결과
 - production HTTPS 환경의 OAuth callback과 webhook 수신; 임시 Quick Tunnel 결과만 존재
 - 장시간·고동시성 부하에서 60초/120초 SLO 달성률

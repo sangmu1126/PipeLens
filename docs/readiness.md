@@ -461,9 +461,11 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 [GitHub App E2E 증적 절차](github-app-acceptance.md)에 따라 별도 인수 테스트 기록으로 남겨야 한다.
 
 2026-09-08에는 [실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md)으로
-OAuth, signed webhook, branch Commit Check, PR comment, 두 webhook 재전달과 seeded-secret scan을
-통과했다. 임시 Quick Tunnel의 production HTTPS preflight, 외부 fork와 실제 LLM provider audit는
-통과하지 않았으므로 #61·#62는 열린 상태로 유지한다.
+OAuth, signed webhook, branch Commit Check, PR comment, webhook 재전달, seeded-secret scan과 실제
+외부-fork 격리를 통과했다. 외부 fork에서는 provider 활성 상태의 LLM 호출과 PipeLens Commit Check가
+0이었고 경고 comment 한 개가 재전달 뒤 같은 URL로 유지됐다. 임시 Quick Tunnel의 production HTTPS
+preflight, 단일 repository strict acceptance JSON과 승인된 제한 원본 review는 통과하지 않았으므로
+#61·#62는 열린 상태로 유지한다.
 
 ## 5. 남은 작업 우선순위
 
@@ -572,5 +574,5 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] Alertmanager routing과 로컬 webhook 통합 검증
 - [x] Alertmanager production 채널의 redacted machine-readable evidence 도구
 - [ ] [Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
-- [ ] [외부 fork 공격 입력 검증](https://github.com/sangmu1126/PipeLens/issues/61)
+- [x] [외부 fork 공격 입력 검증](https://github.com/sangmu1126/PipeLens/issues/61)
 - [ ] [부하 상태에서 시작 60초·완료 120초 SLO 검증](https://github.com/sangmu1126/PipeLens/issues/66)
