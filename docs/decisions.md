@@ -1047,3 +1047,19 @@
   stdout에 들어가지 않는다. 외부 ingress와 CDN도 같은 redaction을 별도로 확인해야 한다.
 - 관련: `frontend/nginx.conf`, `Dockerfile`, `tests/test_security.py`,
   [공개 HTTPS acceptance](https-acceptance.md).
+
+## D-070. 임시 public staging 결과를 production 완료와 분리
+
+- 결정: account 없는 Quick Tunnel에서 얻은 실제 GitHub App OAuth·webhook·게시 결과는 실행별 부분
+  증적으로 보존하되 production HTTPS, 외부 fork와 provider audit 완료로 승격하지 않는다.
+- 이유: 실제 GitHub API와 signed delivery는 mock보다 강한 근거지만 Quick Tunnel은 고정 hostname,
+  HTTP exact redirect, SLA와 운영 secret manager를 제공하지 않는다. 성공 항목을 기록하지 않으면
+  같은 검증을 반복하고, 전체 완료로 표시하면 남은 trust boundary를 숨긴다.
+- 대안: production 환경 전에는 외부 결과를 전혀 기록하지 않음, Quick Tunnel 성공으로 #61·#62를
+  닫음, raw credential-bearing log를 CI artifact로 보관.
+- 결과: branch·PR run ID, 게시 URL, SLO, redelivery와 secret fingerprint/count는 공개 기록하고
+  credential·delivery 원문은 제외한다. #61은 외부 fork, #62는 production HTTPS preflight가 실제로
+  통과할 때까지 열린 상태다.
+- 관련: [2026-09-08 실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md),
+  [실제 GitHub App E2E 증적](github-app-acceptance.md),
+  [공개 HTTPS acceptance](https-acceptance.md).

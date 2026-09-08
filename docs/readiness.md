@@ -460,6 +460,11 @@ SBOM과 provenance 자동화는 `v0.1.0`에서 실행·검증됐다. GitHub Rele
 이 결과는 실행 날짜, run ID, 게시 URL, latency와 발견된 문제를
 [GitHub App E2E 증적 절차](github-app-acceptance.md)에 따라 별도 인수 테스트 기록으로 남겨야 한다.
 
+2026-09-08에는 [실제 GitHub App staging 실행](acceptance-runs/2026-09-08-github-app-staging.md)으로
+OAuth, signed webhook, branch Commit Check, PR comment, 두 webhook 재전달과 seeded-secret scan을
+통과했다. 임시 Quick Tunnel의 production HTTPS preflight, 외부 fork와 실제 LLM provider audit는
+통과하지 않았으므로 #61·#62는 열린 상태로 유지한다.
+
 ## 5. 남은 작업 우선순위
 
 ### P0 — 서비스 완료 조건

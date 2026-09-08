@@ -1322,6 +1322,21 @@ Nginx는 별도 PR로 분리했다.
   끈다. application metric과 명시적 log는 유지한다. 회귀 test가 nginx 형식에 request URI·args·
   referrer가 없고 API image command에 `--no-access-log`가 있음을 검사한다. 판단은 D-069에 기록했다.
 
+### 실제 GitHub App branch·PR 실패 staging 실행
+
+- `pipelens-staging-acceptance` App을 Actions(read), Checks(write), Contents(read), Metadata(read),
+  Pull requests(write)와 `workflow_run` event로 만들고 격리된 `PipeLens-acceptance` 저장소 하나에만
+  설치했다. App JWT, installation token, repository selection과 실제 권한을 GitHub API로 확인했다.
+- 실제 GitHub OAuth login→callback→dashboard와 인증된 사용자 API를 통과했다. 의도적으로 실패한
+  branch run 34184222277은 3.130초에 분석되어 Commit Check 1개를 만들었고, PR run 34184453918은
+  3.093초에 분석되어 근거·관련 파일·run link를 가진 comment 1개를 만들었다. 두 delivery를 실제로
+  재전달한 뒤에도 각 게시 URL과 분석 행은 하나로 유지됐다.
+- run별 synthetic seeded secret은 persistence, PR comment, Commit Check와 provider request에서 exact
+  match 0이었다. staging은 LLM provider `none`이므로 실제 provider redaction 증적은 아니다.
+- 상세 실행 ID, URL, latency, fingerprint와 제한 사항은
+  [2026-09-08 staging 실행 기록](acceptance-runs/2026-09-08-github-app-staging.md)에 보존했다. Quick
+  Tunnel은 HTTP exact redirect preflight를 실패했고 외부 fork도 실행하지 않아 #61·#62는 닫지 않았다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -1344,10 +1359,9 @@ Nginx는 별도 PR로 분리했다.
 
 다음은 코드나 자동화는 존재하지만 실제 외부 환경 결과가 아직 저장소 이력에 없다.
 
-- GitHub App을 실제 저장소에 설치한 종단 간 실행
-- 실제 실패 workflow에 대한 PR 코멘트·Commit Check 게시 결과
+- 실제 외부 fork workflow에 대한 무부작용 경계
 - 실제 OpenAI 호출의 품질·token·비용 결과
-- production HTTPS 환경의 OAuth callback과 webhook 수신
+- production HTTPS 환경의 OAuth callback과 webhook 수신; 임시 Quick Tunnel 결과만 존재
 - 장시간·고동시성 부하에서 60초/120초 SLO 달성률
 
 이 항목은 완료로 간주하지 않으며 [검증 및 운영 준비 현황](readiness.md)에서 후속 작업으로

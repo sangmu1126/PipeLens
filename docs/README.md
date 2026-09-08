@@ -27,6 +27,8 @@
 - [브라우저 E2E](browser-e2e.md): Chromium OAuth·session·dashboard 인수 흐름과 외부 검증 경계
 - [실제 GitHub App E2E 증적](github-app-acceptance.md): PR·branch 실패 게시, 재전달, SLO와
   fork·secret 경계를 검증하는 외부 인수 절차
+  - [2026-09-08 실제 staging 실행](acceptance-runs/2026-09-08-github-app-staging.md): 실제 OAuth·
+    signed webhook·PR comment·Commit Check와 남은 외부 경계
 - [공개 HTTPS acceptance](https-acceptance.md): TLS preflight와 실제 OAuth·session·signed webhook
   증적 절차
 - [로컬 Docker 검증](local-docker-validation.md): arm64 major-upgrade·routing·worker·image 증적
@@ -49,4 +51,5 @@
 ## 현재 한 줄 상태
 
 MVP 요구 기능, 자동화된 로컬·CI 검증, `main` 보호와 서명 image release·보존 정책은 구현됐다.
-실제 GitHub App 설치를 통한 종단 간 인수 테스트와 production HTTPS 배포는 아직 남아 있다.
+실제 GitHub App staging의 OAuth·branch·PR 실패 게시와 재전달은 검증했으며, 외부 fork와 production
+HTTPS 배포는 아직 남아 있다.
