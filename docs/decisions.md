@@ -1005,3 +1005,16 @@
   아니므로 production 완료 경계는 유지한다.
 - 관련: `ops/recovery/verify-live-restore.sh`, `.github/workflows/ci.yml`,
   `tests/test_live_recovery_smoke.py`, [Production 통합 recovery drill](production-recovery-drill.md).
+
+## D-067. 요구사항 완료와 외부 인수 완료를 분리해 추적
+
+- 결정: 최초 명세의 FR-01~FR-11과 보안·성능·신뢰성·관측성 요구를 구현 파일, 자동 검증과 외부
+  issue에 함께 연결한다. 상태는 `구현·자동 검증 완료`, `외부 인수 필요`, `미구현`으로 구분한다.
+- 이유: 기능 목록과 readiness만으로는 어떤 test가 어느 요구를 증명하는지 역추적하기 어렵고,
+  mock·합성 CI 통과를 실제 GitHub App·production 운영 완료로 오인할 수 있다.
+- 대안: README 기능 목록만 유지, test 이름에 요구 ID 삽입, 외부 P0/P1 issue까지 모두 완료로 표시.
+- 결과: 제품 기능은 코드·test 근거로 완료를 주장하되 #61~#66은 실제 account·HTTPS·data·secret·
+  channel·장시간 telemetry가 없으면 열린 상태로 유지한다. 향후 요구 동작이 바뀌는 PR은 추적성 표도
+  함께 갱신한다.
+- 관련: [MVP 요구사항 추적성](requirements-traceability.md),
+  [검증 및 운영 준비 현황](readiness.md).

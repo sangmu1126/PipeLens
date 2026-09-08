@@ -1,7 +1,7 @@
 # PipeLens 개발 문서
 
 이 디렉터리는 `README.md`의 사용자용 설명을 보완하는 개발·운영 기록이다. 문서의 기준
-시점은 **2026-09-02**, 기준 브랜치는 `main`이다.
+시점은 **2026-09-08**, 기준 브랜치는 `main`이다.
 
 ## 문서 구성
 
@@ -10,6 +10,8 @@
 - [아키텍처](architecture.md): 런타임 구성, 분석 파이프라인, 데이터·신뢰 경계, 장애 처리
 - [의사결정 기록](decisions.md): 중요한 설계 선택, 선택 이유, 포기한 대안과 결과
 - [검증 및 운영 준비 현황](readiness.md): 테스트·CI·보안 현황, 검증되지 않은 부분과 남은 작업
+- [MVP 요구사항 추적성](requirements-traceability.md): FR-01~FR-11과 비기능 요구의 구현·테스트·
+  외부 인수 상태 매핑
 - [컨테이너 릴리스](release.md): version tag, GHCR image, SBOM·provenance 게시와 검증 절차
   - [v0.1.0 릴리스 증적](releases/v0.1.0.md)
 - [GHCR 보존 정책](ghcr-retention.md): 정식 image·attestation 영구 보존과 월별 감사

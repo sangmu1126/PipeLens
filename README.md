@@ -10,6 +10,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [현재 아키텍처](docs/architecture.md)
 - [주요 의사결정 기록](docs/decisions.md)
 - [검증 및 운영 준비 현황](docs/readiness.md)
+- [MVP 요구사항 추적성](docs/requirements-traceability.md)
 - [실제 GitHub App E2E 증적 절차](docs/github-app-acceptance.md)
 - [컨테이너 릴리스 정책과 절차](docs/release.md)
 - [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)
