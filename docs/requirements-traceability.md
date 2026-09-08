@@ -19,15 +19,15 @@
 
 | ID | 요구사항 | 구현 위치 | 자동 검증 | 현재 판정 |
 | --- | --- | --- | --- | --- |
-| FR-01 | GitHub App 설치·installation token·최소 권한·연동 상태 | `src/pipelens/auth.py`, `src/pipelens/github.py`, `src/pipelens/main.py` | `tests/test_auth.py`, `tests/test_github.py`, `tests/test_security.py` | 구현·자동 검증 완료. 실제 App 설치와 권한 증적은 [#61](https://github.com/sangmu1126/PipeLens/issues/61) |
-| FR-02 | 실패한 `workflow_run`만 감지하고 job·step 식별, run 중복 방지 | `src/pipelens/main.py`, `src/pipelens/github.py`, `src/pipelens/store.py`, `src/pipelens/queue.py` | `tests/test_webhook.py`, `tests/test_queue.py`, `tests/test_store.py` | 구현·자동 검증 완료. 실제 delivery·재전달은 #61 |
+| FR-01 | GitHub App 설치·installation token·최소 권한·연동 상태 | `src/pipelens/auth.py`, `src/pipelens/github.py`, `src/pipelens/main.py` | `tests/test_auth.py`, `tests/test_github.py`, `tests/test_security.py` | 구현·자동·[#61 실제 App acceptance](acceptance-runs/2026-09-08-github-app-consolidated.json) 완료 |
+| FR-02 | 실패한 `workflow_run`만 감지하고 job·step 식별, run 중복 방지 | `src/pipelens/main.py`, `src/pipelens/github.py`, `src/pipelens/store.py`, `src/pipelens/queue.py` | `tests/test_webhook.py`, `tests/test_queue.py`, `tests/test_store.py` | 구현·자동·실제 delivery 재전달 완료 |
 | FR-03 | 실패 로그 수집, ANSI·timestamp 제거, 오류 구간·최초 오류·청크 처리 | `src/pipelens/github.py`, `src/pipelens/preprocessing.py`, `src/pipelens/classifier.py` | `tests/test_github.py`, `tests/test_preprocessing.py`, `tests/test_classifier.py` | 구현·자동 검증 완료 |
-| FR-04 | token·key·JWT·header·password·email 마스킹, 원문 비보존 | `src/pipelens/sanitizer.py`, `src/pipelens/pipeline.py` | `tests/test_sanitizer.py`, `tests/test_pipeline.py`, `tests/test_security.py` | 구현·자동 검증 완료. 실제 seeded-secret 전송·게시 무노출은 #61 |
+| FR-04 | token·key·JWT·header·password·email 마스킹, 원문 비보존 | `src/pipelens/sanitizer.py`, `src/pipelens/pipeline.py` | `tests/test_sanitizer.py`, `tests/test_pipeline.py`, `tests/test_security.py` | 구현·자동 검증과 실제 seeded-secret persistence·게시 무노출 완료 |
 | FR-05 | 명세의 10개 실패 범주와 근거·신뢰도·step·규칙 제공 | `src/pipelens/classifier.py`, `src/pipelens/models.py`, `evaluation/scenarios.json` | `tests/test_classifier.py`, `tests/test_evaluation.py`, CI `pipelens-evaluate --minimum-accuracy 0.8` | 구현·자동 검증 완료, 고정 fixture 13/13 |
 | FR-06 | PR/commit, 이전 성공 이후 변경, 오류 경로와 diff·workflow 연관 분석 | `src/pipelens/github.py`, `src/pipelens/relevance.py`, `src/pipelens/pipeline.py` | `tests/test_github.py`, `tests/test_relevance.py`, `tests/test_pipeline.py` | 구현·자동 검증 완료 |
-| FR-07 | 구조화된 LLM 입력·응답, 교체 가능한 provider와 모델·prompt 기록 | `src/pipelens/llm.py`, `src/pipelens/diagnosis.py`, `src/pipelens/pipeline.py` | `tests/test_llm.py`, `tests/test_diagnosis.py`, `tests/test_pipeline.py` | 구현·자동 검증 완료. 실제 OpenAI 품질·token·비용은 #61 인수 실행에서 측정 |
+| FR-07 | 구조화된 LLM 입력·응답, 교체 가능한 provider와 모델·prompt 기록 | `src/pipelens/llm.py`, `src/pipelens/diagnosis.py`, `src/pipelens/pipeline.py` | `tests/test_llm.py`, `tests/test_diagnosis.py`, `tests/test_pipeline.py` | 구현·자동 검증 완료. 실제 provider 품질·fault는 #66 production soak에서 측정 |
 | FR-08 | 근거 필수, 실제 log·file 존재 검증, 부족·충돌 처리와 fallback | `src/pipelens/diagnosis.py`, `src/pipelens/pipeline.py` | `tests/test_diagnosis.py`, `tests/test_pipeline.py`, `tests/test_relevance.py` | 구현·자동 검증 완료 |
-| FR-09 | PR comment 또는 Commit Check에 요약·근거·관련 파일·제안·상세 링크 게시 | `src/pipelens/publication.py`, `src/pipelens/github.py`, `src/pipelens/pipeline.py` | `tests/test_publication.py`, `tests/test_github.py`, `tests/test_pipeline.py` | 구현·자동 검증 완료. 실제 게시·upsert URL은 #61 |
+| FR-09 | PR comment 또는 Commit Check에 요약·근거·관련 파일·제안·상세 링크 게시 | `src/pipelens/publication.py`, `src/pipelens/github.py`, `src/pipelens/pipeline.py` | `tests/test_publication.py`, `tests/test_github.py`, `tests/test_pipeline.py` | 구현·자동 검증과 실제 comment·Check 게시·upsert 완료 |
 | FR-10 | 저장소별 실행·상태·분류·진단·시간·feedback·GitHub 링크 dashboard | `src/pipelens/main.py`, `src/pipelens/store.py`, `frontend/src/App.tsx` | `tests/test_analysis_api.py`, `frontend/src/App.test.tsx`, `frontend/e2e/oauth-dashboard.spec.ts` | 구현·자동 검증 완료. production 접근은 [#62](https://github.com/sangmu1126/PipeLens/issues/62) |
 | FR-11 | 정확도·부분 정확도·부정확·해결 여부 feedback 저장과 지표화 | `src/pipelens/models.py`, `src/pipelens/store.py`, `src/pipelens/main.py`, `frontend/src/App.tsx` | `tests/test_feedback_api.py`, `tests/test_store.py`, dashboard build | 구현·자동 검증 완료 |
 
@@ -35,16 +35,16 @@
 
 | 영역 | 요구와 구현 | 자동 증거 | 남은 외부 증거 |
 | --- | --- | --- | --- |
-| 보안 | HMAC webhook, encrypted OAuth token, installation 접근 격리, LLM 전 마스킹, untrusted fork 격리, production fail-closed 설정 | `tests/test_webhook.py`, `tests/test_auth.py`, `tests/test_sanitizer.py`, `tests/test_security.py`, `tests/test_pipeline.py`, CodeQL·secret scan·dependency review | 실제 GitHub·HTTPS 경계 #61·#62, production secret manager [#65](https://github.com/sangmu1126/PipeLens/issues/65) |
+| 보안 | HMAC webhook, encrypted OAuth token, installation 접근 격리, LLM 전 마스킹, untrusted fork 격리, production fail-closed 설정 | `tests/test_webhook.py`, `tests/test_auth.py`, `tests/test_sanitizer.py`, `tests/test_security.py`, `tests/test_pipeline.py`, CodeQL·secret scan·dependency review | 실제 GitHub 경계 완료. production HTTPS [#62](https://github.com/sangmu1126/PipeLens/issues/62), secret manager [#65](https://github.com/sangmu1126/PipeLens/issues/65) |
 | 성능 | 비동기 queue·worker, run dedupe, 시작 60초·완료 120초 SLO 기록 | `tests/test_queue.py`, `tests/test_worker.py`, `tests/test_worker_drill.py`, CI 200-job replica drill | production resource·provider latency 장시간 soak [#66](https://github.com/sangmu1126/PipeLens/issues/66) |
-| 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, `tests/test_queue.py`, `tests/test_pipeline.py`, PostgreSQL·Redis integration | 실제 provider·network fault #61·#66, production backup/restore [#63](https://github.com/sangmu1126/PipeLens/issues/63) |
+| 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, `tests/test_queue.py`, `tests/test_pipeline.py`, PostgreSQL·Redis integration | 실제 provider·network fault #66, production backup/restore [#63](https://github.com/sangmu1126/PipeLens/issues/63) |
 | 관측성 | 성공·지연·범주·LLM token/cost·feedback·redaction·queue·SLO Prometheus 지표와 Grafana dashboard | `tests/test_metrics.py`, `tests/test_pipeline.py`, `tests/test_feedback_api.py`, Prometheus rule·Grafana provisioning CI | 실제 incident receiver와 acknowledgement [#64](https://github.com/sangmu1126/PipeLens/issues/64) |
 
 ## 서비스 완료를 막는 외부 인수 조건
 
 | 우선순위 | Issue | 완료 증거 |
 | --- | --- | --- |
-| P0 | [#61 실제 GitHub App E2E](https://github.com/sangmu1126/PipeLens/issues/61) | 실제 PR·branch 실패, comment·check upsert, SLO, secret·fork 격리 |
+| P0 완료 | [#61 실제 GitHub App E2E](https://github.com/sangmu1126/PipeLens/issues/61) | [strict evidence](acceptance-runs/2026-09-08-github-app-consolidated.json): 실제 PR·branch 실패, comment·check upsert, SLO, secret·fork 격리 |
 | P0 | [#62 공개 HTTPS OAuth·webhook](https://github.com/sangmu1126/PipeLens/issues/62) | TLS·HSTS, secure session, callback·forwarding, signed webhook |
 | P1 | [#63 production 규모 recovery](https://github.com/sangmu1126/PipeLens/issues/63) | PostgreSQL·Grafana 규모, RTO/RPO, cutover·rollback |
 | P1 | [#64 Alertmanager 실채널](https://github.com/sangmu1126/PipeLens/issues/64) | firing·resolved, grouping·dedupe·inhibition, rotation·retry |

@@ -4,6 +4,10 @@
 webhook 재전달과 외부 fork 신뢰 경계를 검증하고 redacted JSON 증적을 만드는 절차다.
 `ops/acceptance/github-app-observation.example.json`은 schema 예제일 뿐 실제 실행 증적이 아니다.
 
+2026-09-08 실제 실행은
+[redacted strict evidence](acceptance-runs/2026-09-08-github-app-consolidated.json)에서 12개 check와
+최종 `passed: true`를 기록해 #61 완료 근거로 사용했다.
+
 ## 완료 경계
 
 다음 항목을 모두 실제 외부 환경에서 확인해야 #61 완료 후보가 된다.

@@ -3,9 +3,9 @@
 ## 판정
 
 실제 GitHub App, installation token, OAuth와 signed webhook을 사용한 branch·PR 실패 진단은
-통과했고 별도 공개 fixture의 실제 외부 fork 격리도 통과했다. 다만 임시 Quick Tunnel의 HTTPS
-preflight와 하나의 repository에 묶인 strict acceptance JSON·제한 원본 review는 통과하지 않았으므로
-[#61](https://github.com/sangmu1126/PipeLens/issues/61)과
+통과했고 공개 fixture 하나에서 trusted branch·PR과 실제 외부 fork를 다시 실행한 strict acceptance도
+통과했다. 따라서 [#61](https://github.com/sangmu1126/PipeLens/issues/61)은 완료 조건을 충족한다. 임시
+Quick Tunnel의 production HTTPS preflight는 실패했으므로
 [#62](https://github.com/sangmu1126/PipeLens/issues/62)는 완료 처리하지 않는다.
 
 ## 환경과 권한
@@ -135,6 +135,30 @@ OpenAI endpoint 요청 시도와 LLM fallback metadata가 남도록 provider를 
 Provider match는 `PIPELENS_LLM_PROVIDER=none`인 staging에서 외부 provider request 자체가 0임을
 뜻한다. 실제 LLM provider redaction과 latency 증적은 이 실행 범위에 없다.
 
+## 단일 repository strict acceptance
+
+`PipeLens-external-fork-acceptance` 하나에서 동일한 disposable Actions seed를 사용하는 trusted
+branch·PR failure를 실행하고, 앞서 확인한 실제 외부-fork run과 함께 repository-native verifier에
+입력했다. Seed 원문과 파생 token은 출력·문서·repository에 보존하지 않고 SHA-256만 기록했다.
+
+- trusted branch [run 34188599863](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/actions/runs/34188599863),
+  [Commit Check](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/runs/101941870900)
+- trusted PR [run 34188667637](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/actions/runs/34188667637),
+  [PR #2 comment](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/2#issuecomment-5579464380)
+- external-fork [run 34187478447](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/actions/runs/34187478447),
+  [PR #1 warning](https://github.com/sangmu1126/PipeLens-external-fork-acceptance/pull/1#issuecomment-5579290723)
+- branch start/completion: `0.0s` / `3.0s`
+- PR start/completion: `0.0s` / `3.0s`
+- branch Check와 PR comment: 재전달 전후 각각 `1`, 동일 URL
+- seeded secret SHA-256: `b1ddcabe0e6197a1731d9ca599f04a557e0c79f2a2698de27d6d62ad7942c88b`
+- publication·persistence·provider request exact match: 모두 `0`
+- external-fork LLM invocation·PipeLens Commit Check publication: 모두 `0`
+- strict verifier: 12개 check 모두 `true`, `passed: true`
+- [redacted machine-readable evidence](2026-09-08-github-app-consolidated.json)
+
+검증 뒤 trusted PR과 branch, external-fork PR과 branch 및 disposable Actions seed를 정리했다. 실제
+run·comment·Check URL과 redacted evidence는 남겨 재검토할 수 있다.
+
 ## 실행 중 발견하고 수정한 결함
 
 1. dashboard nginx가 `/webhooks/github`를 SPA로 보내던 누락을 수정했다.
@@ -155,11 +179,8 @@ Provider match는 `PIPELENS_LLM_PROVIDER=none`인 staging에서 외부 provider 
 
 - Quick Tunnel은 account·SLA·고정 hostname이 없는 개발용 endpoint다. HTTPS verifier는 HTTP
   origin이 exact HTTPS origin으로 영구 redirect되지 않아 실패했다.
-- trusted branch·PR과 외부-fork run이 서로 다른 base repository여서 현재 strict acceptance JSON의
-  단일 repository 계약으로 묶지 않았다.
-- 실제 성공하는 LLM provider의 품질·token·비용과 provider 429·5xx fault는 검증하지 않았다.
-- raw GitHub·ingress·database audit를 승인된 장기 evidence storage에 보관한 production review가
-  아니다.
+- 실제 성공하는 LLM provider의 품질·token·비용과 provider 429·5xx fault는 production worker soak
+  [#66](https://github.com/sangmu1126/PipeLens/issues/66)의 별도 범위다.
+- production ingress·secret manager와 장기 운영 audit 보관은 #62·#65에서 검증한다.
 
-따라서 이 문서는 #61의 모든 개별 실행 조건에 대한 실제 staging 증적이지만, 하나의 repository에
-묶인 strict acceptance JSON이나 승인된 원본 review 및 production HTTPS 완료 증적을 대신하지 않는다.
+따라서 #61의 실제 GitHub App acceptance는 완료됐지만 production HTTPS 완료를 대신하지 않는다.
