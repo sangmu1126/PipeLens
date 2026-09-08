@@ -1336,6 +1336,10 @@ Nginx는 별도 PR로 분리했다.
 - 상세 실행 ID, URL, latency, fingerprint와 제한 사항은
   [2026-09-08 staging 실행 기록](acceptance-runs/2026-09-08-github-app-staging.md)에 보존했다. Quick
   Tunnel은 HTTP exact redirect preflight를 실패했고 외부 fork도 실행하지 않아 #61·#62는 닫지 않았다.
+- 최초 synthetic dependency 문구는 실제 게시 경로를 통과했지만 category가 `unknown`이었다.
+  acceptance fixture를 외부 code를 설치하지 않는 실제 `pip==0.0.0` resolver failure로 바꾸고 run
+  34185336066을 실행했다. `dependency_installation_failure`, confidence 0.9, total 3.141초를 확인했고
+  재전달 뒤 Check 1개와 동일 URL, seeded-secret exact match 0을 다시 검증했다.
 
 ## 현재까지의 검증 방식
 
