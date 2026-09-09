@@ -1452,6 +1452,28 @@ Nginx는 별도 PR로 분리했다.
   8개로 고정해 새 Redis 관측 panel 2개가 포함된 정상 dashboard를 거부했다. 기대 panel 수를 같은
   provisioned JSON에서 계산하도록 바꿔 dashboard 확장과 upgrade 검증의 중복 상수를 제거했다.
 
+### Python 3.15 preview dependency 경계 분리
+
+- 기존 advisory job은 CPython 3.15.0rc1 자체는 설치했지만 `psycopg-binary==3.3.4`의 cp315
+  배포본이 없어 dependency 설치에서 중단됐다. 지원 범위를 바꾸지 않은 채 이후 회귀를 관측하기
+  위해 preview 전용 installer를 추가했다.
+- installer는 `pyproject.toml`을 표준 `tomllib`으로 읽고 runtime·dev dependency 중 정확히 하나인
+  `psycopg[binary]`를 extras만 제거한 같은 version range로 치환한다. 누락·중복이면 즉시 실패하며,
+  dependency 설치 뒤 root package만 `--ignore-requires-python --no-deps`로 설치한다. production
+  metadata와 image 설치 경로에는 영향을 주지 않는다.
+- parser와 fail-closed 동작은 extras·marker 보존, 누락·중복·파일 부재를 포함한 5개 단위 테스트로
+  고정했다. CI는 driver가 `psycopg.pq.__impl__ == "python"`인지 확인한 뒤에만 dependency 검사,
+  테스트와 평가 결과를 readiness 성공으로 기록한다.
+- PR run 34305850281은 CPython 3.15.0rc2와 순수 Python/libpq `psycopg` 3.3.5에서 `pip check`,
+  425개 테스트와 진단 평가 13/13을 통과했다. runtime, interpreter, install, postgres driver,
+  dependencies, tests, evaluation 결과가 모두 `success`였다.
+- cp315 wheel이 아직 없는 `httptools`, `pydantic-core`, PyYAML, `uvloop`, MarkupSafe가 source
+  build되어 install은 약 3분 10초가 걸렸다. Starlette 1.6.0의 `anyio.abc.BlockingPortal` 별칭
+  deprecation warning 한 건도 숨기지 않고 남겼다.
+- 이 검증은 Python 수준의 조기 회귀 신호이며 3.15 지원 선언은 아니다. 2026-10-01 final 이후
+  binary driver와 전체 PostgreSQL·Redis integration을 통과하고 metadata·필수 check를 함께 바꾸는
+  작업은 #71에서 계속한다. 판단은 D-076에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
