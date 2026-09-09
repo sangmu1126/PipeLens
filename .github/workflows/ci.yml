@@ -214,6 +214,13 @@ jobs:
           --redis-url redis://localhost:6379/0
           --jobs 200
           --replicas 4
+      - name: Verify isolated worker containers and fault recovery
+        timeout-minutes: 5
+        run: >-
+          python -m ops.worker.run_container_soak
+          --profile smoke
+          --run-id worker-soak-ci
+          --output-dir /tmp/pipelens-worker-soak-ci
       - name: Stop Compose Redis service
         if: always()
         run: |
