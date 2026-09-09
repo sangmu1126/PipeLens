@@ -13,6 +13,13 @@ grafana_volume="pipelens-grafana-upgrade-data"
 grafana_port="53001"
 admin_user="pipelens-upgrade-admin"
 admin_password="pipelens-upgrade-password"
+operations_panels="$(python -c '
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as dashboard_file:
+    print(len(json.load(dashboard_file).get("panels", [])))
+' "$PWD/ops/grafana/dashboards/pipelens-overview.json")"
 
 assert_container_absent() {
     if docker container inspect "$1" >/dev/null 2>&1; then
@@ -116,7 +123,7 @@ if ! wait_for_grafana "$GRAFANA_PREVIOUS_VERSION"; then
     docker logs "$previous_container"
     exit 1
 fi
-validate_dashboard "pipelens-operations" "PipeLens Operations" 8
+validate_dashboard "pipelens-operations" "PipeLens Operations" "$operations_panels"
 
 curl --silent --show-error --fail \
     --user "$admin_user:$admin_password" \
@@ -133,7 +140,7 @@ if ! wait_for_grafana "$GRAFANA_CURRENT_VERSION"; then
 fi
 
 validate_dashboard "grafana-upgrade-probe" "Grafana upgrade probe" 0
-validate_dashboard "pipelens-operations" "PipeLens Operations" 8
+validate_dashboard "pipelens-operations" "PipeLens Operations" "$operations_panels"
 
 datasource="$(curl --silent --show-error --fail \
     "http://127.0.0.1:$grafana_port/api/datasources/uid/prometheus")"

@@ -1448,6 +1448,9 @@ Nginx는 별도 PR로 분리했다.
 - backend CI에는 기존 200-job in-process drill을 유지하면서 5분 timeout의 container `smoke`를
   추가했다. 장시간 capacity 판정은 `--profile launch`에서만 수행하며 짧은 smoke 결과로 기존 1시간
   #66 acceptance를 대체하지 않는다. 판단은 D-075에 기록했다.
+- 첫 PR CI는 새 smoke에 도달하기 전 Grafana major-upgrade 검증이 provisioned dashboard panel 수를
+  8개로 고정해 새 Redis 관측 panel 2개가 포함된 정상 dashboard를 거부했다. 기대 panel 수를 같은
+  provisioned JSON에서 계산하도록 바꿔 dashboard 확장과 upgrade 검증의 중복 상수를 제거했다.
 
 ## 현재까지의 검증 방식
 
