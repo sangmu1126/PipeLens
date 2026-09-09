@@ -1474,6 +1474,26 @@ Nginx는 별도 PR로 분리했다.
   binary driver와 전체 PostgreSQL·Redis integration을 통과하고 metadata·필수 check를 함께 바꾸는
   작업은 #71에서 계속한다. 판단은 D-076에 기록했다.
 
+### GitHub repository governance drift 감사와 교정
+
+- 9월 1일의 readiness 스냅샷이 열린 issue 7개와 production-readiness milestone 0/6을 계속
+  표시하는 것을 계기로 live GitHub 설정을 다시 대조했다. 실제 값은 열린 issue 4개, milestone
+  3/6이었다.
+- branch protection은 strict mode, 관리자 적용, 선형 이력, conversation 해결, force/delete 금지와
+  GitHub Actions app ID `15368`의 필수 check 9개가 모두 일치했다. secret scanning, push
+  protection, Dependabot security updates와 private vulnerability reporting도 활성 상태였다.
+- repository 전역에서는 문서 정책과 달리 merge commit이 허용됐고 병합 branch 자동 삭제가 꺼져
+  있었다. 2026-09-09T03:33:09Z의 새 CLI 첫 실행은 다른 항목을 섞지 않고 두 check만 실패했다.
+- `allow_merge_commit=false`, `delete_branch_on_merge=true`로 교정하고 03:33:29Z에 재실행해
+  22/22를 통과했다. 정상적으로 변하는 issue·milestone 수와 legacy `v0.1.0`의
+  `immutable=false`는 정책 실패가 아닌 관측값으로 분리했다.
+- 열린 Dependabot, CodeQL, secret-scanning alert는 모두 0이었다. 인증 token에 `read:packages`
+  scope가 없어 package API는 403을 반환했으므로 이를 0으로 해석하지 않았고, 별도의 공개 GHCR
+  retention audit로 API·dashboard 각각 2개 tag, release 1개와 attestation 결합을 검증했다.
+- 감사기는 token이나 원본 API 응답을 저장하지 않고 redacted expected/actual만 출력한다. endpoint나
+  필수 필드가 없으면 fail closed하며 7개 단위 테스트와 전체 432개 테스트로 검증했다. 판단은
+  D-077에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

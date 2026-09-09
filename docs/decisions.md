@@ -1178,3 +1178,20 @@
   남긴다.
 - 관련: `ops/ci/install_python_preview.py`, `tests/test_python_preview_install.py`,
   [Python 3.15 지원 #71](https://github.com/sangmu1126/PipeLens/issues/71).
+
+## D-077. GitHub repository governance를 live 불변식과 시점 관측값으로 분리
+
+- 결정: repository metadata·merge 설정·보안 기능과 `main` protection을 22개 fail-closed live
+  검사로 고정한다. 필수 status check는 context와 GitHub Actions app ID를 함께 비교한다. 열린 issue,
+  milestone 진행률과 latest release immutable 값은 변할 수 있으므로 결과에 관측하되 gate로 쓰지 않는다.
+- 이유: 2026-09-09 문서 갱신 중 branch protection의 선형 이력은 정상이지만 repository 전역에서
+  merge commit이 허용되고 병합 branch 자동 삭제가 꺼진 설정 drift를 발견했다. 정적 문서는 이
+  차이를 스스로 탐지하지 못했고, 오래된 issue·milestone 숫자도 현재 상태처럼 읽힐 수 있었다.
+- 대안: 문서 숫자만 수동 갱신, GitHub 설정을 IaC provider에 연결, branch protection만 검사,
+  정상적으로 변하는 backlog 수까지 exact gate로 고정.
+- 결과: 교정 전 감사는 `merge.commit_disabled`, `merge.delete_branch`만 실패했고, repository
+  설정 변경 뒤 22/22를 통과했다. report는 token·원본 payload 없이 redacted expected/actual과
+  비민감 관측값만 출력한다. 관리자 API 권한이 없는 일반 CI token으로 성공을 가장하지 않으며,
+  읽기 실패는 별도 exit code로 거부한다.
+- 관련: `ops/governance/audit_repository.py`, `tests/test_repository_governance.py`,
+  [저장소 보호와 변경 절차](repository-governance.md).
