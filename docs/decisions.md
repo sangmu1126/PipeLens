@@ -1158,3 +1158,23 @@
   SHA-256 결합을 통과해야 한다.
 - 관련: `ops/worker/run_container_soak.py`, `ops/worker/container_runtime.py`,
   `tests/test_container_soak.py`, [worker replica drill](worker-replica-drill.md).
+
+## D-076. Python 3.15 preview에서 binary driver 부재를 격리해 회귀를 계속 검증
+
+- 결정: production의 `psycopg[binary]>=3.3.5,<4`와 Python `>=3.12,<3.15` 선언은 유지한다. Python
+  3.15 advisory job에서만 dependency 목록의 `psycopg[binary]` 한 항목을 같은 version range의
+  `psycopg`로 교체하고, 실제 driver 구현이 순수 Python/libpq인지 확인한 뒤 `pip check`, 비통합
+  테스트와 평가를 실행한다. 항목이 없거나 둘 이상이면 installer가 실패한다.
+- 이유: 3.15.0rc2에도 `psycopg-binary` 배포본이 없어 기본 설치는 불가능하지만, 한 선택 dependency의
+  wheel 시차 때문에 나머지 dependency와 애플리케이션의 Python 3.15 회귀까지 관측하지 못하는 것은
+  readiness 신호를 불필요하게 줄인다. production 경로와 preview 대체를 분리하면 지원을 선언하지
+  않으면서 실제로 실행 가능한 범위를 넓힐 수 있다.
+- 대안: binary wheel이 나올 때까지 설치 단계 실패만 기록, production에서 binary extra 제거,
+  dependency 전체를 느슨하게 설치, preview job을 필수 check로 승격.
+- 결과: PR run 34305850281에서 CPython 3.15.0rc2, `psycopg` 3.3.5의 `python` 구현, dependency
+  무결성, 425개 테스트와 13개 평가를 통과했다. 일부 dependency는 source build됐고 Starlette의
+  AnyIO deprecation warning이 남았다. 이는 GA 지원 근거가 아니며 final interpreter,
+  `psycopg-binary` wheel, PostgreSQL·Redis 통합, metadata 변경과 branch protection 승격은 #71에
+  남긴다.
+- 관련: `ops/ci/install_python_preview.py`, `tests/test_python_preview_install.py`,
+  [Python 3.15 지원 #71](https://github.com/sangmu1126/PipeLens/issues/71).

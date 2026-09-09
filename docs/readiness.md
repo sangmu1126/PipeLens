@@ -269,12 +269,19 @@
 주지 않는다.
 
 Python 3.15는 2026-10-01 final 예정이므로 아직 지원 범위에 포함하지 않는다. advisory preview
-job은 setup-python이 제공하는 최신 prerelease에서 root package의 Python 범위만 설치 시 우회하고
-가능한 단계까지 동일한 비통합 테스트, `pip check`와 평가를 실행한다. 실패 단계는 warning과 Step
-Summary로 남기되 advisory check는 성공 처리하며 branch protection의 필수 check가 아니다. final 뒤
-전체 service integration과 dependency metadata를 확인한 다음 `<3.16` 지원 선언과 필수 check
-승격을 결정한다. 최초 PR 검증에서는 3.15.0 RC1 runtime 설치가 성공했지만
-`psycopg-binary==3.3.4`의 CPython 3.15 배포본이 없어 dependency 설치에서 readiness가 중단됐다.
+job은 setup-python이 제공하는 최신 prerelease에서 root package의 Python 범위만 설치 시 우회한다.
+`psycopg[binary]` 배포본만 없을 때에는 production dependency 선언을 바꾸지 않고 preview installer가
+같은 version range의 순수 Python `psycopg`로 정확히 한 번 대체한다. 이어서 driver 구현이 `python`인지,
+`pip check`, 동일한 비통합 테스트와 평가가 모두 성공했는지 별도로 확인한다. 다른 dependency 누락이나
+중복 대체는 실패로 남긴다.
+
+PR run 34305850281의 CPython 3.15.0rc2에서는 순수 Python/libpq `psycopg` 3.3.5로 dependency
+검사, 425개 테스트와 13개 진단 평가가 모두 통과했다. 아직 wheel이 없는 `httptools`,
+`pydantic-core`, PyYAML, `uvloop`, MarkupSafe는 source build되어 설치 시간이 약 3분 10초였고,
+Starlette의 향후 AnyIO API 제거 warning이 한 건 남았다. 실패 단계는 warning과 Step Summary로
+남기되 advisory check는 성공 처리하며 branch protection의 필수 check가 아니다. final 뒤 binary
+driver 배포, 전체 service integration과 dependency metadata를 확인한 다음 `<3.16` 지원 선언과
+필수 check 승격을 결정한다.
 
 FastAPI/Starlette 테스트 클라이언트는 dev extra의 `httpx2` 2.12.0을 사용한다. production의
 GitHub·OpenAI·retry client는 기존 `httpx` 0.28.1을 계속 사용하고 production image는 dev extra를
