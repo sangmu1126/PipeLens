@@ -237,10 +237,12 @@ Vite proxy, 인증된 화면과 logout을 실제 브라우저에서 연결한다
 
 - `/healthz`: 프로세스 생존만 확인한다.
 - `/readyz`: DB와 queue를 각각 확인하고 하나라도 실패하면 `503`을 반환한다.
-- `/metrics`: webhook, 분석 결과·시간, queue wait·복구·깊이, SLO, 오류 범주, trust level,
+- `/metrics`: webhook, 분석 결과·시간, queue wait·lease 복구·연결 오류/재연결 시간·깊이, SLO,
+  오류 범주, trust level,
   redaction, chunk, HTTP retry, LLM token·비용, feedback 지표를 노출한다.
 
-Prometheus 규칙은 API/worker 중단, 분석 시작·완료 SLO 위반과 queue backlog를 감지해
+Prometheus 규칙은 API/worker 중단, 분석 시작·완료 SLO 위반, queue backlog와 반복 Redis 연결
+오류를 감지해
 Alertmanager에 전달한다. Alertmanager는 group, deduplication, inhibition과 silence 경계를
 담당하고 Grafana dashboard는 같은 지표를 시각화한다. 기본 receiver는 외부 호출을 보내지 않으며
 [routing drill](alertmanager.md)이 Prometheus→Alertmanager→webhook 전체 경로를 검증한다.
@@ -262,7 +264,7 @@ URL과 Redis queue를 시작 전에 검증한다. SQLite·memory queue 또는 �
 - PostgreSQL·Grafana 데이터 백업과 복구 절차
 - Alertmanager의 실제 알림 채널과 secret 주입
 - `immutable: true`인 차기 GitHub Release 발행 확인
-- production resource limit·provider latency를 포함한 worker soak/load test
+- 실제 운영 payload·provider 분포로 반복하는 worker soak/load test
 - 외부에서 접근 가능한 GitHub OAuth callback, App setup URL과 webhook URL
 
 공개 배포 직후 `ops.acceptance.verify_https`가 인증서 검증을 강제한 채 HTTP→HTTPS, HSTS,

@@ -92,6 +92,19 @@ GitHub Actions CI에서도 Ruff, 전체 백엔드·대시보드 테스트, Chrom
 게이트와 대시보드 빌드를 함께 실행합니다. 브라우저 검증의 범위와 실제 GitHub 인수 테스트의
 구분은 [브라우저 E2E 문서](docs/browser-e2e.md)에 기록합니다.
 
+실제 worker 컨테이너 4개, PostgreSQL pool, controlled provider와 worker·Redis 장애를 한 번에
+검증하는 짧은 격리 smoke는 Docker가 실행 중일 때 다음처럼 재현합니다. 고유 이름의 container,
+network, volume만 만들며 종료 시 정리하고 결과 디렉터리는 덮어쓰지 않습니다.
+
+```bash
+python -m ops.worker.run_container_soak \
+  --profile smoke \
+  --output-dir /tmp/pipelens-worker-soak
+```
+
+1시간 launch profile과 산출물 해석은
+[Worker replica drill 문서](docs/worker-replica-drill.md)를 참고합니다.
+
 Docker를 사용한다면 `.env`를 만든 뒤 다음 명령으로 실행합니다.
 
 ```bash

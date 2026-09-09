@@ -1424,6 +1424,31 @@ Nginx는 별도 PR로 분리했다.
   container 안의 네 worker와 controlled provider라는 경계를 명시하고 운영 30일 또는 1 job/s 초과
   시 실제 replica container·payload·provider 분포로 재실행한다. 판단은 D-074에 기록했다.
 
+### Worker soak 재현 도구와 replica별 container 검증
+
+- 기존 1시간 acceptance의 수동 보조 container와 in-process worker 4개를 저장소 내부의 단일 명령으로
+  재구성했다. 새 runner는 고유 run ID로 PostgreSQL 18, Redis 8.2, controlled provider와 worker
+  container를 만들며 기존 Compose project의 이름·network·volume을 참조하지 않는다.
+- victim worker가 첫 job을 claim한 것을 Redis marker로 확인한 뒤 실제 `SIGKILL`하고, 4개 live
+  worker가 만료 lease를 회수하도록 했다. 각 worker에는 0.25 CPU·128 MiB와 PostgreSQL connection
+  5개를 실제 적용했다. Redis container도 전용 network에서 분리·재연결하고 새 queue connection
+  error·reconnection·recovery-duration Prometheus metric을 검증한다.
+- provider emulator는 worker pipeline의 실제 HTTP retry helper 앞에 GitHub형·LLM형 latency와 첫
+  429·다음 503을 주입한다. 외부 credential·비용 없이 retry 계약을 재현하지만 실제 provider 품질을
+  주장하지 않는다. runner·telemetry·provider audit는 hash로 observation에 결합하고 민감 key·URL
+  문자열 scan match가 0이어야 strict evidence가 통과한다.
+- 첫 smoke `r1`은 coordinator stderr를 출력하지 않아 실패 원인이 비어 보였고, stderr 결합을
+  추가했다. `r2`에서 processing list 길이를 합산하는 표현 내부의 `await`가 async generator가 되어
+  TypeError를 낸 것을 확인했다. 명시적 async loop로 수정하고 두 실패의 빈 output directory와 모든
+  전용 Docker 자원이 cleanup됐음을 확인했다.
+- 확정 source `8beed94`의 `worker-soak-smoke-r4`는 25/25, duplicate/lost 0, SLO 100%와 queue drain을
+  통과했다. killed job recovery 4.003초, Redis network recovery 7.680초, 연결 오류 16·재연결 4,
+  provider별 27 request와 429·503 각 1회를 기록했다. PostgreSQL pool 20, total 29/50, worker CPU
+  8.01%·memory 53.66%, Redis 1.250%였고 strict 9개 check가 모두 `true`였다.
+- backend CI에는 기존 200-job in-process drill을 유지하면서 5분 timeout의 container `smoke`를
+  추가했다. 장시간 capacity 판정은 `--profile launch`에서만 수행하며 짧은 smoke 결과로 기존 1시간
+  #66 acceptance를 대체하지 않는다. 판단은 D-075에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
