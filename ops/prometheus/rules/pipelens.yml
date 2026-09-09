@@ -40,3 +40,10 @@ groups:
           severity: warning
         annotations:
           summary: PipeLens analysis queue has remained above 20 jobs for 5 minutes
+
+      - alert: PipeLensQueueConnectionUnstable
+        expr: increase(pipelens_queue_connection_errors_total[5m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: PipeLens workers repeatedly lost their Redis queue connection

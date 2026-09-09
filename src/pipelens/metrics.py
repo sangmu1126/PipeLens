@@ -105,6 +105,24 @@ class Metrics:
             "Queued database records restored to the analysis queue on startup.",
             registry=self.registry,
         )
+        self.queue_connection_errors = Counter(
+            "pipelens_queue_connection_errors_total",
+            "Redis queue connection failures by worker phase.",
+            ("phase",),
+            registry=self.registry,
+        )
+        self.queue_reconnections = Counter(
+            "pipelens_queue_reconnections_total",
+            "Redis queue connections restored after a worker failure, by phase.",
+            ("phase",),
+            registry=self.registry,
+        )
+        self.queue_recovery_duration = Histogram(
+            "pipelens_queue_recovery_duration_seconds",
+            "Time from the first Redis queue failure until recovery, by worker phase.",
+            ("phase",),
+            registry=self.registry,
+        )
         self.http_retries = Counter(
             "pipelens_http_retries_total",
             "Retried outbound HTTP requests by provider and reason.",
