@@ -1138,3 +1138,23 @@
 - 관련: [worker soak acceptance](acceptance-runs/2026-09-09-worker-soak/README.md),
   `src/pipelens/worker.py`, `ops/worker/verify_replica_recovery.py`,
   [production worker soak #66](https://github.com/sangmu1126/PipeLens/issues/66).
+
+## D-075. Worker soak orchestration을 실제 replica container와 고유 자원으로 저장소화
+
+- 결정: worker soak의 재현 단위를 한 process의 논리 replica가 아니라 0.25 CPU·128 MiB cgroup을
+  각각 가진 container 4개로 바꾼다. 각 container는 PostgreSQL 실연결 pool 5개, 독립 Redis worker
+  ID·lease·metrics endpoint를 가지며 전용 provider, Redis, PostgreSQL과 실행별 network·volume·
+  keyspace를 `run_container_soak.py`가 생성·회수한다.
+- 이유: 1시간 launch acceptance는 queue invariant와 총 cgroup/pool 제한을 검증했지만 replica별
+  scheduler·memory 편차와 수동 orchestration 재현성은 남아 있었다. 임시 shell 절차를 반복하면
+  기존 staging을 잘못 내리거나 실패 산출물의 source·hash·fault timeline을 다르게 기록할 위험도 있다.
+- 대안: production Kubernetes가 생길 때까지 보류, 기존 in-process drill만 유지, Compose project
+  전체를 재사용, 실제 GitHub/OpenAI endpoint에 반복 부하를 발생, 모든 원본 endpoint와 connection
+  string을 증적에 저장.
+- 결과: `smoke`는 실제 SIGKILL·expired lease·Redis network disconnect, controlled HTTP 429·503,
+  replica별 pool과 resource telemetry를 CI 시간 안에 검증한다. `launch`는 같은 코드에 3,600초
+  profile을 적용한다. controlled provider는 재시도·지연 경로만 증명하며 실제 provider 품질·비용이나
+  production scheduler 최대 용량을 뜻하지 않는다. 생성 산출물은 덮어쓰지 않고 민감 문자열 scan과
+  SHA-256 결합을 통과해야 한다.
+- 관련: `ops/worker/run_container_soak.py`, `ops/worker/container_runtime.py`,
+  `tests/test_container_soak.py`, [worker replica drill](worker-replica-drill.md).

@@ -194,6 +194,47 @@ worker 1 CPU/512 MiB cgroup을 적용했다. 5 jobs/s capacity 실행도 SLO 100
 verifier의 9개 check가 모두 `true`이므로 현재 launch model의 #66 조건은 완료했다. 실제 운영 30일
 또는 1 job/s 초과 시 실제 replica container, payload와 provider 분포로 다시 실행한다.
 
+## 실제 replica container 통합 runner
+
+`run_container_soak.py`는 기존 1시간 acceptance에서 수동 임시 orchestration이었던 부분을 저장소
+도구로 만든다. 기존 Compose project를 내리거나 고정 이름을 재사용하지 않고 실행별 run ID가 붙은
+container, network, PostgreSQL volume과 Redis keyspace만 생성한다. 결과 directory가 이미 있으면
+덮어쓰지 않으며 `--keep`을 주지 않은 모든 성공·실패 경로에서 자신이 만든 자원만 정리한다.
+
+```bash
+python -m ops.worker.run_container_soak \
+  --profile smoke \
+  --run-id worker-soak-local \
+  --output-dir /tmp/pipelens-worker-soak-local
+```
+
+짧은 `smoke`는 다음 실제 경로를 검증한다.
+
+1. 0.25 CPU·128 MiB 제한의 victim worker가 job을 claim한 뒤 `SIGKILL`된다.
+2. 4개 별도 worker container가 각자 Redis connection·processing list·lease와 PostgreSQL 실연결
+   5개를 유지한다.
+3. 만료 lease를 다른 worker가 회수하고 같은 run의 completion은 한 번만 기록한다.
+4. Redis container를 전용 network에서 실제 분리했다가 같은 alias로 연결하고 worker의 연결 오류와
+   재연결 metric을 확인한다.
+5. 별도 HTTP provider container가 GitHub형·LLM형 요청에 latency와 첫 429·다음 503을 주입하고 제품의
+   retry helper로 모두 회복한다.
+6. coordinator가 rate/burst workload를 넣고 Docker stats, `pg_stat_activity`, Redis memory를 수집한
+   뒤 exactly-once, queue drain, SLO와 strict evidence를 판정한다.
+
+`runner.json`, `telemetry.json`, `provider-audit.json`, `observation.json`, `evidence.json` 다섯 파일이
+생성된다. 앞의 세 원본은 SHA-256으로 observation에 결합되고 URL, connection string, password,
+token·secret 문자열을 실제로 스캔한다. smoke의 minimum duration은 0이므로 `production_duration`
+check는 도구 회귀만 뜻한다. 1시간 인수 재실행에는 같은 명령에서 `--profile launch`를 사용한다.
+launch는 3,605 jobs, 1 job/s, burst 4, 3,600초 arrival, GitHub형 150ms·LLM형 1.2초, lease 30초를
+고정하고 strict minimum duration 3,600초를 적용한다.
+
+2026-09-09 Docker Desktop의 source `8beed94`에서 `worker-soak-smoke-r4`를 실행했다. 25/25 jobs,
+duplicate/lost 0, queue drain과 SLO 100%를 통과했고 killed job은 4.003초 뒤 다시 시작됐다. Redis
+network fault는 7.680초에 회복되며 연결 오류 16회·재연결 4회를 기록했다. provider마다 실제 HTTP
+27회, 429·503 각 1회와 retry recovery 2회를 기록했다. worker peak는 CPU 8.01%, memory 53.66%,
+PostgreSQL pool 20/20·total 29/50, Redis maxmemory 1.250%였고 strict 9개 check가 모두 통과했다.
+이는 자동화 경로의 짧은 회귀 근거이며 기존 1시간 capacity acceptance를 대체하지 않는다.
+
 ## 로컬 arm64 재검증
 
 2026-08-31 Docker Desktop 29.6.2에서 Compose의 Redis 8.2 digest를 실행하고 임의 loopback

@@ -36,9 +36,9 @@
 | 영역 | 요구와 구현 | 자동 증거 | 남은 외부 증거 |
 | --- | --- | --- | --- |
 | 보안 | HMAC webhook, encrypted OAuth token, installation 접근 격리, LLM 전 마스킹, untrusted fork 격리, production fail-closed 설정 | `tests/test_webhook.py`, `tests/test_auth.py`, `tests/test_sanitizer.py`, `tests/test_security.py`, `tests/test_pipeline.py`, CodeQL·secret scan·dependency review | 실제 GitHub 경계 완료. production HTTPS [#62](https://github.com/sangmu1126/PipeLens/issues/62), secret manager [#65](https://github.com/sangmu1126/PipeLens/issues/65) |
-| 성능 | 비동기 queue·worker, run dedupe, 시작 60초·완료 120초 SLO 기록 | `tests/test_queue.py`, `tests/test_worker.py`, CI 200-job drill, [1시간 worker soak](acceptance-runs/2026-09-09-worker-soak/README.md) | launch 모델 완료; 실제 traffic이 1 job/s를 넘으면 재산정 |
-| 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, PostgreSQL·Redis integration, [launch 규모 recovery](acceptance-runs/2026-09-08-recovery-scale/README.md), [worker fault soak](acceptance-runs/2026-09-09-worker-soak/README.md) | 운영량 증가 시 provider·network·recovery 기준 재산정 |
-| 관측성 | 성공·지연·범주·LLM token/cost·feedback·redaction·queue·SLO Prometheus 지표와 Grafana dashboard | `tests/test_metrics.py`, `tests/test_pipeline.py`, `tests/test_feedback_api.py`, Prometheus rule·Grafana provisioning CI | 실제 incident receiver와 acknowledgement [#64](https://github.com/sangmu1126/PipeLens/issues/64) |
+| 성능 | 비동기 queue·worker, run dedupe, 시작 60초·완료 120초 SLO 기록 | `tests/test_queue.py`, `tests/test_worker.py`, CI 200-job drill·실제 4-container smoke, [1시간 worker soak](acceptance-runs/2026-09-09-worker-soak/README.md) | launch 모델 완료; 실제 traffic이 1 job/s를 넘으면 재산정 |
+| 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, PostgreSQL·Redis integration, 실제 worker SIGKILL·Redis network CI smoke, [launch 규모 recovery](acceptance-runs/2026-09-08-recovery-scale/README.md), [worker fault soak](acceptance-runs/2026-09-09-worker-soak/README.md) | 운영량 증가 시 실제 provider·payload 분포로 재산정 |
+| 관측성 | 성공·지연·범주·LLM token/cost·feedback·redaction·queue·Redis 연결 복구·SLO Prometheus 지표와 Grafana dashboard | `tests/test_metrics.py`, `tests/test_pipeline.py`, `tests/test_feedback_api.py`, Prometheus rule·Grafana provisioning CI | 실제 incident receiver와 acknowledgement [#64](https://github.com/sangmu1126/PipeLens/issues/64) |
 
 ## 서비스 완료를 막는 외부 인수 조건
 

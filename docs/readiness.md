@@ -29,6 +29,7 @@
 | Worker replica drill | 통과 | CI와 로컬 4 replica·200 job, orphan 1개 복구와 60초/120초 SLO 검증 |
 | Worker soak evidence 도구 | 준비됨 | load·resource·provider fault·network·SLO·capacity strict JSON 판정 |
 | Launch worker soak/load | 통과 | 3,601초·3,605 jobs, SLO 100%, worker·lease·Redis fault 손실 0, 5 jobs/s capacity |
+| Container worker fault smoke | 통과 | 실제 제한 worker 4개·pool 20개, SIGKILL·lease·Redis network·429·503 자동 재현 |
 | PostgreSQL runtime | 통과 | CI amd64·로컬 arm64에서 18.6, 17→18 dump/restore·Alembic·integration 검증 |
 | PostgreSQL 복원 증적 도구 | 준비됨 | 격리 18 volume 복원, RTO/RPO·checksum·Alembic·대표 count JSON 출력 |
 | Grafana runtime | 통과 | CI amd64·로컬 arm64에서 13.2.1, 12→13 volume·provisioning·Viewer 검증 |
