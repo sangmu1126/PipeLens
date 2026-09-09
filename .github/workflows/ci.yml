@@ -277,20 +277,25 @@ jobs:
         id: install
         if: steps.interpreter.outcome == 'success'
         continue-on-error: true
-        run: python -m pip install --ignore-requires-python -e '.[dev]'
+        run: python ops/ci/install_python_preview.py
+      - name: Report preview PostgreSQL implementation
+        id: postgres_driver
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: python -c 'import psycopg.pq; assert psycopg.pq.__impl__ == "python"; print(psycopg.pq.__impl__)'
       - name: Check dependency consistency
         id: dependencies
-        if: steps.install.outcome == 'success'
+        if: steps.postgres_driver.outcome == 'success'
         continue-on-error: true
         run: python -m pip check
       - name: Run non-integration backend tests
         id: tests
-        if: steps.install.outcome == 'success'
+        if: steps.dependencies.outcome == 'success'
         continue-on-error: true
         run: pytest -q --ignore=tests/integration
       - name: Run diagnostic evaluation
         id: evaluation
-        if: steps.install.outcome == 'success'
+        if: steps.tests.outcome == 'success'
         continue-on-error: true
         run: pipelens-evaluate --minimum-accuracy 0.8
       - name: Report advisory result
@@ -299,11 +304,12 @@ jobs:
           PYTHON_OUTCOME: ${{ steps.preview_python.outcome }}
           INTERPRETER_OUTCOME: ${{ steps.interpreter.outcome }}
           INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          POSTGRES_DRIVER_OUTCOME: ${{ steps.postgres_driver.outcome }}
           DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
           TESTS_OUTCOME: ${{ steps.tests.outcome }}
           EVALUATION_OUTCOME: ${{ steps.evaluation.outcome }}
         run: |
-          summary="runtime=$PYTHON_OUTCOME interpreter=$INTERPRETER_OUTCOME install=$INSTALL_OUTCOME dependencies=$DEPENDENCIES_OUTCOME tests=$TESTS_OUTCOME evaluation=$EVALUATION_OUTCOME"
+          summary="runtime=$PYTHON_OUTCOME interpreter=$INTERPRETER_OUTCOME install=$INSTALL_OUTCOME postgres_driver=$POSTGRES_DRIVER_OUTCOME dependencies=$DEPENDENCIES_OUTCOME tests=$TESTS_OUTCOME evaluation=$EVALUATION_OUTCOME"
           if [[ "$summary" == *"failure"* || "$summary" == *"skipped"* ]]; then
             echo "::warning title=Python 3.15 preview is not ready::$summary"
             status="Not ready; inspect the first failed preview step."
