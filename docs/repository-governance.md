@@ -11,6 +11,7 @@
 - 해결되지 않은 review conversation이 있으면 merge할 수 없다.
 - 관리자에게도 같은 정책을 적용한다.
 - merge commit은 허용하지 않고 선형 이력을 유지한다.
+- 병합이 끝난 head branch는 자동 삭제한다.
 - force push와 branch 삭제를 허용하지 않는다.
 
 필수 check는 모두 GitHub Actions app(`app_id: 15368`)이 만든 다음 context로 제한한다.
@@ -35,6 +36,24 @@
 4. 9개 필수 check와 추가 workflow가 성공했는지 확인한다.
 5. review conversation이 모두 해결된 뒤 squash 또는 rebase 방식으로 merge한다.
 6. merge commit의 `main` CI·CodeQL도 성공하는지 확인한다.
+
+### Live 설정 감사
+
+문서와 GitHub 설정이 조용히 달라지지 않도록 관리자 read 권한이 있는 token으로 live 감사를 실행한다.
+
+```bash
+GITHUB_TOKEN="$(gh auth token)" \
+  python ops/governance/audit_repository.py
+```
+
+감사는 공개성, 기본 branch, description·homepage·topics, squash·rebase 허용과 merge commit 금지,
+병합 branch 자동 삭제, secret scanning·push protection·Dependabot security update·private reporting,
+`main`의 strict PR·관리자·선형 이력·conversation·force/delete 보호를 확인한다. 9개 필수 check는 이름뿐
+아니라 GitHub Actions app ID `15368`까지 정확히 일치해야 한다. 필드나 endpoint를 읽지 못하면
+성공으로 추정하지 않고 exit 2, 정책 이탈은 redacted JSON과 함께 exit 1, 전체 일치는 exit 0이다.
+
+열린 issue 수, production-readiness milestone 완료율과 최신 release의 immutable 상태는 시점에 따라
+정상적으로 바뀌므로 관측값으로만 출력한다. 실제 token과 원본 API payload는 보고서에 넣지 않는다.
 
 필수 job 이름을 바꾸면 기존 context가 영구 대기할 수 있다. 이 경우 새 이름의 job을 먼저
 추가해 성공 실행을 만든 뒤 branch protection context를 갱신하고, 마지막에 이전 job 이름을
@@ -113,3 +132,8 @@ repository ruleset은 아직 사용하지 않는다. 현재 요구는 단일 `ma
 [CI run 33288653155](https://github.com/sangmu1126/PipeLens/actions/runs/33288653155)와
 [CodeQL run 33288653056](https://github.com/sangmu1126/PipeLens/actions/runs/33288653056)도
 성공했다.
+
+2026-09-09 live 감사에서 branch protection 9개 check와 보안 기능은 정책과 일치했지만 repository
+전역의 merge commit 허용과 병합 branch 자동 삭제 비활성화를 발견했다. 각각 비활성·활성으로
+교정한 직후 22개 검사를 다시 실행해 모두 통과했다. 당시 열린 보안 alert는 Dependabot, CodeQL,
+secret scanning 모두 0이었고 공개 GHCR 보존 감사도 두 package의 `v0.1.0`을 통과했다.

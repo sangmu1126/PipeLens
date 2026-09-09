@@ -522,18 +522,19 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
 
-2026-09-01 조회 결과:
+2026-09-09 live governance 감사 결과:
 
 - visibility: public
 - default branch: `main`
-- open issues: 7 (`priority:p0` 2개, `priority:p1` 4개, `priority:p2` 1개)
+- open issues: 4 (`priority:p0` 1개, `priority:p1` 2개, `priority:p2` 1개)
 - open pull requests: 0
-- open milestones: 1 (`v0.2.0 Production readiness`, 0/6 완료)
+- open milestones: 1 (`v0.2.0 Production readiness`, 3/6 완료)
 - version tags: 1 (`v0.1.0`)
 - releases: 1 (`v0.1.0`, immutable false); repository 불변성은 미래 release 대상으로 활성화
 - GHCR images: 2 (`pipelens-api`, `pipelens-dashboard`), 빈 인증 설정 manifest 조회 통과
 - GHCR retention: 정식 release·attestation 영구 보존, 월별 자동 감사
 - branch protection: PR과 9개 GitHub Actions check 필수, 관리자 적용
+- merge policy: squash·rebase만 허용, merge commit 금지, 병합 branch 자동 삭제
 - repository rulesets: 0
 - open CodeQL alerts: 0
 - private vulnerability reporting: enabled
@@ -544,6 +545,11 @@ FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 - repository topics: `ci-cd`, `developer-tools`, `devops`, `fastapi`, `github-actions`,
   `observability`, `python`, `react`, `typescript`
 - repository homepage: 공개 HTTPS 배포 전이므로 의도적으로 비어 있음
+
+`ops/governance/audit_repository.py`의 22개 live 검사가 위 고정 정책을 모두 통과했다. 최초 실행은
+repository 전역의 merge commit 허용과 병합 branch 자동 삭제 비활성화를 탐지했고, 설정을 교정한
+직후 같은 감사가 통과했다. 열린 Dependabot·CodeQL·secret-scanning alert는 각각 0이며, 공개 GHCR
+보존 감사도 API·dashboard 두 package의 `v0.1.0` release와 attestation tag를 확인했다.
 
 P0/P1 항목은 issue #61–#66으로 분리해 milestone에 연결했다. #61·#63·#66은 승인된 acceptance
 증적으로 완료했고, 나머지는 실제 외부 환경, 완료 조건과 저장해야 할 증적을 명시하며 repository에서
