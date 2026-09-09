@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from contextlib import suppress
 
 from prometheus_client import start_http_server
@@ -35,6 +36,7 @@ class AnalysisWorker:
         self.max_attempts = max_attempts
         self.heartbeat_seconds = heartbeat_seconds
         self._task: asyncio.Task[None] | None = None
+        self._queue_failure_started_at: dict[str, float] = {}
 
     async def start(self) -> None:
         self._task = asyncio.create_task(self.run(), name="pipelens-analysis-worker")
@@ -50,12 +52,14 @@ class AnalysisWorker:
             try:
                 await self._maintain_queue_once()
             except RedisError:
+                self._record_queue_error("startup")
                 logger.exception(
                     "queue unavailable during worker startup; retrying in %.1fs",
                     self.heartbeat_seconds,
                 )
                 await asyncio.sleep(self.heartbeat_seconds)
             else:
+                self._record_queue_success("startup")
                 break
         maintenance_task = asyncio.create_task(
             self._maintain_queue(), name="pipelens-queue-maintenance"
@@ -65,11 +69,14 @@ class AnalysisWorker:
                 try:
                     await self.process_next()
                 except RedisError:
+                    self._record_queue_error("processing")
                     logger.exception(
                         "queue operation failed; retrying in %.1fs",
                         self.heartbeat_seconds,
                     )
                     await asyncio.sleep(self.heartbeat_seconds)
+                else:
+                    self._record_queue_success("processing")
         finally:
             maintenance_task.cancel()
             with suppress(asyncio.CancelledError):
@@ -80,8 +87,26 @@ class AnalysisWorker:
             await asyncio.sleep(self.heartbeat_seconds)
             try:
                 await self._maintain_queue_once()
+            except RedisError:
+                self._record_queue_error("maintenance")
+                logger.exception("queue lease maintenance failed")
             except Exception:
                 logger.exception("queue lease maintenance failed")
+            else:
+                self._record_queue_success("maintenance")
+
+    def _record_queue_error(self, phase: str) -> None:
+        self.metrics.queue_connection_errors.labels(phase=phase).inc()
+        self._queue_failure_started_at.setdefault(phase, time.monotonic())
+
+    def _record_queue_success(self, phase: str) -> None:
+        started_at = self._queue_failure_started_at.pop(phase, None)
+        if started_at is None:
+            return
+        self.metrics.queue_reconnections.labels(phase=phase).inc()
+        self.metrics.queue_recovery_duration.labels(phase=phase).observe(
+            time.monotonic() - started_at
+        )
 
     async def _maintain_queue_once(self) -> None:
         await self.queue.heartbeat()

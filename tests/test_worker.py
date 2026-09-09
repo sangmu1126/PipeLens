@@ -81,8 +81,9 @@ async def test_worker_retries_redis_failure_during_startup() -> None:
     queue = MagicMock()
     queue.heartbeat = AsyncMock(side_effect=[RedisConnectionError("offline"), None])
     queue.recover_orphaned = AsyncMock(return_value=0)
+    metrics = Metrics()
     worker = AnalysisWorker(
-        MagicMock(), queue, MagicMock(), Metrics(), max_attempts=3, heartbeat_seconds=0.001
+        MagicMock(), queue, MagicMock(), metrics, max_attempts=3, heartbeat_seconds=0.001
     )
     processed = asyncio.Event()
 
@@ -97,6 +98,9 @@ async def test_worker_retries_redis_failure_during_startup() -> None:
     await worker.stop()
 
     assert queue.heartbeat.await_count >= 2
+    output = generate_latest(metrics.registry).decode()
+    assert 'pipelens_queue_connection_errors_total{phase="startup"} 1.0' in output
+    assert 'pipelens_queue_reconnections_total{phase="startup"} 1.0' in output
 
 
 @pytest.mark.asyncio
@@ -104,8 +108,9 @@ async def test_worker_retries_redis_failure_while_processing() -> None:
     queue = MagicMock()
     queue.heartbeat = AsyncMock()
     queue.recover_orphaned = AsyncMock(return_value=0)
+    metrics = Metrics()
     worker = AnalysisWorker(
-        MagicMock(), queue, MagicMock(), Metrics(), max_attempts=3, heartbeat_seconds=0.001
+        MagicMock(), queue, MagicMock(), metrics, max_attempts=3, heartbeat_seconds=0.001
     )
     recovered = asyncio.Event()
     attempts = 0
@@ -115,7 +120,9 @@ async def test_worker_retries_redis_failure_while_processing() -> None:
         attempts += 1
         if attempts == 1:
             raise RedisConnectionError("offline")
-        recovered.set()
+        if attempts == 2:
+            recovered.set()
+            return False
         await asyncio.sleep(60)
         return False
 
@@ -125,3 +132,28 @@ async def test_worker_retries_redis_failure_while_processing() -> None:
     await worker.stop()
 
     assert worker.process_next.await_count >= 2
+    output = generate_latest(metrics.registry).decode()
+    assert 'pipelens_queue_connection_errors_total{phase="processing"} 1.0' in output
+    assert 'pipelens_queue_reconnections_total{phase="processing"} 1.0' in output
+
+
+@pytest.mark.asyncio
+async def test_worker_records_maintenance_redis_recovery() -> None:
+    queue = MagicMock()
+    queue.heartbeat = AsyncMock(side_effect=[RedisConnectionError("offline"), None])
+    queue.recover_orphaned = AsyncMock(return_value=0)
+    metrics = Metrics()
+    worker = AnalysisWorker(
+        MagicMock(), queue, MagicMock(), metrics, max_attempts=3, heartbeat_seconds=0.001
+    )
+
+    maintenance = asyncio.create_task(worker._maintain_queue())
+    while queue.heartbeat.await_count < 2:
+        await asyncio.sleep(0.001)
+    maintenance.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await maintenance
+
+    output = generate_latest(metrics.registry).decode()
+    assert 'pipelens_queue_connection_errors_total{phase="maintenance"} 1.0' in output
+    assert 'pipelens_queue_reconnections_total{phase="maintenance"} 1.0' in output

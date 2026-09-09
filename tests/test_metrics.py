@@ -19,6 +19,9 @@ def test_metrics_record_redactions_and_llm_usage() -> None:
     metrics.queue_wait.observe(0.5)
     metrics.total_latency.observe(1.5)
     metrics.slo_results.labels(phase="start", outcome="met").inc()
+    metrics.queue_connection_errors.labels(phase="processing").inc()
+    metrics.queue_reconnections.labels(phase="processing").inc()
+    metrics.queue_recovery_duration.labels(phase="processing").observe(0.25)
     output = generate_latest(metrics.registry).decode()
 
     assert 'pipelens_redactions_total{kind="github_token"} 2.0' in output
@@ -33,3 +36,9 @@ def test_metrics_record_redactions_and_llm_usage() -> None:
     assert "pipelens_queue_wait_seconds_count 1.0" in output
     assert "pipelens_total_latency_seconds_count 1.0" in output
     assert 'pipelens_slo_results_total{outcome="met",phase="start"} 1.0' in output
+    assert 'pipelens_queue_connection_errors_total{phase="processing"} 1.0' in output
+    assert 'pipelens_queue_reconnections_total{phase="processing"} 1.0' in output
+    assert (
+        'pipelens_queue_recovery_duration_seconds_count{phase="processing"} 1.0'
+        in output
+    )
