@@ -1561,12 +1561,29 @@ Nginx는 별도 PR로 분리했다.
 - mypy 범위를 `tests`까지 확장하고 CI step 이름을 전체 범위에 맞게 `Check Python types`로 바꿨다.
   로컬에서 strict 97/97 module, Ruff, 전체 443 passed·2 skipped를 재검증했다. 판단은 D-081에 기록했다.
 
+### Python statement·branch coverage 기준선
+
+- dev extra에 `pytest-cov>=7.1.0,<8`을 추가하고 coverage.py가 `pipelens`와 `ops` 전체를 source로
+  추적하도록 설정했다. branch 측정, 소수점 두 자리, 누락 행 출력과 XML·JSON 경로를 프로젝트 설정에
+  고정했으며 `.coverage`와 생성 보고서는 저장소에서 제외했다.
+- 기존 443개 테스트를 같은 pytest invocation에서 측정한 결과 2개 integration test가 환경 부재로
+  skip되고 전체 combined coverage는 74.73%였다. production package는 86.50%(statement 89.47%,
+  branch 74.39%), operations는 67.15%(statement 69.26%, branch 59.82%)로 분리됐다.
+- operations에는 Docker container, browser와 외부 process를 별도 단계에서 실행하는 경로가 있어
+  pytest 수치만으로 운영 검증 전체를 평가하지 않는다. 측정에서 해당 파일을 제외해 숫자를 높이지
+  않고, 첫 변경에는 임의 임계치도 두지 않았다. 반복 가능한 기준선을 먼저 보존하고 보안·예외 경로를
+  표적으로 보강한 뒤 gate 도입 여부를 결정한다. 판단은 D-082에 기록했다.
+- 기존 `backend` test step이 terminal 누락 행과 XML·JSON을 생성하고 검증된 full-SHA
+  `actions/upload-artifact`로 14일 보관한다. 외부 coverage service, repository token이나 새 required
+  check는 추가하지 않는다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
 
 - Ruff 정적 lint
 - mypy strict production·operations·tests 전체 Python 타입 검사
+- pytest 기반 production·operations statement·branch coverage와 XML·JSON artifact
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
 - 13개 진단 fixture의 80% 정확도 gate
