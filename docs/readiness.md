@@ -40,6 +40,7 @@
 | GitHub Release 불변성 | 설정됨 | repository API `enabled: true`; 미래 release부터 적용, v0.1.0은 `immutable: false` 유지 |
 | GitHub Actions Python runtime | 통과 | setup-python 7.0.0, Python 3.12·3.14 CI와 GHCR 감사 검증 |
 | GitHub Actions 공급망 | 통과 | 모든 외부 action full commit SHA 고정과 mutable reference CI gate 통과 |
+| Markdown 문서 무결성 | 통과 | 33개 파일의 상대 경로·대소문자·heading anchor를 dependency 설치 전 CI 검증 |
 | OAuth token key rotation | 통과 | primary/fallback Fernet key ring, lazy 재암호화와 session 폐기 회귀 테스트 |
 | secret file 주입 경계 | 통과 | 9개 민감 설정의 `*_FILE`, 충돌·빈 값·형식·크기 fail-closed 검증 |
 | secret manager 증적 도구 | 준비됨 | inventory·least privilege·file 주입·rotation·unavailable 대응 JSON 판정 |
