@@ -1547,12 +1547,26 @@ Nginx는 별도 PR로 분리했다.
   테스트 suite 자체의 strict 전환은 fixture와 mock annotation을 별도로 정리할 수 있도록 다음
   범위로 남겼다. 판단은 D-080에 기록했다.
 
+### Test suite strict type gate 완성
+
+- `src/pipelens`, `ops`, `tests`를 함께 strict 검사해 import 경계의 가짜 오류를 제외하고 97개
+  module 중 24개 테스트 파일에서 136개 오류를 확인했다. 대부분 store·queue의 Optional 반환,
+  중첩 JSON fixture, Pydantic Settings 동적 keyword와 async mock 교체 전제가 타입에 없던 문제였다.
+- DB·queue·pipeline 테스트는 결과 존재와 nullable model field를 assertion으로 좁혔다. evidence
+  fixture는 JSON load 경계를 명시하고 governance·HTTPS·Grafana payload를 사용 전에 구체화했다.
+  callable fixture와 mock은 반환·인자 타입을 붙이고 method replacement만 좁은 동적 경계로 남겼다.
+- 초기 수정에서 동적 Settings dictionary를 `model_validate`에 전달하자 BaseSettings의 file source
+  precedence가 달라져 secret file 주입 테스트 10개가 실패했다. 이를 타입 통과로 덮지 않고 실제
+  `Settings(**values)` 경로로 되돌린 뒤 constructor 호출 한 곳만 cast해 런타임 사양을 보존했다.
+- mypy 범위를 `tests`까지 확장하고 CI step 이름을 전체 범위에 맞게 `Check Python types`로 바꿨다.
+  로컬에서 strict 97/97 module, Ruff, 전체 443 passed·2 skipped를 재검증했다. 판단은 D-081에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
 
 - Ruff 정적 lint
-- mypy strict production·operations 타입 검사
+- mypy strict production·operations·tests 전체 Python 타입 검사
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
 - 13개 진단 fixture의 80% 정확도 gate
