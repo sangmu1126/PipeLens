@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import builtins
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any, TypedDict, cast
 
 from sqlalchemy import (
     JSON,
@@ -25,8 +27,9 @@ from sqlalchemy import (
     text,
     update,
 )
-from sqlalchemy.engine import Engine, RowMapping
+from sqlalchemy.engine import Connection, Engine, RowMapping
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import Select
 
 from pipelens.models import (
     AnalysisRecord,
@@ -71,6 +74,14 @@ class AnalysisCursor:
 class AnalysisPage:
     records: list[AnalysisRecord]
     next_cursor: AnalysisCursor | None
+
+
+class AuthSessionRow(TypedDict):
+    github_user_id: int
+    encrypted_access_token: str
+    expires_at: datetime
+    login: str
+    avatar_url: str | None
 
 
 analyses = Table(
@@ -250,7 +261,7 @@ class AnalysisStore:
         error: str | None = None,
         attempt_token: str | None = None,
     ) -> None:
-        values: dict = {
+        values: dict[str, object] = {
             "status": status.value,
             "error": error,
             "updated_at": datetime.now(UTC),
@@ -280,9 +291,7 @@ class AnalysisStore:
             result = connection.execute(statement.values(**values))
             self._require_current_attempt(result.rowcount, run_id, attempt_token)
 
-    def get(
-        self, run_id: int, installation_ids: set[int] | None = None
-    ) -> AnalysisRecord | None:
+    def get(self, run_id: int, installation_ids: set[int] | None = None) -> AnalysisRecord | None:
         statement = _analysis_select().where(analyses.c.run_id == run_id)
         if installation_ids is not None:
             if not installation_ids:
@@ -350,16 +359,14 @@ class AnalysisStore:
             rows = connection.execute(statement).mappings().all()
             page_rows = rows[:limit]
             stages = self._stage_history(connection, [row["run_id"] for row in page_rows])
-        records = [
-            self._to_record(row, stages.get(row["run_id"], [])) for row in page_rows
-        ]
+        records = [self._to_record(row, stages.get(row["run_id"], [])) for row in page_rows]
         next_cursor = None
         if len(rows) > limit and page_rows:
             last = page_rows[-1]
             next_cursor = AnalysisCursor(_as_utc(last["created_at"]), last["run_id"])
         return AnalysisPage(records, next_cursor)
 
-    def queued_requests(self) -> list[AnalysisRequest]:
+    def queued_requests(self) -> builtins.list[AnalysisRequest]:
         statement = (
             select(
                 analyses.c.run_id,
@@ -380,13 +387,17 @@ class AnalysisStore:
     def begin_analysis(self, run_id: int, attempt_token: str | None = None) -> AnalysisStart:
         started_at = datetime.now(UTC)
         with self.engine.begin() as connection:
-            timing = connection.execute(
-                select(
-                    analyses.c.created_at,
-                    analyses.c.analysis_started_at,
-                    analyses.c.queue_wait_seconds,
-                ).where(analyses.c.run_id == run_id)
-            ).mappings().one_or_none()
+            timing = (
+                connection.execute(
+                    select(
+                        analyses.c.created_at,
+                        analyses.c.analysis_started_at,
+                        analyses.c.queue_wait_seconds,
+                    ).where(analyses.c.run_id == run_id)
+                )
+                .mappings()
+                .one_or_none()
+            )
             if timing is None:
                 raise AnalysisAttemptSuperseded(f"analysis run {run_id} does not exist")
             first_start = timing["analysis_started_at"] is None
@@ -491,9 +502,7 @@ class AnalysisStore:
             )
 
     @staticmethod
-    def _require_current_attempt(
-        rowcount: int, run_id: int, attempt_token: str | None
-    ) -> None:
+    def _require_current_attempt(rowcount: int, run_id: int, attempt_token: str | None) -> None:
         if attempt_token is not None and rowcount != 1:
             raise AnalysisAttemptSuperseded(
                 f"analysis attempt for run {run_id} is no longer current"
@@ -565,7 +574,7 @@ class AnalysisStore:
                 )
 
     def replace_user_installations(
-        self, github_user_id: int, installations: list[GitHubInstallation]
+        self, github_user_id: int, installations: builtins.list[GitHubInstallation]
     ) -> None:
         now = datetime.now(UTC)
         with self.engine.begin() as connection:
@@ -605,7 +614,7 @@ class AnalysisStore:
                 )
             )
 
-    def get_auth_session(self, session_hash: str) -> dict | None:
+    def get_auth_session(self, session_hash: str) -> AuthSessionRow | None:
         statement = (
             select(
                 auth_sessions.c.github_user_id,
@@ -624,7 +633,7 @@ class AnalysisStore:
         )
         with self.engine.connect() as connection:
             row = connection.execute(statement).mappings().first()
-        return dict(row) if row else None
+        return cast(AuthSessionRow, dict(row)) if row else None
 
     def delete_auth_session(self, session_hash: str) -> None:
         with self.engine.begin() as connection:
@@ -632,9 +641,7 @@ class AnalysisStore:
                 delete(auth_sessions).where(auth_sessions.c.session_hash == session_hash)
             )
 
-    def update_auth_session_token(
-        self, session_hash: str, encrypted_access_token: str
-    ) -> None:
+    def update_auth_session_token(self, session_hash: str, encrypted_access_token: str) -> None:
         with self.engine.begin() as connection:
             connection.execute(
                 update(auth_sessions)
@@ -642,7 +649,7 @@ class AnalysisStore:
                 .values(encrypted_access_token=encrypted_access_token)
             )
 
-    def installations_for_user(self, github_user_id: int) -> list[GitHubInstallation]:
+    def installations_for_user(self, github_user_id: int) -> builtins.list[GitHubInstallation]:
         with self.engine.connect() as connection:
             rows = (
                 connection.execute(
@@ -664,7 +671,9 @@ class AnalysisStore:
         self.engine.dispose()
 
     @staticmethod
-    def _stage_history(connection, run_ids: list[int]) -> dict[int, list[AnalysisStageEvent]]:
+    def _stage_history(
+        connection: Connection, run_ids: builtins.list[int]
+    ) -> dict[int, builtins.list[AnalysisStageEvent]]:
         if not run_ids:
             return {}
         rows = (
@@ -676,7 +685,7 @@ class AnalysisStore:
             .mappings()
             .all()
         )
-        result: dict[int, list[AnalysisStageEvent]] = {run_id: [] for run_id in run_ids}
+        result: dict[int, builtins.list[AnalysisStageEvent]] = {run_id: [] for run_id in run_ids}
         for row in rows:
             values = dict(row)
             run_id = values.pop("run_id")
@@ -686,7 +695,7 @@ class AnalysisStore:
 
     @staticmethod
     def _to_record(
-        row: RowMapping, stage_history: list[AnalysisStageEvent]
+        row: RowMapping, stage_history: builtins.list[AnalysisStageEvent]
     ) -> AnalysisRecord:
         values = dict(row)
         feedback_run_id = values.pop("feedback_run_id")
@@ -707,7 +716,7 @@ class AnalysisStore:
 
 def _dump_model(
     value: Classification | Diagnosis | ExecutionContext | None,
-) -> dict | None:
+) -> dict[str, Any] | None:
     return value.model_dump(mode="json") if value is not None else None
 
 
@@ -719,7 +728,7 @@ def _as_utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
 
-def _analysis_select():
+def _analysis_select() -> Select[Any]:
     return select(
         *analyses.c,
         feedback.c.run_id.label("feedback_run_id"),

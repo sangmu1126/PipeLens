@@ -115,14 +115,15 @@ class Settings(BaseSettings):
 
     @property
     def token_encryption_key_ring(self) -> list[str]:
-        primary = self.token_encryption_key or base64.urlsafe_b64encode(
-            hashlib.sha256(self.session_secret.encode()).digest()
-        ).decode()
+        primary = (
+            self.token_encryption_key
+            or base64.urlsafe_b64encode(
+                hashlib.sha256(self.session_secret.encode()).digest()
+            ).decode()
+        )
         keys = [primary]
         keys.extend(
-            key.strip()
-            for key in self.token_encryption_fallback_keys.split(",")
-            if key.strip()
+            key.strip() for key in self.token_encryption_fallback_keys.split(",") if key.strip()
         )
         return list(dict.fromkeys(keys))
 
@@ -179,7 +180,8 @@ class Settings(BaseSettings):
                     "production GitHub App settings must be configured: "
                     + ", ".join(missing_github_settings)
                 )
-            if not self.github_app_id.isdigit() or int(self.github_app_id) < 1:
+            github_app_id = self.github_app_id
+            if github_app_id is None or not github_app_id.isdigit() or int(github_app_id) < 1:
                 raise ValueError("production GitHub App ID must be a positive integer")
             if not self.database_url:
                 raise ValueError("production PostgreSQL URL must be configured")

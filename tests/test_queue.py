@@ -48,9 +48,7 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
     job = await queue.dequeue(timeout=2)
     await queue.acknowledge(job)
 
-    redis.brpoplpush.assert_awaited_once_with(
-        "analyses", "analyses:processing:worker-a", timeout=2
-    )
+    redis.brpoplpush.assert_awaited_once_with("analyses", "analyses:processing:worker-a", timeout=2)
     acknowledge_call = redis.eval.await_args
     assert acknowledge_call.args[2:] == (
         "analyses:processing:worker-a",
@@ -59,10 +57,24 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
         "77",
     )
     pipeline.sadd.assert_called_once_with("analyses:workers", "analyses:processing:worker-a")
-    pipeline.set.assert_called_once_with(
-        "analyses:processing:worker-a:lease", "worker-a", ex=60
-    )
+    pipeline.set.assert_called_once_with("analyses:processing:worker-a:lease", "worker-a", ex=60)
     redis.ping.assert_awaited_once_with()
+
+
+@pytest.mark.asyncio
+async def test_redis_queue_normalizes_binary_receipt() -> None:
+    redis = MagicMock()
+    pipeline = MagicMock()
+    pipeline.execute = AsyncMock()
+    redis.pipeline.return_value = pipeline
+    envelope = QueueEnvelope(request=_request())
+    redis.brpoplpush = AsyncMock(return_value=envelope.model_dump_json().encode())
+    queue = RedisAnalysisQueue(redis, "analyses")
+
+    job = await queue.dequeue()
+
+    assert job.receipt == envelope.model_dump_json()
+    assert job.envelope == envelope
 
 
 @pytest.mark.asyncio
@@ -110,6 +122,27 @@ async def test_redis_queue_recovers_processing_jobs() -> None:
 
     assert recovered == 2
     redis.eval.assert_awaited_once()
+    assert redis.eval.await_args.args[2:] == (
+        "analyses:processing:worker-b:lease",
+        "analyses:processing:worker-b",
+        "analyses",
+        "analyses:workers",
+    )
+
+
+@pytest.mark.asyncio
+async def test_redis_queue_normalizes_binary_processing_keys() -> None:
+    redis = MagicMock()
+    redis.smembers = AsyncMock(
+        return_value={
+            b"analyses:processing:worker-a",
+            b"analyses:processing:worker-b",
+        }
+    )
+    redis.eval = AsyncMock(return_value=1)
+    queue = RedisAnalysisQueue(redis, "analyses", worker_id="worker-a")
+
+    assert await queue.recover_orphaned() == 1
     assert redis.eval.await_args.args[2:] == (
         "analyses:processing:worker-b:lease",
         "analyses:processing:worker-b",

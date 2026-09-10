@@ -1,7 +1,7 @@
 import json
 import uuid
 from enum import StrEnum
-from typing import Protocol
+from typing import Any, Protocol
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
@@ -223,15 +223,16 @@ def _bounded_context_json(context: LLMContext, limit: int) -> str:
     return encoded
 
 
-def _response_output_text(body: dict) -> str:
+def _response_output_text(body: dict[str, Any]) -> str:
     for output in body.get("output", []):
         if output.get("type") != "message":
             continue
         for content in output.get("content", []):
             if content.get("type") == "refusal":
                 raise LLMError("OpenAI model refused the diagnosis request")
-            if content.get("type") == "output_text" and content.get("text"):
-                return content["text"]
+            text = content.get("text")
+            if content.get("type") == "output_text" and isinstance(text, str) and text:
+                return text
     raise LLMError("OpenAI response contained no output text")
 
 

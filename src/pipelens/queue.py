@@ -174,7 +174,8 @@ class RedisAnalysisQueue:
         raw = await self.redis.brpoplpush(self.pending_key, self.processing_key, timeout=timeout)
         if raw is None:
             return None
-        return QueueJob(envelope=QueueEnvelope.model_validate_json(raw), receipt=raw)
+        receipt = _redis_text(raw)
+        return QueueJob(envelope=QueueEnvelope.model_validate_json(receipt), receipt=receipt)
 
     async def acknowledge(self, job: QueueJob) -> None:
         if job.receipt is not None:
@@ -208,7 +209,8 @@ class RedisAnalysisQueue:
     async def recover_orphaned(self) -> int:
         recovered = 0
         processing_keys = await self.redis.smembers(self.workers_key)
-        for processing_key in processing_keys:
+        for raw_processing_key in processing_keys:
+            processing_key = _redis_text(raw_processing_key)
             if processing_key == self.processing_key:
                 continue
             recovered += await self.redis.eval(
@@ -244,3 +246,7 @@ def create_queue(
     if backend == "redis":
         return RedisAnalysisQueue.from_url(redis_url, queue_name, worker_id, lease_seconds)
     raise ValueError(f"unsupported queue backend: {backend}")
+
+
+def _redis_text(value: bytes | str) -> str:
+    return value.decode() if isinstance(value, bytes) else value
