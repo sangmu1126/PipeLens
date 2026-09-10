@@ -36,6 +36,8 @@ jobs:
         run: python ops/ci/verify_action_pinning.py
       - name: Verify Dockerfile base image pinning
         run: python ops/ci/verify_dockerfile_pinning.py
+      - name: Verify Markdown documentation integrity
+        run: python ops/ci/verify_markdown_links.py
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - name: Verify OpenAPI contract
