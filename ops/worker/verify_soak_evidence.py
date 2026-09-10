@@ -374,29 +374,34 @@ def compile_evidence(
         },
         "resource_observation",
     )
+    worker_cpu_peak_percent = percentage(
+        resources["worker_cpu_peak_percent"], "resource_observation.worker_cpu_peak_percent"
+    )
+    worker_memory_peak_percent = percentage(
+        resources["worker_memory_peak_percent"],
+        "resource_observation.worker_memory_peak_percent",
+    )
+    postgres_pool_peak_connections = positive_int(
+        resources["postgres_pool_peak_connections"],
+        "resource_observation.postgres_pool_peak_connections",
+    )
+    postgres_total_peak_connections = positive_int(
+        resources["postgres_total_peak_connections"],
+        "resource_observation.postgres_total_peak_connections",
+    )
+    redis_memory_peak_percent = percentage(
+        resources["redis_memory_peak_percent"],
+        "resource_observation.redis_memory_peak_percent",
+    )
     resource_observation = {
         "captured_at": utc_timestamp(
             parse_timestamp(resources["captured_at"], "resource_observation.captured_at")
         ),
-        "worker_cpu_peak_percent": percentage(
-            resources["worker_cpu_peak_percent"], "resource_observation.worker_cpu_peak_percent"
-        ),
-        "worker_memory_peak_percent": percentage(
-            resources["worker_memory_peak_percent"],
-            "resource_observation.worker_memory_peak_percent",
-        ),
-        "postgres_pool_peak_connections": positive_int(
-            resources["postgres_pool_peak_connections"],
-            "resource_observation.postgres_pool_peak_connections",
-        ),
-        "postgres_total_peak_connections": positive_int(
-            resources["postgres_total_peak_connections"],
-            "resource_observation.postgres_total_peak_connections",
-        ),
-        "redis_memory_peak_percent": percentage(
-            resources["redis_memory_peak_percent"],
-            "resource_observation.redis_memory_peak_percent",
-        ),
+        "worker_cpu_peak_percent": worker_cpu_peak_percent,
+        "worker_memory_peak_percent": worker_memory_peak_percent,
+        "postgres_pool_peak_connections": postgres_pool_peak_connections,
+        "postgres_total_peak_connections": postgres_total_peak_connections,
+        "redis_memory_peak_percent": redis_memory_peak_percent,
     }
 
     capacity = require_mapping(observation["capacity_recommendation"], "capacity_recommendation")
@@ -413,29 +418,33 @@ def compile_evidence(
         },
         "capacity_recommendation",
     )
+    max_sustained_rate_per_second = positive_number(
+        capacity["max_sustained_rate_per_second"],
+        "capacity_recommendation.max_sustained_rate_per_second",
+    )
+    recommended_rate_per_second = positive_number(
+        capacity["recommended_rate_per_second"],
+        "capacity_recommendation.recommended_rate_per_second",
+    )
+    headroom_percent = percentage(
+        capacity["headroom_percent"], "capacity_recommendation.headroom_percent"
+    )
+    reviewed = require_bool(capacity["reviewed"], "capacity_recommendation.reviewed")
     capacity_recommendation = {
-        "max_sustained_rate_per_second": positive_number(
-            capacity["max_sustained_rate_per_second"],
-            "capacity_recommendation.max_sustained_rate_per_second",
-        ),
-        "recommended_rate_per_second": positive_number(
-            capacity["recommended_rate_per_second"],
-            "capacity_recommendation.recommended_rate_per_second",
-        ),
+        "max_sustained_rate_per_second": max_sustained_rate_per_second,
+        "recommended_rate_per_second": recommended_rate_per_second,
         "recommended_worker_replicas": positive_int(
             capacity["recommended_worker_replicas"],
             "capacity_recommendation.recommended_worker_replicas",
         ),
-        "headroom_percent": percentage(
-            capacity["headroom_percent"], "capacity_recommendation.headroom_percent"
-        ),
+        "headroom_percent": headroom_percent,
         "limiting_resource": safe_identifier(
             capacity["limiting_resource"], "capacity_recommendation.limiting_resource"
         ),
         "owner_documented": bool(
             safe_identifier(capacity["owner"], "capacity_recommendation.owner")
         ),
-        "reviewed": require_bool(capacity["reviewed"], "capacity_recommendation.reviewed"),
+        "reviewed": reviewed,
     }
 
     artifacts = require_mapping(observation["artifacts"], "artifacts")
@@ -465,17 +474,16 @@ def compile_evidence(
     resource_captured_at = parse_timestamp(
         resource_observation["captured_at"], "resource_observation.captured_at"
     )
-    if min([resource_captured_at, *all_fault_times]) < started_at or max(
-        [resource_captured_at, *all_fault_times]
-    ) > completed_at:
+    if (
+        min([resource_captured_at, *all_fault_times]) < started_at
+        or max([resource_captured_at, *all_fault_times]) > completed_at
+    ):
         raise ValueError("resource and fault events must be within the soak window")
     now = (checked_at or datetime.now(UTC)).astimezone(UTC)
     if completed_at > now:
         raise ValueError("observation must not contain future events")
 
-    pool_budget = (
-        resource_limits["worker_replicas"] * resource_limits["postgres_pool_size_each"]
-    )
+    pool_budget = resource_limits["worker_replicas"] * resource_limits["postgres_pool_size_each"]
     provider_exercises = all(
         item["rate_limit_responses"] >= 1
         and item["transient_failures"] >= 1
@@ -487,20 +495,17 @@ def compile_evidence(
         for item in parsed_faults.values()
     )
     resource_safe = (
-        resource_observation["worker_cpu_peak_percent"] <= max_resource_utilization_percent
-        and resource_observation["worker_memory_peak_percent"] <= max_resource_utilization_percent
-        and resource_observation["redis_memory_peak_percent"] <= max_resource_utilization_percent
-        and resource_observation["postgres_pool_peak_connections"] <= pool_budget
-        and resource_observation["postgres_total_peak_connections"]
-        <= resource_limits["postgres_max_connections"]
+        worker_cpu_peak_percent <= max_resource_utilization_percent
+        and worker_memory_peak_percent <= max_resource_utilization_percent
+        and redis_memory_peak_percent <= max_resource_utilization_percent
+        and postgres_pool_peak_connections <= pool_budget
+        and postgres_total_peak_connections <= resource_limits["postgres_max_connections"]
     )
     capacity_consistent = (
-        capacity_recommendation["recommended_rate_per_second"]
-        <= capacity_recommendation["max_sustained_rate_per_second"]
-        and capacity_recommendation["recommended_rate_per_second"]
-        >= load_profile["arrival_rate_per_second"]
-        and capacity_recommendation["headroom_percent"] >= 20
-        and capacity_recommendation["reviewed"]
+        recommended_rate_per_second <= max_sustained_rate_per_second
+        and recommended_rate_per_second >= load_profile["arrival_rate_per_second"]
+        and headroom_percent >= 20
+        and reviewed
     )
     checks = {
         "production_duration": (

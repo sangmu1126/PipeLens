@@ -210,8 +210,17 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(rendered, end="")
 
-    if not report["passed"]:
-        failed = [item["name"] for item in report["checks"] if not item["passed"]]
+    if report.get("passed") is not True:
+        raw_checks = report.get("checks")
+        failed = (
+            [
+                str(item.get("name"))
+                for item in raw_checks
+                if isinstance(item, dict) and item.get("passed") is not True
+            ]
+            if isinstance(raw_checks, list)
+            else ["invalid report checks"]
+        )
         print(f"repository governance drift: {', '.join(failed)}", file=sys.stderr)
         return 1
     return 0

@@ -87,10 +87,11 @@ def planned_arrival_seconds(args: argparse.Namespace) -> float:
     """Return the time from the first shaped batch to the final batch start."""
     if not args.enqueue_rate_per_second or args.jobs <= 2:
         return 0.0
-    burst_size = args.burst_size or 1
-    shaped_jobs = args.jobs - 1  # The abandoned recovery probe is enqueued separately.
+    burst_size = int(args.burst_size or 1)
+    shaped_jobs = int(args.jobs) - 1  # The abandoned recovery probe is enqueued separately.
     batches = ceil(shaped_jobs / burst_size)
-    return max(0.0, (batches - 1) * burst_size / args.enqueue_rate_per_second)
+    enqueue_rate = float(args.enqueue_rate_per_second)
+    return max(0.0, (batches - 1) * burst_size / enqueue_rate)
 
 
 def validate_args(args: argparse.Namespace) -> None:
@@ -288,9 +289,7 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
             raise DrillError(f"completion SLO breached: {max_completion:.3f}s")
         recovery_limit = args.lease_seconds + args.recovery_grace_seconds
         if recovery_latency > recovery_limit:
-            raise DrillError(
-                f"orphan recovery exceeded lease plus grace: {recovery_latency:.3f}s"
-            )
+            raise DrillError(f"orphan recovery exceeded lease plus grace: {recovery_latency:.3f}s")
 
         recovered = sum(
             counter_value(worker_metrics, "pipelens_queue_recovered_total")
@@ -304,12 +303,13 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
         start_samples = list(start_latencies.values())
         completion_samples = list(completion_latencies.values())
         observed_seconds = max(tracker.completed_at.values()) - min(tracker.enqueued_at.values())
-        start_attainment = sum(
-            latency <= args.start_slo_seconds for latency in start_samples
-        ) / args.jobs
-        completion_attainment = sum(
-            latency <= args.completion_slo_seconds for latency in completion_samples
-        ) / args.jobs
+        start_attainment = (
+            sum(latency <= args.start_slo_seconds for latency in start_samples) / args.jobs
+        )
+        completion_attainment = (
+            sum(latency <= args.completion_slo_seconds for latency in completion_samples)
+            / args.jobs
+        )
 
         return {
             "schema_version": 1,
@@ -329,12 +329,10 @@ async def run_drill(args: argparse.Namespace) -> dict[str, object]:
             "max_completion_seconds": round(max_completion, 3),
             "orphan_recovery_seconds": round(recovery_latency, 3),
             "start_latency_seconds": {
-                f"p{rank}": round(percentile(start_samples, rank), 3)
-                for rank in (50, 95, 99)
+                f"p{rank}": round(percentile(start_samples, rank), 3) for rank in (50, 95, 99)
             },
             "completion_latency_seconds": {
-                f"p{rank}": round(percentile(completion_samples, rank), 3)
-                for rank in (50, 95, 99)
+                f"p{rank}": round(percentile(completion_samples, rank), 3) for rank in (50, 95, 99)
             },
             "start_slo_seconds": args.start_slo_seconds,
             "completion_slo_seconds": args.completion_slo_seconds,

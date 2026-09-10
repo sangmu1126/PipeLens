@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+import io
+import urllib.request
+
 import pytest
 
-from ops.ghcr.audit_retention import AuditError, PackageInventory, validate_inventories
+from ops.ghcr import audit_retention
+from ops.ghcr.audit_retention import (
+    AuditError,
+    PackageInventory,
+    RegistryClient,
+    validate_inventories,
+)
 
 DIGEST = "sha256:" + "a" * 64
 DIGEST_TAG = "sha256-" + "a" * 64
@@ -51,3 +60,14 @@ def test_package_release_sets_must_match() -> None:
 
     with pytest.raises(AuditError, match="release tags differ"):
         validate_inventories(inventories)
+
+
+def test_registry_client_rejects_non_object_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        audit_retention.urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: io.BytesIO(b"[]"),
+    )
+
+    with pytest.raises(AuditError, match="non-object"):
+        RegistryClient._read_json(urllib.request.Request("https://ghcr.io/v2/test/tags/list"))

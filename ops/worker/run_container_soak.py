@@ -12,7 +12,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict, cast
 
 from ops.worker.verify_soak_evidence import compile_evidence, load_observation
 
@@ -31,6 +31,15 @@ SENSITIVE_ARTIFACT = re.compile(
 
 class SoakError(RuntimeError):
     """Raised when orchestration or a soak invariant fails."""
+
+
+class ResourceSample(TypedDict):
+    captured_at: str
+    worker_cpu_peak_percent: float
+    worker_memory_peak_percent: float
+    postgres_pool_connections: int
+    postgres_total_connections: int
+    redis_memory_percent: float
 
 
 @dataclass(frozen=True)
@@ -170,7 +179,7 @@ def metric_total(payloads: list[str], metric: str) -> float:
     return total
 
 
-def resource_sample(worker_names: list[str], postgres: str, redis: str) -> dict[str, object]:
+def resource_sample(worker_names: list[str], postgres: str, redis: str) -> ResourceSample:
     stats_result = run("stats", "--no-stream", "--format", "{{json .}}", *worker_names, check=False)
     stats = [json.loads(line) for line in stats_result.stdout.splitlines() if line.strip()]
     cpu = max((float(item["CPUPerc"].rstrip("%")) for item in stats), default=0)
@@ -204,28 +213,29 @@ def resource_sample(worker_names: list[str], postgres: str, redis: str) -> dict[
     }
 
 
-def aggregate_resources(samples: list[dict[str, object]]) -> dict[str, object]:
+def aggregate_resources(samples: list[ResourceSample]) -> dict[str, object]:
     if not samples:
         raise SoakError("no resource telemetry was captured")
     return {
         "captured_at": samples[-1]["captured_at"],
-        "worker_cpu_peak_percent": max(float(item["worker_cpu_peak_percent"]) for item in samples),
-        "worker_memory_peak_percent": max(
-            float(item["worker_memory_peak_percent"]) for item in samples
-        ),
+        "worker_cpu_peak_percent": max(item["worker_cpu_peak_percent"] for item in samples),
+        "worker_memory_peak_percent": max(item["worker_memory_peak_percent"] for item in samples),
         "postgres_pool_peak_connections": max(
-            int(item["postgres_pool_connections"]) for item in samples
+            item["postgres_pool_connections"] for item in samples
         ),
         "postgres_total_peak_connections": max(
-            int(item["postgres_total_connections"]) for item in samples
+            item["postgres_total_connections"] for item in samples
         ),
-        "redis_memory_peak_percent": max(float(item["redis_memory_percent"]) for item in samples),
+        "redis_memory_peak_percent": max(item["redis_memory_percent"] for item in samples),
     }
 
 
 def provider_audit(container: str) -> dict[str, object]:
     code = "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/audit').read().decode())"
-    return json.loads(exec_output(container, "python", "-c", code))
+    payload = json.loads(exec_output(container, "python", "-c", code))
+    if not isinstance(payload, dict):
+        raise SoakError("provider audit endpoint returned a non-object JSON payload")
+    return cast(dict[str, object], payload)
 
 
 def write_json(path: Path, value: object) -> None:
@@ -337,7 +347,7 @@ def execute(args: argparse.Namespace) -> dict[str, object]:
     }
     created_containers: list[str] = []
     worker_names: list[str] = []
-    telemetry: list[dict[str, object]] = []
+    telemetry: list[ResourceSample] = []
     worker_injected_at = worker_recovered_at = ""
     network_injected_at = network_recovered_at = ""
     metrics_summary: dict[str, float] = {}

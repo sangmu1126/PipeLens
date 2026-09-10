@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import ops.worker.run_container_soak as container_soak
 from ops.worker.container_runtime import ProviderState, nearest_rank
 from ops.worker.run_container_soak import (
     PROFILES,
@@ -11,6 +12,7 @@ from ops.worker.run_container_soak import (
     artifact_scan,
     execute,
     metric_total,
+    provider_audit,
 )
 
 
@@ -42,6 +44,13 @@ def test_provider_audit_counts_injected_failures() -> None:
         "transient_failures": 1,
         "retry_successes": 2,
     }
+
+
+def test_provider_audit_rejects_non_object_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(container_soak, "exec_output", lambda *_args: "[]")
+
+    with pytest.raises(SoakError, match="non-object"):
+        provider_audit("provider")
 
 
 def test_metric_total_combines_replicas_and_ignores_metadata() -> None:

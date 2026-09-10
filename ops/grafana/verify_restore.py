@@ -14,7 +14,7 @@ import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, cast
 from urllib.error import HTTPError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -186,10 +186,11 @@ def wait_for_grafana(
             payload = json.loads(body)
             if (
                 status == 200
+                and isinstance(payload, dict)
                 and payload.get("database") == "ok"
                 and payload.get("version") == expected_version
             ):
-                return payload
+                return cast(dict[str, Any], payload)
         except (OSError, ValueError, json.JSONDecodeError):
             pass
         time.sleep(1)
