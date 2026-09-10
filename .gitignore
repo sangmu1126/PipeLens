@@ -3,6 +3,9 @@
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+.coverage
+coverage.json
+coverage.xml
 node_modules/
 *.tsbuildinfo
 *.py[cod]
