@@ -17,6 +17,7 @@ def test_direct_log_path_ranks_changed_file_first() -> None:
 
     assert result[0].filename == "src/payments/service.py"
     assert result[0].score == 0.9
+    assert result[0].patch_excerpt is not None
     assert "+charge(payment_method)" in result[0].patch_excerpt
     assert result[1].filename == "tests/test_checkout.py"
 

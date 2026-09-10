@@ -1,13 +1,14 @@
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from pipelens.config import Settings
 from pipelens.main import create_app
 
 
-def _app(tmp_path: Path):
+def _app(tmp_path: Path) -> FastAPI:
     return create_app(
         Settings(database_path=str(tmp_path / "db.sqlite"), auth_required=False)
     )

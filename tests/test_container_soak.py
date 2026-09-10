@@ -7,6 +7,7 @@ import ops.worker.run_container_soak as container_soak
 from ops.worker.container_runtime import ProviderState, nearest_rank
 from ops.worker.run_container_soak import (
     PROFILES,
+    ResourceSample,
     SoakError,
     aggregate_resources,
     artifact_scan,
@@ -64,7 +65,7 @@ def test_metric_total_combines_replicas_and_ignores_metadata() -> None:
 
 
 def test_resource_aggregation_uses_each_peak() -> None:
-    samples = [
+    samples: list[ResourceSample] = [
         {
             "captured_at": "2026-09-09T00:00:00Z",
             "worker_cpu_peak_percent": 2,

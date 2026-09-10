@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -49,7 +50,7 @@ def test_worker_drill_rejects_invalid_load_shape(
         validate_args(parse_args(arguments))
 
 
-def test_worker_drill_parses_rate_shape_and_evidence_output(tmp_path) -> None:
+def test_worker_drill_parses_rate_shape_and_evidence_output(tmp_path: Path) -> None:
     output = tmp_path / "soak-result.json"
     args = parse_args(
         [

@@ -34,7 +34,9 @@ def test_store_deduplicates_workflow_run(tmp_path: Path) -> None:
 
     assert store.create_if_absent(record) is True
     assert store.create_if_absent(record) is False
-    assert store.get(42).status == AnalysisStatus.QUEUED
+    saved = store.get(42)
+    assert saved is not None
+    assert saved.status == AnalysisStatus.QUEUED
 
 
 def test_store_lists_only_runnable_queued_analyses(tmp_path: Path) -> None:
@@ -93,10 +95,12 @@ def test_store_persists_repository_correlation(tmp_path: Path) -> None:
     )
 
     saved = store.get(43)
+    assert saved is not None
     assert saved.related_files[0].filename == "src/app.py"
     assert saved.workflow_path == ".github/workflows/ci.yml"
     assert saved.model_name == "test-model"
     assert saved.prompt_version == "diagnosis-v1"
+    assert saved.execution_context is not None
     assert saved.execution_context.failed_jobs[0].runner_labels == ["ubuntu-latest"]
 
 
@@ -127,10 +131,14 @@ def test_store_creates_and_updates_feedback(tmp_path: Path) -> None:
         FeedbackRequest(accuracy=FeedbackAccuracy.ACCURATE, suggestion_resolved=True),
     )
 
+    assert created is not None
+    assert updated is not None
     assert created.created_at == updated.created_at
     assert updated.accuracy is FeedbackAccuracy.ACCURATE
     assert updated.suggestion_resolved is True
-    assert store.get(44).feedback == updated
+    saved = store.get(44)
+    assert saved is not None
+    assert saved.feedback == updated
 
 
 def test_store_rejects_feedback_for_unknown_analysis(tmp_path: Path) -> None:
@@ -234,8 +242,10 @@ def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:
         baseline_sha="last-success-sha",
     )
 
-    assert store.get(47).trust_level is TrustLevel.UNTRUSTED_FORK
-    assert store.get(47).baseline_sha == "last-success-sha"
+    saved = store.get(47)
+    assert saved is not None
+    assert saved.trust_level is TrustLevel.UNTRUSTED_FORK
+    assert saved.baseline_sha == "last-success-sha"
 
 
 def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None:
@@ -258,6 +268,7 @@ def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None
     total_latency = store.finish_analysis(48, start.attempt_started_at)
 
     saved = store.get(48)
+    assert saved is not None
     assert saved.analysis_started_at is not None
     assert saved.analysis_completed_at is not None
     assert saved.duration_seconds is not None and saved.duration_seconds >= 0
@@ -306,12 +317,17 @@ def test_new_analysis_attempt_fences_stale_worker_updates(tmp_path: Path) -> Non
             attempt_token="attempt-a",
         )
 
-    assert store.get(49).stage_history[0].status is StageStatus.FAILED
-    assert "Superseded" in store.get(49).stage_history[0].error
+    saved = store.get(49)
+    assert saved is not None
+    assert saved.stage_history[0].status is StageStatus.FAILED
+    assert saved.stage_history[0].error is not None
+    assert "Superseded" in saved.stage_history[0].error
 
     store.finish_analysis(49, second_start.attempt_started_at, attempt_token="attempt-b")
     assert second_start.first_start is False
     assert second_start.queue_wait_seconds == first_start.queue_wait_seconds
     with pytest.raises(AnalysisAttemptSuperseded):
         store.begin_analysis(49, "attempt-c")
-    assert store.get(49).status is AnalysisStatus.COMPLETED
+    saved = store.get(49)
+    assert saved is not None
+    assert saved.status is AnalysisStatus.COMPLETED

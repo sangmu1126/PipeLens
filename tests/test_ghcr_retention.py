@@ -5,7 +5,6 @@ import urllib.request
 
 import pytest
 
-from ops.ghcr import audit_retention
 from ops.ghcr.audit_retention import (
     AuditError,
     PackageInventory,
@@ -64,7 +63,7 @@ def test_package_release_sets_must_match() -> None:
 
 def test_registry_client_rejects_non_object_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        audit_retention.urllib.request,
+        urllib.request,
         "urlopen",
         lambda *_args, **_kwargs: io.BytesIO(b"[]"),
     )

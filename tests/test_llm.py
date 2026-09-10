@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import httpx
 import pytest
@@ -50,7 +51,7 @@ def _context() -> LLMContext:
     )
 
 
-def _analysis(**overrides) -> LLMAnalysis:
+def _analysis(**overrides: object) -> LLMAnalysis:
     values = {
         "category": "missing_environment_variable",
         "summary": "환경변수 설정 누락",
@@ -109,7 +110,7 @@ def test_validate_llm_analysis_rejects_invented_evidence() -> None:
 
 @pytest.mark.asyncio
 async def test_openai_provider_requests_strict_structured_output() -> None:
-    captured: dict = {}
+    captured: dict[str, Any] = {}
     captured_headers: dict[str, str] = {}
 
     def handler(request: httpx.Request) -> httpx.Response:

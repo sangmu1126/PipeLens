@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -15,7 +16,7 @@ from ops.alertmanager.verify_channel_evidence import (
 CHECKED_AT = datetime(2026, 9, 2, 1, 0, tzinfo=UTC)
 
 
-def valid_observation() -> dict[str, object]:
+def valid_observation() -> dict[str, Any]:
     return {
         "schema_version": 1,
         "source_revision": "release-2026-09-02",
@@ -54,7 +55,7 @@ def valid_observation() -> dict[str, object]:
     }
 
 
-def compile_valid(observation: dict[str, object] | None = None) -> dict[str, object]:
+def compile_valid(observation: dict[str, Any] | None = None) -> dict[str, Any]:
     return compile_evidence(
         observation or valid_observation(),
         "a" * 64,
@@ -70,7 +71,7 @@ def test_compile_evidence_passes_all_channel_exercises() -> None:
     evidence = compile_valid()
 
     assert evidence["passed"] is True
-    assert all(evidence["checks"].values())  # type: ignore[union-attr]
+    assert all(evidence["checks"].values())
     assert evidence["latency_seconds"] == {
         "firing_delivery": 12.0,
         "acknowledgement": 30.0,
@@ -83,7 +84,7 @@ def test_compile_evidence_passes_all_channel_exercises() -> None:
         "alertmanager_group": "pipelens-critical-staging",
         "external_incident_id": "INC-2026-0042",
     }
-    assert evidence["timeline"]["probe"]["firing_sent_at"] == "2025-09-02T00:00:00Z"  # type: ignore[index]
+    assert evidence["timeline"]["probe"]["firing_sent_at"] == "2025-09-02T00:00:00Z"
 
 
 def test_evidence_excludes_owner_and_policy_details() -> None:
@@ -155,8 +156,8 @@ def test_failed_acceptance_checks_are_emitted_without_schema_failure() -> None:
     evidence = compile_valid(observation)
 
     assert evidence["passed"] is False
-    assert evidence["checks"]["grouping"] is False  # type: ignore[index]
-    assert evidence["checks"]["silence"] is False  # type: ignore[index]
+    assert evidence["checks"]["grouping"] is False
+    assert evidence["checks"]["silence"] is False
 
 
 @pytest.mark.parametrize("threshold", [0, -1, float("nan"), float("inf")])

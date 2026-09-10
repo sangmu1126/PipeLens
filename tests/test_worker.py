@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -92,7 +93,7 @@ async def test_worker_retries_redis_failure_during_startup() -> None:
         await asyncio.sleep(60)
         return False
 
-    worker.process_next = AsyncMock(side_effect=process_once)
+    cast(Any, worker).process_next = AsyncMock(side_effect=process_once)
     await worker.start()
     await asyncio.wait_for(processed.wait(), timeout=1)
     await worker.stop()
@@ -126,12 +127,13 @@ async def test_worker_retries_redis_failure_while_processing() -> None:
         await asyncio.sleep(60)
         return False
 
-    worker.process_next = AsyncMock(side_effect=process_after_failure)
+    process_next = AsyncMock(side_effect=process_after_failure)
+    cast(Any, worker).process_next = process_next
     await worker.start()
     await asyncio.wait_for(recovered.wait(), timeout=1)
     await worker.stop()
 
-    assert worker.process_next.await_count >= 2
+    assert process_next.await_count >= 2
     output = generate_latest(metrics.registry).decode()
     assert 'pipelens_queue_connection_errors_total{phase="processing"} 1.0' in output
     assert 'pipelens_queue_reconnections_total{phase="processing"} 1.0' in output

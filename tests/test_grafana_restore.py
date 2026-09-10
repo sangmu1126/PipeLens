@@ -200,6 +200,7 @@ def test_run_drill_emits_redacted_evidence_and_cleans_target(tmp_path: Path) -> 
         return subprocess.CompletedProcess(command, returncode, stdout=stdout, stderr="")
 
     def fake_getter(url: str, credentials: tuple[str, str] | None) -> tuple[int, bytes, str]:
+        payload: object
         if url.endswith("/api/health"):
             payload = {"database": "ok", "version": "13.2.0"}
         elif url.endswith("/api/dashboards/uid/operations"):

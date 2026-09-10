@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Any, cast
 
+import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, inspect
@@ -9,7 +11,9 @@ from sqlalchemy.schema import CreateTable
 from pipelens.store import analyses
 
 
-def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkeypatch) -> None:
+def test_initial_migration_upgrades_and_downgrades_sqlite(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     database_url = f"sqlite:///{tmp_path / 'migration.db'}"
     monkeypatch.setenv("PIPELENS_DATABASE_URL", database_url)
     config = Config("alembic.ini")
@@ -53,7 +57,8 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(tmp_path: Path, monkey
 
 
 def test_analysis_table_compiles_for_postgresql() -> None:
-    statement = str(CreateTable(analyses).compile(dialect=postgresql.dialect()))
+    dialect = cast(Any, postgresql.dialect)()
+    statement = str(CreateTable(analyses).compile(dialect=dialect))
 
     assert "CREATE TABLE analyses" in statement
     assert "JSON" in statement
