@@ -44,7 +44,7 @@ asyncio_mode = "auto"
 
 [tool.mypy]
 python_version = "3.12"
-files = ["src/pipelens", "ops"]
+files = ["src/pipelens", "ops", "tests"]
 strict = true
 pretty = true
 show_error_codes = true
