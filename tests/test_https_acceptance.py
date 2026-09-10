@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any, cast
 
 import httpx
 import pytest
@@ -47,7 +48,9 @@ def _handler(request: httpx.Request) -> httpx.Response:
 def test_https_boundary_returns_redacted_machine_readable_evidence() -> None:
     checked_at = datetime(2026, 9, 1, 5, 0, tzinfo=UTC)
     with httpx.Client(transport=httpx.MockTransport(_handler)) as client:
-        evidence = verify_https_boundary(client, ORIGIN, checked_at=checked_at)
+        evidence = cast(
+            dict[str, Any], verify_https_boundary(client, ORIGIN, checked_at=checked_at)
+        )
 
     assert evidence["result"] == "pass"
     assert evidence["checked_at"] == "2026-09-01T05:00:00+00:00"

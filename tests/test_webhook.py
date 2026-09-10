@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
@@ -16,7 +17,7 @@ def _signature(body: bytes, secret: str) -> str:
     return "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
 
 
-def _failure_payload() -> dict:
+def _failure_payload() -> dict[str, Any]:
     return {
         "action": "completed",
         "installation": {"id": 99},

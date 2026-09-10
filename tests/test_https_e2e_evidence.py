@@ -4,7 +4,7 @@ import copy
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -20,7 +20,7 @@ CHECKED_AT = datetime(2026, 9, 2, tzinfo=UTC)
 
 
 def valid_observation() -> dict[str, Any]:
-    return json.loads(EXAMPLE_PATH.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(EXAMPLE_PATH.read_text(encoding="utf-8")))
 
 
 def compile_valid(observation: dict[str, Any] | None = None) -> dict[str, Any]:

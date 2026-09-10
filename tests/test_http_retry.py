@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from pipelens.http_retry import RetryPolicy, request_with_retry
+from pipelens.http_retry import RetryPolicy, Sleep, request_with_retry
 
 
 def _policy(max_attempts: int = 3) -> RetryPolicy:
@@ -143,7 +143,7 @@ async def test_quota_error_is_not_retried() -> None:
     assert calls == 1
 
 
-def _record_sleep(delays: list[float]):
+def _record_sleep(delays: list[float]) -> Sleep:
     async def sleep(delay: float) -> None:
         delays.append(delay)
 

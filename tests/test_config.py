@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 from pydantic import ValidationError
@@ -92,11 +93,11 @@ def test_production_rejects_unsafe_security_settings(
     override: dict[str, object], message: str
 ) -> None:
     with pytest.raises(ValidationError, match=message):
-        Settings(**_production_settings(**override))
+        cast(Any, Settings)(**_production_settings(**override))
 
 
 def test_production_accepts_explicit_security_settings() -> None:
-    settings = Settings(**_production_settings())
+    settings = cast(Any, Settings)(**_production_settings())
 
     assert settings.environment == "production"
 
@@ -134,17 +135,19 @@ def test_secret_settings_support_read_only_file_injection(
     secret_file = tmp_path / file_name
     secret_file.write_text(f"{content}\n", encoding="utf-8")
 
-    settings = Settings(**{file_name: secret_file})
+    settings = cast(Any, Settings)(**{file_name: secret_file})
 
     assert getattr(settings, value_name) == content
 
 
-def test_secret_file_setting_loads_from_environment(tmp_path: Path, monkeypatch) -> None:
+def test_secret_file_setting_loads_from_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     secret_file = tmp_path / "webhook"
     secret_file.write_text("mounted-secret\n", encoding="utf-8")
     monkeypatch.setenv("PIPELENS_WEBHOOK_SECRET_FILE", str(secret_file))
 
-    settings = Settings(_env_file=None)
+    settings = cast(Any, Settings)(_env_file=None)
 
     assert settings.webhook_secret == "mounted-secret"
 
@@ -165,7 +168,7 @@ def test_production_validation_uses_file_injected_secrets(tmp_path: Path) -> Non
         secret_file.write_text(str(production_settings.pop(value_name)), encoding="utf-8")
         secret_files[file_name] = secret_file
 
-    settings = Settings(**production_settings, **secret_files)
+    settings = cast(Any, Settings)(**production_settings, **secret_files)
 
     assert settings.webhook_secret == "w" * 32
     assert settings.session_secret == "s" * 32

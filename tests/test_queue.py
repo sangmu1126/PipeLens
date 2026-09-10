@@ -23,9 +23,11 @@ async def test_memory_queue_retries_with_incremented_attempt() -> None:
     assert await queue.enqueue(_request()) is False
 
     first = await queue.dequeue()
+    assert first is not None
     await queue.retry(first)
     second = await queue.dequeue()
 
+    assert second is not None
     assert second.envelope.request.run_id == 77
     assert second.envelope.attempts == 1
     await queue.acknowledge(second)
@@ -46,6 +48,7 @@ async def test_redis_queue_acknowledges_processing_receipt() -> None:
 
     await queue.healthcheck()
     job = await queue.dequeue(timeout=2)
+    assert job is not None
     await queue.acknowledge(job)
 
     redis.brpoplpush.assert_awaited_once_with("analyses", "analyses:processing:worker-a", timeout=2)
@@ -73,6 +76,7 @@ async def test_redis_queue_normalizes_binary_receipt() -> None:
 
     job = await queue.dequeue()
 
+    assert job is not None
     assert job.receipt == envelope.model_dump_json()
     assert job.envelope == envelope
 

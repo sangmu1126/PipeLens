@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import pytest
 
 from ops.governance.audit_repository import (
@@ -13,7 +15,13 @@ from ops.governance.audit_repository import (
 )
 
 
-def valid_snapshot() -> tuple[dict[str, object], ...]:
+def valid_snapshot() -> tuple[
+    dict[str, object],
+    dict[str, object],
+    dict[str, object],
+    dict[str, object],
+    dict[str, object],
+]:
     repository: dict[str, object] = {
         "full_name": "sangmu1126/PipeLens",
         "visibility": "public",
@@ -47,9 +55,13 @@ def valid_snapshot() -> tuple[dict[str, object], ...]:
         "allow_force_pushes": {"enabled": False},
         "allow_deletions": {"enabled": False},
     }
-    private_reporting = {"enabled": True}
-    milestone = {"title": "v0.2.0 Production readiness", "open_issues": 3, "closed_issues": 3}
-    release = {"tag_name": "v0.1.0", "immutable": False}
+    private_reporting: dict[str, object] = {"enabled": True}
+    milestone: dict[str, object] = {
+        "title": "v0.2.0 Production readiness",
+        "open_issues": 3,
+        "closed_issues": 3,
+    }
+    release: dict[str, object] = {"tag_name": "v0.1.0", "immutable": False}
     return repository, protection, private_reporting, milestone, release
 
 
@@ -77,7 +89,8 @@ def test_merge_and_required_check_drift_fail_independently() -> None:
     checks[0] = {"context": checks[0]["context"], "app_id": 1}
 
     report = audit_snapshot(repository, protection, private_reporting, milestone, release)
-    failed = {item["name"] for item in report["checks"] if not item["passed"]}
+    checks = cast(list[dict[str, Any]], report["checks"])
+    failed = {item["name"] for item in checks if not item["passed"]}
 
     assert report["passed"] is False
     assert failed == {"merge.commit_disabled", "protection.required_checks"}
@@ -89,7 +102,8 @@ def test_missing_nested_security_and_protection_values_fail_closed() -> None:
     protection.pop("enforce_admins")
 
     report = audit_snapshot(repository, protection, private_reporting, milestone, release)
-    failed = {item["name"] for item in report["checks"] if not item["passed"]}
+    checks = cast(list[dict[str, Any]], report["checks"])
+    failed = {item["name"] for item in checks if not item["passed"]}
 
     assert "security.secret_scanning" in failed
     assert "security.secret_scanning_push_protection" in failed

@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import httpx
 import jwt
@@ -331,7 +332,7 @@ async def test_repository_context_compares_from_previous_successful_run() -> Non
 
 @pytest.mark.asyncio
 async def test_check_publication_creates_then_updates_by_run_id() -> None:
-    requests: list[tuple[str, str, dict | None]] = []
+    requests: list[tuple[str, str, dict[str, Any] | None]] = []
     list_calls = 0
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -353,6 +354,8 @@ async def test_check_publication_creates_then_updates_by_run_id() -> None:
 
     create = next(item for item in requests if item[0] == "POST")
     update = next(item for item in requests if item[0] == "PATCH")
+    assert create[2] is not None
+    assert update[2] is not None
     assert create[2]["external_id"] == "123"
     assert create[2]["details_url"] == "https://app/?run_id=123"
     assert update[1].endswith("/check-runs/700")
@@ -361,7 +364,7 @@ async def test_check_publication_creates_then_updates_by_run_id() -> None:
 
 @pytest.mark.asyncio
 async def test_pr_comment_publication_updates_only_own_marker() -> None:
-    requests: list[tuple[str, str, dict | None]] = []
+    requests: list[tuple[str, str, dict[str, Any] | None]] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         payload = json.loads(request.content) if request.content else None
@@ -389,5 +392,6 @@ async def test_pr_comment_publication_updates_only_own_marker() -> None:
     await github.upsert_pull_request_comment("acme/widgets", 55, 123, "token", "new body")
 
     update = next(item for item in requests if item[0] == "PATCH")
+    assert update[2] is not None
     assert update[1].endswith("/issues/comments/2")
     assert update[2]["body"] == "<!-- pipelens:run:123 -->\nnew body"

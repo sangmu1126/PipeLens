@@ -67,6 +67,10 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
     )
 
     result = store.get(44)
+    assert result is not None
+    assert result.classification is not None
+    assert result.execution_context is not None
+    assert result.diagnosis is not None
     assert result.status is AnalysisStatus.COMPLETED
     assert result.classification.category == "test_failure"
     assert result.classification.related_step == "tests [REDACTED:EMAIL] / Run pytest"
@@ -145,6 +149,9 @@ async def test_llm_failure_records_attempt_and_uses_rule_fallback(tmp_path: Path
     )
 
     result = store.get(45)
+    assert result is not None
+    assert result.classification is not None
+    assert result.diagnosis is not None
     assert result.status is AnalysisStatus.COMPLETED
     assert result.classification.category == "test_failure"
     assert "LLM 분석에 실패" in result.diagnosis.notes[0]
@@ -266,6 +273,8 @@ async def test_untrusted_fork_uses_rules_without_llm_and_skips_commit_check(
     )
 
     result = store.get(52)
+    assert result is not None
+    assert result.diagnosis is not None
     assert result.trust_level is TrustLevel.UNTRUSTED_FORK
     assert "규칙 기반 진단만" in result.diagnosis.notes[0]
     provider.analyze.assert_not_awaited()
@@ -303,6 +312,7 @@ async def test_pipeline_records_failed_stage_and_attempt_duration(tmp_path: Path
         )
 
     result = store.get(53)
+    assert result is not None
     assert result.status is AnalysisStatus.FAILED
     assert result.duration_seconds is not None
     assert result.stage_history[-1].stage is AnalysisStage.COLLECTING
@@ -370,6 +380,7 @@ async def test_new_attempt_fences_resumed_stale_pipeline(tmp_path: Path) -> None
     await stale_task
 
     result = store.get(54)
+    assert result is not None
     assert result.status is AnalysisStatus.COMPLETED
     assert any(
         event.status is StageStatus.FAILED and "Superseded" in (event.error or "")
