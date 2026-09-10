@@ -1494,6 +1494,23 @@ Nginx는 별도 PR로 분리했다.
   필수 필드가 없으면 fail closed하며 7개 단위 테스트와 전체 432개 테스트로 검증했다. 판단은
   D-077에 기록했다.
 
+### Markdown 문서 무결성 CI gate
+
+- 운영 절차, 결정, 실제 acceptance run과 JSON 증적을 연결하는 Markdown이 33개로 늘었지만 내부
+  링크를 자동 확인하는 gate가 없었다. 네트워크 없이 모든 문서를 발견해 source 기준 상대 경로를
+  해석하는 표준 라이브러리 검사기를 추가했다.
+- 파일·directory 존재뿐 아니라 Linux CI에서 문제가 되는 경로 대소문자를 정확히 비교하고,
+  percent-encoded 경로와 같은 문서·다른 문서의 GitHub식 heading anchor를 확인한다. 중복 heading은
+  `-1`, `-2` suffix를 적용하며 ATX와 Setext heading을 모두 처리한다.
+- fenced code 안의 예시 링크는 실제 참조로 오인하지 않는다. 외부 HTTP(S) URL은 저장소가 가용성을
+  통제할 수 없으므로 offline gate에서 제외하고, 상대 경로가 repository root 밖으로 나가면 실패한다.
+- 누락 파일·anchor, reference definition, encoding, code fence, 중복 heading, 탈출과 대소문자
+  회귀를 7개 focused test로 검증했다. 첫 전체 실행은 기존 33개 문서를 모두 통과해 선행 수정이
+  필요한 깨진 내부 링크는 없었다.
+- 기존 필수 `backend` job에서 dependency 설치 전에 실행하도록 연결했다. 별도 context를 추가하지
+  않아 branch protection을 바꾸지 않으면서 실패 시 나머지 비용이 큰 Docker 검증보다 먼저
+  중단된다. 전체 로컬 결과는 439 passed, 2 skipped였고 판단은 D-078에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -1508,6 +1525,7 @@ Nginx는 별도 PR로 분리했다.
 - Prometheus config·규칙과 실제 server readiness, Compose config 검증
 - API·대시보드 컨테이너 빌드, 최종 USER 검사와 API readiness·대시보드 HTTP smoke test
 - Dockerfile 외부 base image의 tag·multi-platform digest 고정 정책 검사
+- Markdown 상대 경로·대소문자·heading anchor 무결성 검사
 - 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·language package 취약점 gate
 - 실제 빌드 이미지의 CycloneDX SBOM 생성·내용 검증·artifact 보관
 - Python·JavaScript/TypeScript CodeQL

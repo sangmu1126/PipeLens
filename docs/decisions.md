@@ -1195,3 +1195,20 @@
   읽기 실패는 별도 exit code로 거부한다.
 - 관련: `ops/governance/audit_repository.py`, `tests/test_repository_governance.py`,
   [저장소 보호와 변경 절차](repository-governance.md).
+
+## D-078. 저장소 소유 Markdown 링크를 offline 필수 gate로 검증
+
+- 결정: 모든 Markdown 파일의 inline·reference-definition 링크 중 상대 경로, 정확한 대소문자와
+  같은 문서·다른 문서의 GitHub식 heading anchor를 표준 라이브러리 검사기로 검증한다. fenced code
+  예시와 HTTP(S) 등 외부 URL은 대상에서 제외하고 기존 필수 `backend` job의 dependency 설치 전에
+  실행한다.
+- 이유: 운영·인수 증적 문서가 33개로 늘어 상대 링크와 JSON 증적 경로가 수동 검토만으로는 쉽게
+  깨질 수 있다. 외부 URL까지 필수 gate로 만들면 저장소 변경과 무관한 네트워크, redirect, rate
+  limit이 병합을 막으므로 저장소가 결정적으로 소유할 수 있는 무결성만 차단 조건으로 삼는다.
+- 대안: 외부 link checker action 도입, 문서 build system 채택, 링크를 수동 검토, 새 required
+  check 추가, 파일 존재만 검사하고 anchor·대소문자는 허용.
+- 결과: 최초 전체 실행에서 기존 33개 문서는 모두 통과했다. 누락 경로·anchor, percent encoding,
+  reference definition, fenced code, 중복 heading suffix, repository 탈출과 대소문자 오류를 7개
+  focused test로 고정했다. 새 job context를 만들지 않아 branch protection migration 없이 기존
+  `backend` gate가 문서 회귀를 차단한다.
+- 관련: `ops/ci/verify_markdown_links.py`, `tests/test_markdown_links.py`, `CONTRIBUTING.md`.
