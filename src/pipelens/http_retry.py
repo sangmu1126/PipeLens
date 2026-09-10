@@ -1,7 +1,7 @@
 import asyncio
 import random
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC
 from email.utils import parsedate_to_datetime
@@ -43,28 +43,33 @@ async def request_with_retry(
     retry_rate_limited_403: bool = False,
     on_retry: RetryObserver | None = None,
     sleep: Sleep = asyncio.sleep,
-    **kwargs: object,
+    headers: Mapping[str, str] | None = None,
+    params: Mapping[str, str | int] | None = None,
+    data: Mapping[str, str] | None = None,
+    json: object | None = None,
 ) -> httpx.Response:
     method = method.upper()
     for attempt in range(1, policy.max_attempts + 1):
         try:
-            response = await client.request(method, url, **kwargs)
+            response = await client.request(
+                method, url, headers=headers, params=params, data=data, json=json
+            )
         except httpx.TransportError:
             if attempt == policy.max_attempts or method not in _IDEMPOTENT_METHODS:
                 raise
-            delay = _backoff_delay(policy, attempt)
-            _observe(on_retry, "transport", attempt, delay)
-            await sleep(delay)
+            retry_delay = _backoff_delay(policy, attempt)
+            _observe(on_retry, "transport", attempt, retry_delay)
+            await sleep(retry_delay)
             continue
 
         reason = _retry_reason(response, retry_rate_limited_403)
         if reason is None or attempt == policy.max_attempts:
             return response
-        delay = _response_delay(response, policy, attempt)
-        if delay is None:
+        response_delay = _response_delay(response, policy, attempt)
+        if response_delay is None:
             return response
-        _observe(on_retry, reason, attempt, delay)
-        await sleep(delay)
+        _observe(on_retry, reason, attempt, response_delay)
+        await sleep(response_delay)
 
     raise AssertionError("retry loop exited unexpectedly")
 
@@ -94,9 +99,7 @@ def _is_rate_limited(response: httpx.Response) -> bool:
     return "secondary rate limit" in body or "rate limit exceeded" in body
 
 
-def _response_delay(
-    response: httpx.Response, policy: RetryPolicy, attempt: int
-) -> float | None:
+def _response_delay(response: httpx.Response, policy: RetryPolicy, attempt: int) -> float | None:
     header_delay = _retry_after_delay(response)
     if header_delay is not None:
         if header_delay > policy.max_delay_seconds:
@@ -130,7 +133,7 @@ def _retry_after_delay(response: httpx.Response) -> float | None:
 
 
 def _backoff_delay(policy: RetryPolicy, attempt: int) -> float:
-    delay = min(policy.base_delay_seconds * (2 ** (attempt - 1)), policy.max_delay_seconds)
+    delay = min(policy.base_delay_seconds * (2.0 ** (attempt - 1)), policy.max_delay_seconds)
     if delay and policy.jitter_ratio:
         delay *= 1 + random.uniform(0, policy.jitter_ratio)
     return min(delay, policy.max_delay_seconds)

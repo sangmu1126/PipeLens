@@ -1,7 +1,9 @@
 import io
 import time
 import zipfile
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Any, cast
 from urllib.parse import urlencode
 
 import httpx
@@ -61,7 +63,7 @@ class GitHubClient:
         client_secret: str,
         code: str,
         redirect_uri: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             response = await self._request(
                 client,
@@ -76,23 +78,23 @@ class GitHubClient:
                 },
             )
             response.raise_for_status()
-        payload = response.json()
+        payload = cast(dict[str, Any], response.json())
         if "access_token" not in payload:
             raise GitHubConfigurationError(
                 f"GitHub OAuth exchange failed: {payload.get('error', 'missing access token')}"
             )
         return payload
 
-    async def authenticated_user(self, token: str) -> dict:
+    async def authenticated_user(self, token: str) -> dict[str, Any]:
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             response = await self._request(
                 client, "GET", f"{self.api_url}/user", headers=self._headers(token)
             )
             response.raise_for_status()
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
-    async def user_installations(self, token: str) -> list[dict]:
-        installations: list[dict] = []
+    async def user_installations(self, token: str) -> list[dict[str, Any]]:
+        installations: list[dict[str, Any]] = []
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             page = 1
             while True:
@@ -127,13 +129,14 @@ class GitHubClient:
             response = await self._request(
                 client,
                 "POST",
-                f"{self.api_url}/app/installations/{installation_id}/access_tokens", headers=headers
+                f"{self.api_url}/app/installations/{installation_id}/access_tokens",
+                headers=headers,
             )
             response.raise_for_status()
-            return response.json()["token"]
+            return cast(str, response.json()["token"])
 
     async def failed_jobs(self, repository: str, run_id: int, token: str) -> list[FailedJob]:
-        jobs: list[dict] = []
+        jobs: list[dict[str, Any]] = []
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             page = 1
             while True:
@@ -198,7 +201,8 @@ class GitHubClient:
             run_response = await self._request(
                 client,
                 "GET",
-                f"{self.api_url}/repos/{repository}/actions/runs/{run_id}", headers=headers
+                f"{self.api_url}/repos/{repository}/actions/runs/{run_id}",
+                headers=headers,
             )
             run_response.raise_for_status()
             run = run_response.json()
@@ -229,8 +233,8 @@ class GitHubClient:
         repository: str,
         head_sha: str,
         headers: dict[str, str],
-        run: dict,
-    ) -> dict:
+        run: dict[str, Any],
+    ) -> dict[str, Any]:
         """Recover a fork PR that GitHub omitted from workflow_run.pull_requests."""
         if (
             run.get("pull_requests")
@@ -275,18 +279,14 @@ class GitHubClient:
         return {**run, "pull_requests": matches}
 
     @staticmethod
-    def _trust_level(repository: str, run: dict) -> TrustLevel:
+    def _trust_level(repository: str, run: dict[str, Any]) -> TrustLevel:
         pull_request = (run.get("pull_requests") or [None])[0]
         head_repository = run.get("head_repository") or {}
         if pull_request:
             head = pull_request.get("head", {}).get("repo") or {}
             base = pull_request.get("base", {}).get("repo") or {}
             if head.get("id") is not None and base.get("id") is not None:
-                return (
-                    TrustLevel.UNTRUSTED_FORK
-                    if head["id"] != base["id"]
-                    else TrustLevel.TRUSTED
-                )
+                return TrustLevel.UNTRUSTED_FORK if head["id"] != base["id"] else TrustLevel.TRUSTED
             head_repository = head or head_repository
         head_full_name = head_repository.get("full_name")
         if head_full_name and head_full_name.casefold() != repository.casefold():
@@ -299,7 +299,7 @@ class GitHubClient:
         repository: str,
         head_sha: str,
         headers: dict[str, str],
-        run: dict,
+        run: dict[str, Any],
     ) -> tuple[list[ChangedFile], str | None]:
         pull_requests = run.get("pull_requests", [])
         if pull_requests:
@@ -315,9 +315,7 @@ class GitHubClient:
             files = response.json()
             baseline_sha = pull_requests[0].get("base", {}).get("sha")
         else:
-            baseline_sha = await self._previous_successful_sha(
-                client, repository, run, headers
-            )
+            baseline_sha = await self._previous_successful_sha(client, repository, run, headers)
             if baseline_sha:
                 response = await self._request(
                     client,
@@ -332,7 +330,8 @@ class GitHubClient:
                 response = await self._request(
                     client,
                     "GET",
-                    f"{self.api_url}/repos/{repository}/commits/{head_sha}", headers=headers
+                    f"{self.api_url}/repos/{repository}/commits/{head_sha}",
+                    headers=headers,
                 )
                 response.raise_for_status()
                 files = response.json().get("files", [])
@@ -353,7 +352,7 @@ class GitHubClient:
         self,
         client: httpx.AsyncClient,
         repository: str,
-        run: dict,
+        run: dict[str, Any],
         headers: dict[str, str],
     ) -> str | None:
         workflow_id = run.get("workflow_id")
@@ -378,7 +377,8 @@ class GitHubClient:
             candidates = response.json().get("workflow_runs", [])
             for candidate in candidates:
                 if not created_at or candidate.get("created_at", "") < created_at:
-                    return candidate.get("head_sha")
+                    head_sha = candidate.get("head_sha")
+                    return head_sha if isinstance(head_sha, str) else None
             if len(candidates) < 100:
                 break
         return None
@@ -396,7 +396,8 @@ class GitHubClient:
         response = await self._request(
             client,
             "GET",
-            f"{self.api_url}/repos/{repository}/actions/workflows/{workflow_id}", headers=headers
+            f"{self.api_url}/repos/{repository}/actions/workflows/{workflow_id}",
+            headers=headers,
         )
         response.raise_for_status()
         workflow_path = response.json().get("path")
@@ -424,8 +425,9 @@ class GitHubClient:
         summary: str,
         details_url: str,
     ) -> None:
+        check_name = "PipeLens diagnosis"
         body = {
-            "name": "PipeLens diagnosis",
+            "name": check_name,
             "head_sha": head_sha,
             "external_id": str(run_id),
             "details_url": details_url,
@@ -439,7 +441,7 @@ class GitHubClient:
                 "GET",
                 f"{self.api_url}/repos/{repository}/commits/{head_sha}/check-runs",
                 headers=self._headers(token),
-                params={"check_name": body["name"], "filter": "latest", "per_page": 100},
+                params={"check_name": check_name, "filter": "latest", "per_page": 100},
             )
             existing.raise_for_status()
             check = next(
@@ -478,7 +480,7 @@ class GitHubClient:
     ) -> None:
         marker = f"<!-- pipelens:run:{run_id} -->"
         comment_body = f"{marker}\n{body}"
-        existing_comment: dict | None = None
+        existing_comment: dict[str, Any] | None = None
         async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
             page = 1
             while existing_comment is None:
@@ -520,12 +522,20 @@ class GitHubClient:
                 )
             response.raise_for_status()
 
-    def _is_own_comment(self, comment: dict) -> bool:
+    def _is_own_comment(self, comment: dict[str, Any]) -> bool:
         app = comment.get("performed_via_github_app") or {}
         return bool(self.app_id and str(app.get("id")) == str(self.app_id))
 
     async def _request(
-        self, client: httpx.AsyncClient, method: str, url: str, **kwargs: object
+        self,
+        client: httpx.AsyncClient,
+        method: str,
+        url: str,
+        *,
+        headers: Mapping[str, str] | None = None,
+        params: Mapping[str, str | int] | None = None,
+        data: Mapping[str, str] | None = None,
+        json: object | None = None,
     ) -> httpx.Response:
         return await request_with_retry(
             client,
@@ -534,7 +544,10 @@ class GitHubClient:
             policy=self.retry_policy,
             retry_rate_limited_403=True,
             on_retry=self.on_retry,
-            **kwargs,
+            headers=headers,
+            params=params,
+            data=data,
+            json=json,
         )
 
     @staticmethod

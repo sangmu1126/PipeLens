@@ -1,13 +1,15 @@
 import base64
 import binascii
 import json
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from starlette.middleware.base import RequestResponseEndpoint
 
 from pipelens.auth import AuthenticatedSession, AuthenticationError, AuthService
 from pipelens.bootstrap import create_runtime
@@ -29,9 +31,7 @@ from pipelens.worker import AnalysisWorker
 
 API_V1_PREFIX = "/api/v1"
 LEGACY_API_DEPRECATION = "@1788134400"
-DEPRECATION_POLICY_URL = (
-    "https://github.com/sangmu1126/PipeLens/blob/main/docs/api-versioning.md"
-)
+DEPRECATION_POLICY_URL = "https://github.com/sangmu1126/PipeLens/blob/main/docs/api-versioning.md"
 
 
 async def reconcile_queued_analyses(store: AnalysisStore, queue: AnalysisQueue) -> int:
@@ -79,7 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     @asynccontextmanager
-    async def lifespan(_: FastAPI):
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         store.initialize()
         reconciled = await reconcile_queued_analyses(store, runtime.queue)
         if reconciled:
@@ -101,7 +101,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.auth = auth
 
     @app.middleware("http")
-    async def add_security_headers(request: Request, call_next):
+    async def add_security_headers(
+        request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -115,7 +117,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return response
 
     def get_store(request: Request) -> AnalysisStore:
-        return request.app.state.store
+        return cast(AnalysisStore, request.app.state.store)
 
     def require_session(request: Request) -> AuthenticatedSession:
         session = auth.authenticate(request.cookies.get("pipelens_session"))
@@ -130,10 +132,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         installations = await auth.sync_installations(
             session.user.github_user_id, session.access_token
         )
-        return {
-            item.installation_id
-            for item in installations
-        }
+        return {item.installation_id for item in installations}
 
     @app.get("/healthz", tags=["system"])
     async def health() -> dict[str, str]:
@@ -355,9 +354,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         installation_ids: Annotated[set[int] | None, Depends(analysis_access)],
         limit: Annotated[int, Query(ge=1, le=100)] = 50,
         repository: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
-        analysis_status: Annotated[
-            AnalysisStatus | None, Query(alias="status")
-        ] = None,
+        analysis_status: Annotated[AnalysisStatus | None, Query(alias="status")] = None,
         category: ErrorCategory | None = None,
         cursor: str | None = None,
     ) -> list[AnalysisRecord]:
@@ -370,9 +367,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             cursor=_decode_analysis_cursor(cursor) if cursor else None,
         )
         if page.next_cursor is not None:
-            response.headers["X-PipeLens-Next-Cursor"] = _encode_analysis_cursor(
-                page.next_cursor
-            )
+            response.headers["X-PipeLens-Next-Cursor"] = _encode_analysis_cursor(page.next_cursor)
         return page.records
 
     @app.get(

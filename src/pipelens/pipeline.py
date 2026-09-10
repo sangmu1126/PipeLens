@@ -1,13 +1,14 @@
 import asyncio
 import logging
 import uuid
+from collections.abc import Iterator
 from contextlib import contextmanager
 from time import perf_counter
 
 from pipelens.classifier import classify_log
 from pipelens.config import Settings
 from pipelens.diagnosis import build_rule_based_diagnosis, validate_diagnosis
-from pipelens.github import GitHubClient
+from pipelens.github import FailedJob, GitHubClient
 from pipelens.llm import PROMPT_VERSION, LLMContext, LLMProvider, validate_llm_analysis
 from pipelens.metrics import Metrics
 from pipelens.models import (
@@ -142,9 +143,7 @@ class AnalysisPipeline:
             for changed in repository_context.changed_files:
                 patch, patch_redactions = sanitize_log(changed.patch or "")
                 self.metrics.record_redactions(patch_redactions)
-                sanitized_changed_files.append(
-                    changed.model_copy(update={"patch": patch or None})
-                )
+                sanitized_changed_files.append(changed.model_copy(update={"patch": patch or None}))
             workflow_content, workflow_redactions = sanitize_log(
                 repository_context.workflow_content or ""
             )
@@ -156,9 +155,7 @@ class AnalysisPipeline:
                 for job in execution_context.failed_jobs
                 for step in job.failed_steps
             ] or [job.name for job in execution_context.failed_jobs]
-            classification = classify_log(
-                context, related_step=", ".join(failed_locations) or None
-            )
+            classification = classify_log(context, related_step=", ".join(failed_locations) or None)
             self.metrics.error_categories.labels(category=classification.category.value).inc()
 
         with self._stage(request.run_id, AnalysisStage.CORRELATING, attempt_token):
@@ -238,9 +235,7 @@ class AnalysisPipeline:
         )
         with self._stage(request.run_id, AnalysisStage.PUBLISHING, attempt_token):
             if self.settings.publish_checks:
-                details_url = (
-                    f"{self.settings.public_url.rstrip('/')}/?run_id={request.run_id}"
-                )
+                details_url = f"{self.settings.public_url.rstrip('/')}/?run_id={request.run_id}"
                 body = render_github_diagnosis(
                     request.run_id,
                     classification,
@@ -271,10 +266,8 @@ class AnalysisPipeline:
                     )
 
     @contextmanager
-    def _stage(self, run_id: int, stage: AnalysisStage, attempt_token: str):
-        self.store.record_stage(
-            run_id, stage, StageStatus.STARTED, attempt_token=attempt_token
-        )
+    def _stage(self, run_id: int, stage: AnalysisStage, attempt_token: str) -> Iterator[None]:
+        self.store.record_stage(run_id, stage, StageStatus.STARTED, attempt_token=attempt_token)
         try:
             yield
         except Exception as exc:
@@ -304,7 +297,7 @@ class AnalysisPipeline:
             )
             return RepositoryContext()
 
-    def _sanitize_execution_context(self, failed_jobs) -> ExecutionContext:
+    def _sanitize_execution_context(self, failed_jobs: list[FailedJob]) -> ExecutionContext:
         def clean(value: str | None) -> str | None:
             if value is None:
                 return None
@@ -323,9 +316,7 @@ class AnalysisPipeline:
                 FailedJobContext(
                     name=clean(job.name) or "unknown job",
                     failed_steps=[clean(step) or "unknown step" for step in job.failed_steps],
-                    runner_labels=[
-                        clean(label) or "unknown" for label in job.runner_labels
-                    ],
+                    runner_labels=[clean(label) or "unknown" for label in job.runner_labels],
                 )
                 for job in failed_jobs
             ],
