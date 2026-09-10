@@ -28,6 +28,7 @@ dev = [
   "mypy>=2.3.1,<3",
   "pytest>=9.1.1,<10",
   "pytest-asyncio>=1.4.0,<2",
+  "pytest-cov>=7.1.0,<8",
   "ruff>=0.16.6,<1",
 ]
 
@@ -41,6 +42,21 @@ packages = ["src/pipelens"]
 pythonpath = ["src", "."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["pipelens", "ops"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.json]
+output = "coverage.json"
 
 [tool.mypy]
 python_version = "3.12"
