@@ -1530,12 +1530,29 @@ Nginx는 별도 PR로 분리했다.
   script는 동적 fixture·CLI payload 성격과 변경량이 달라 이번 gate에서 제외했으며, 포함 범위
   확대는 독립 작업으로 남겼다. 판단은 D-079에 기록했다.
 
+### Operations strict type gate 확장
+
+- production package와 `ops`를 함께 측정했을 때 51개 module 중 7개 운영 파일에서 19개 strict
+  오류가 확인됐다. worker soak의 resource·capacity 혼합 dictionary, Docker telemetry 집계,
+  Grafana·GHCR JSON 응답, governance report와 Prometheus sample이 주요 경계였다.
+- worker soak는 resource sample을 `TypedDict`로 정의하고, 증적 verifier가 검증한 CPU·memory·
+  connection·capacity 값을 구체 지역 변수로 유지해 이후 비교가 원시 `object`에 의존하지 않게 했다.
+  replica arrival 계산과 database connection collection도 실제 숫자·collection 타입을 명시했다.
+- controlled provider audit, Grafana health, GHCR registry 응답은 top-level JSON object가 아니면
+  중단한다. 기존에는 올바른 fixture에서만 드러나지 않던 배열 응답을 provider와 GHCR 회귀 테스트로
+  고정했다. governance report는 `passed`와 checks collection을 사용 전 좁힌다.
+- mypy 범위를 `src/pipelens`, `ops`로 확장하고 CI step 이름도 실제 범위를 나타내도록 변경했다.
+  별도 required context를 만들지 않고 기존 `backend` gate 안에서 51개 module을 검사한다.
+- 로컬 검증은 mypy strict 51/51 module, 관련 테스트 90개, Ruff, 전체 443 passed·2 skipped였다.
+  테스트 suite 자체의 strict 전환은 fixture와 mock annotation을 별도로 정리할 수 있도록 다음
+  범위로 남겼다. 판단은 D-080에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
 
 - Ruff 정적 lint
-- mypy strict production package 타입 검사
+- mypy strict production·operations 타입 검사
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
 - 13개 진단 fixture의 80% 정확도 gate
