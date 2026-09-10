@@ -1262,3 +1262,20 @@
   precedence가 달라지는 것을 전체 테스트에서 발견해 실제 `Settings(...)` 경로를 보존했다. ignore를
   추가하지 않고 97개 module strict 검사와 443개 테스트가 통과한다.
 - 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `tests/`.
+
+## D-082. Coverage는 production과 operations를 분리한 기준선으로 먼저 관측
+
+- 결정: pytest가 실행하는 `pipelens`와 `ops`의 statement·branch coverage를 기존 `backend` job에서
+  측정하고, 누락 행을 job log에 출력하며 XML·JSON 결과를 14일 artifact로 보관한다. 최초 도입에서는
+  전체 또는 파일별 `fail_under`를 두지 않고 production·operations 수치를 분리해 기준선으로 기록한다.
+- 이유: 테스트 443개가 통과해도 실행되지 않는 경로를 정량적으로 볼 수 없었다. 반면 operations에는
+  Docker, browser와 외부 process를 별도 CI 단계에서 검증하는 실행기가 많아 단일 합산 임계치는 제품
+  회귀보다 실행 방식 차이를 크게 반영한다. 수치를 먼저 고정하면 낮은 숫자를 올리기 위한 무의미한
+  테스트나 제외 규칙 없이 실제 보안·오류 경계를 선택할 수 있다.
+- 대안: 즉시 80% 또는 90% 필수 gate 적용, production package만 측정, operations 실행기 제외,
+  line coverage만 측정, 외부 coverage service에 업로드.
+- 결과: Python 3.14 로컬 최초 측정은 443 passed·2 skipped에서 전체 74.73%였다. production package는
+  86.50%(statement 89.47%, branch 74.39%), operations는 67.15%(statement 69.26%, branch 59.82%)다.
+  저장소 밖 서비스나 token 없이 CI에서 같은 보고서를 재생성할 수 있고 기존 `backend` required
+  context를 유지한다. 후속 gate는 반복 측정의 안정성과 핵심 모듈의 미검증 분기를 검토한 뒤 정한다.
+- 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `CONTRIBUTING.md`, `docs/readiness.md`.

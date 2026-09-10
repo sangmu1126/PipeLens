@@ -33,6 +33,16 @@ npm --prefix frontend test
 npm --prefix frontend run build
 ```
 
+To reproduce the Python statement and branch coverage baseline, run:
+
+```bash
+pytest -q --cov --cov-report=term-missing --cov-report=xml --cov-report=json
+```
+
+Coverage reports include `src/pipelens` and `ops`. The baseline is informational: use the package-level
+and operations-level results to select meaningful missing paths instead of optimizing only the combined
+percentage.
+
 Changes to OAuth, session, proxy, or dashboard navigation should also run the Playwright E2E suite.
 Changes to PostgreSQL, Redis, images, observability, or upgrade drills should use the corresponding Docker
 validation documented in `README.md` and `docs/`.
