@@ -1228,3 +1228,20 @@
   명시했다. ignore 없이 strict 검사 22개 module과 전체 441개 테스트가 통과한다. 테스트·운영
   도구의 확대는 production gate의 신뢰도를 유지한 채 별도 변경으로 진행한다.
 - 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `CONTRIBUTING.md`.
+
+## D-080. 증적을 판정하는 operations 코드도 strict 타입 경계에 포함
+
+- 결정: mypy strict 필수 gate를 `src/pipelens`뿐 아니라 `ops` 전체로 확장한다. JSON·Docker·
+  Prometheus처럼 동적인 입력은 사용 전에 구체 타입으로 검증하고, 잘못된 top-level JSON 형태는
+  fail closed한다. 테스트 코드는 이 단계의 검사 범위에 포함하지 않는다.
+- 이유: 운영 스크립트는 production recovery, worker capacity, governance, GHCR retention 결과를
+  승인하거나 거부한다. 이 코드의 숫자·객체 경계 오류는 서비스 런타임 오류만큼 readiness 판정을
+  왜곡할 수 있으며, production과 함께 검사했을 때 7개 파일에서 실제 19개 오류가 확인됐다.
+- 대안: `ops`를 lint와 실행 테스트만으로 유지, 오류 코드별 ignore 추가, tests까지 동시에 strict
+  적용, 운영 스크립트를 별도 mypy job으로 분리.
+- 결과: worker resource·capacity 수치를 검증 직후 구체 타입으로 좁혔고 Grafana·GHCR·provider
+  JSON object 경계를 명시적으로 거부하도록 만들었다. governance report와 Prometheus sample의
+  동적 값도 사용 전에 좁혔다. ignore 추가 없이 production·operations 51개 module, 관련 90개와
+  전체 443개 테스트가 통과한다. 기존 `backend` context를 유지하므로 branch protection 변경은 없다.
+- 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `ops/`, `tests/test_container_soak.py`,
+  `tests/test_ghcr_retention.py`.

@@ -10,7 +10,7 @@
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-11·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
 | 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
 | 백엔드 테스트 | 통과 | 로컬 441 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 정적 타입 | 통과 | production package 22개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
+| Python 정적 타입 | 통과 | production·operations 51개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 412개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 5에서 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
@@ -253,7 +253,7 @@
 1. Python 3.12 환경과 pip cache 구성
 2. editable dev dependency 설치
 3. `ruff check .`
-4. `mypy` strict mode로 `src/pipelens` production package 검사
+4. `mypy` strict mode로 `src/pipelens` production package와 `ops` 운영 코드 검사
 5. 전체 `pytest -q`
 6. Compose에 고정한 Prometheus image의 공식 `promtool`로 설정과 규칙 5개를 검사하고 실제
    server readiness 검증
