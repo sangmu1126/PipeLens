@@ -25,6 +25,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "httpx2>=2.12.0,<3",
+  "mypy>=2.3.1,<3",
   "pytest>=9.1.1,<10",
   "pytest-asyncio>=1.4.0,<2",
   "ruff>=0.16.6,<1",
@@ -40,6 +41,13 @@ packages = ["src/pipelens"]
 pythonpath = ["src", "."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/pipelens"]
+strict = true
+pretty = true
+show_error_codes = true
 
 [tool.ruff]
 line-length = 100
