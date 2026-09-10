@@ -10,7 +10,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, cast
 
 SEMVER_TAG: Final = re.compile(r"^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 DIGEST: Final = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -98,9 +98,12 @@ class RegistryClient:
     def _read_json(request: urllib.request.Request) -> dict[str, object]:
         try:
             with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
-                return json.load(response)
+                payload = json.load(response)
         except (OSError, urllib.error.HTTPError, json.JSONDecodeError) as error:
             raise AuditError(f"registry request failed: {request.full_url}: {error}") from error
+        if not isinstance(payload, dict):
+            raise AuditError(f"registry returned a non-object response: {request.full_url}")
+        return cast(dict[str, object], payload)
 
     def _token(self, repository: str) -> str:
         query = urllib.parse.urlencode({"scope": f"repository:{repository}:pull"})

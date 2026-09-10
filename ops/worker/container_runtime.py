@@ -234,7 +234,7 @@ class NoopStore:
 
 
 def open_database_pool(database_url: str, worker_id: str, size: int) -> list[Any]:
-    connections = []
+    connections: list[Any] = []
     deadline = time.monotonic() + 30
     while len(connections) < size:
         try:
