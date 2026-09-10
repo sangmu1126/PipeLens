@@ -40,7 +40,7 @@ jobs:
         run: python ops/ci/verify_markdown_links.py
       - run: pip install -e '.[dev]'
       - run: ruff check .
-      - name: Check production package types
+      - name: Check production and operations types
         run: mypy
       - name: Verify OpenAPI contract
         run: python ops/ci/export_openapi.py --check
