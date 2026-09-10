@@ -1511,11 +1511,31 @@ Nginx는 별도 PR로 분리했다.
   않아 branch protection을 바꾸지 않으면서 실패 시 나머지 비용이 큰 Docker 검증보다 먼저
   중단된다. 전체 로컬 결과는 439 passed, 2 skipped였고 판단은 D-078에 기록했다.
 
+### Production Python strict type gate
+
+- mypy 2.3.1 기본 검사로 `src/pipelens` 22개 module을 측정했으며 6개 파일에서 23개 오류를
+  확인했다. 주요 원인은 `AnalysisStore.list`가 class scope의 builtin `list` annotation을 가린 것,
+  production GitHub App ID의 nullable narrowing, Redis client의 `bytes | str` 응답, HTTP request
+  keyword의 무제한 `object` forwarding이었다.
+- HTTP retry와 GitHub client는 현재 지원하는 `headers`, `params`, `data`, `json`을 각각 명시해
+  잘못된 keyword와 값 형태를 호출 시점에 차단한다. Redis queue는 `decode_responses` 설정에
+  의존하지 않고 receipt와 worker key의 binary 응답을 정규화하며 두 회귀 테스트를 추가했다.
+- strict mode에서 드러난 외부 JSON과 SQL row 경계도 정리했다. GitHub·OpenAI payload에는 동적
+  경계를 명시하고 검증이 필요한 scalar를 좁혔으며, 인증 session row는 필드별 `TypedDict` 계약으로
+  표현했다. FastAPI lifespan·middleware와 pipeline context manager도 실제 callable 계약을 기록했다.
+- `mypy>=2.3.1,<3`을 dev dependency로 추가하고 Python 3.12, `strict = true`, production package
+  범위를 `pyproject.toml`에 고정했다. 기존 필수 `backend` job에서 Ruff 직후 실행하므로 branch
+  protection 변경 없이 타입 회귀가 병합을 차단한다.
+- 로컬 검증은 mypy strict 22/22 module, Ruff, 전체 441 passed·2 skipped였다. 테스트와 `ops`
+  script는 동적 fixture·CLI payload 성격과 변경량이 달라 이번 gate에서 제외했으며, 포함 범위
+  확대는 독립 작업으로 남겼다. 판단은 D-079에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
 
 - Ruff 정적 lint
+- mypy strict production package 타입 검사
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
 - 13개 진단 fixture의 80% 정확도 gate

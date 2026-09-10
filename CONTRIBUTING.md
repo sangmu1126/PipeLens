@@ -25,6 +25,7 @@ Before submitting a change, run the checks relevant to it:
 
 ```bash
 ruff check .
+mypy
 pytest -q
 python ops/ci/verify_markdown_links.py
 pipelens-evaluate --minimum-accuracy 0.8

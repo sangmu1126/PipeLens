@@ -1212,3 +1212,19 @@
   focused test로 고정했다. 새 job context를 만들지 않아 branch protection migration 없이 기존
   `backend` gate가 문서 회귀를 차단한다.
 - 관련: `ops/ci/verify_markdown_links.py`, `tests/test_markdown_links.py`, `CONTRIBUTING.md`.
+
+## D-079. Production Python package를 mypy strict 계약으로 고정
+
+- 결정: Python 3.12를 타입 검사 기준으로 삼아 `src/pipelens`의 22개 production module 전체에
+  mypy strict mode를 적용하고 기존 필수 `backend` job에서 실행한다. 테스트와 `ops` 도구는 현재
+  범위에 포함하지 않으며, 외부 JSON처럼 본질적으로 동적인 값은 경계에서 명시적으로 좁힌다.
+- 이유: Ruff는 이름·문법·일반적인 결함은 탐지하지만 Redis의 `bytes | str`, nullable production
+  설정, HTTP keyword forwarding, 클래스 method가 builtin generic을 가리는 문제는 차단하지 못했다.
+  배포 경로부터 엄격하게 고정하면 새 required check나 외부 서비스 없이 이 계약의 회귀를 막을 수 있다.
+- 대안: mypy 기본 설정 사용, 일부 오류 코드 무시, 테스트·운영 도구까지 한 번에 strict 적용,
+  Pyright 도입, 타입 검사를 advisory job으로만 실행.
+- 결과: 최초 기본 검사는 6개 파일에서 23개 오류를 찾았다. HTTP retry 인자를 실제 사용 범위로
+  제한하고 Redis 응답을 문자열로 정규화했으며, 인증 session row와 동적 API payload 경계를
+  명시했다. ignore 없이 strict 검사 22개 module과 전체 441개 테스트가 통과한다. 테스트·운영
+  도구의 확대는 production gate의 신뢰도를 유지한 채 별도 변경으로 진행한다.
+- 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `CONTRIBUTING.md`.

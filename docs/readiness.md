@@ -2,14 +2,15 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-09**, 변경 전 기준 main commit `84a8338`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-10**, 변경 전 기준 main commit `e15fe8c`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-11·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
 | 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | Python 3.14.6 로컬 412 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| 백엔드 테스트 | 통과 | 로컬 441 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
+| Python 정적 타입 | 통과 | production package 22개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 412개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 5에서 4/4, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
@@ -252,16 +253,17 @@
 1. Python 3.12 환경과 pip cache 구성
 2. editable dev dependency 설치
 3. `ruff check .`
-4. 전체 `pytest -q`
-5. Compose에 고정한 Prometheus image의 공식 `promtool`로 설정과 규칙 5개를 검사하고 실제
+4. `mypy` strict mode로 `src/pipelens` production package 검사
+5. 전체 `pytest -q`
+6. Compose에 고정한 Prometheus image의 공식 `promtool`로 설정과 규칙 5개를 검사하고 실제
    server readiness 검증
-6. `docker compose config --quiet`와 Grafana dashboard JSON 검증
-7. Grafana 12.1에서 만든 비관리 dashboard와 같은 volume을 Compose Grafana 13.2로 승격해
+7. `docker compose config --quiet`와 Grafana dashboard JSON 검증
+8. Grafana 12.1에서 만든 비관리 dashboard와 같은 volume을 Compose Grafana 13.2로 승격해
    데이터 보존, file provisioning, Prometheus UID datasource와 익명 Viewer API 검증
-8. PostgreSQL 17 source에 migration·표본 데이터를 만든 뒤 Compose PostgreSQL 18 target으로
+9. PostgreSQL 17 source에 migration·표본 데이터를 만든 뒤 Compose PostgreSQL 18 target으로
    dump/restore하고 데이터와 `alembic check` 검증
-9. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
-10. `pipelens-evaluate --minimum-accuracy 0.8`
+10. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
+11. `pipelens-evaluate --minimum-accuracy 0.8`
 
 별도 compatibility job은 Python 3.14에서 integration directory를 제외한 132개 테스트와
 13개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
