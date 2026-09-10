@@ -1245,3 +1245,20 @@
   전체 443개 테스트가 통과한다. 기존 `backend` context를 유지하므로 branch protection 변경은 없다.
 - 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `ops/`, `tests/test_container_soak.py`,
   `tests/test_ghcr_retention.py`.
+
+## D-081. 테스트의 fixture·mock도 production과 같은 strict 검사에 포함
+
+- 결정: mypy strict 범위를 `tests`까지 확대해 저장소의 Python 코드 97개 module 전체를 기존
+  `backend` gate에서 검사한다. Optional 결과의 존재 전제는 assertion으로 명시하고, JSON fixture와
+  동적 keyword·mock 교체는 좁은 `Any`/cast 경계에서만 허용한다.
+- 이유: 테스트 코드는 production 계약을 검증하는 실행 사양이다. nullable 반환을 바로 역참조하거나
+  mock method를 임의 교체하는 전제가 타입에 나타나지 않으면 API 변경 시 테스트 자체의 오류와 제품
+  회귀를 구분하기 어렵다. production·operations와 함께 측정했을 때 24개 파일에서 136개 오류가
+  확인됐고 대부분 실제 fixture 전제를 명시해 해결할 수 있었다.
+- 대안: 테스트에는 완화된 mypy 설정 적용, `tests` 제외 유지, 오류 코드별 ignore, 일부 핵심 테스트만
+  포함, 별도 advisory job으로 분리.
+- 결과: store·queue·pipeline Optional 결과, Pydantic BaseSettings의 동적 생성, HTTP/JSON payload,
+  async mock과 evidence fixture 타입을 명시했다. 설정 파일 주입은 `model_validate`로 바꾸면 source
+  precedence가 달라지는 것을 전체 테스트에서 발견해 실제 `Settings(...)` 경로를 보존했다. ignore를
+  추가하지 않고 97개 module strict 검사와 443개 테스트가 통과한다.
+- 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `tests/`.
