@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from pipelens.models import (
@@ -19,9 +17,7 @@ from pipelens.models import (
 from pipelens.store import AnalysisAttemptSuperseded, AnalysisStore
 
 
-def test_store_deduplicates_workflow_run(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_deduplicates_workflow_run(store: AnalysisStore) -> None:
     record = AnalysisRecord(
         run_id=42,
         delivery_id="delivery-1",
@@ -39,9 +35,7 @@ def test_store_deduplicates_workflow_run(tmp_path: Path) -> None:
     assert saved.status == AnalysisStatus.QUEUED
 
 
-def test_store_lists_only_runnable_queued_analyses(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_lists_only_runnable_queued_analyses(store: AnalysisStore) -> None:
     for run_id, installation_id in [(50, 7), (51, 7), (52, None)]:
         store.create_if_absent(
             AnalysisRecord(
@@ -62,9 +56,7 @@ def test_store_lists_only_runnable_queued_analyses(tmp_path: Path) -> None:
     assert queued[0].installation_id == 7
 
 
-def test_store_persists_repository_correlation(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_persists_repository_correlation(store: AnalysisStore) -> None:
     record = AnalysisRecord(
         run_id=43,
         delivery_id="delivery-2",
@@ -104,9 +96,7 @@ def test_store_persists_repository_correlation(tmp_path: Path) -> None:
     assert saved.execution_context.failed_jobs[0].runner_labels == ["ubuntu-latest"]
 
 
-def test_store_creates_and_updates_feedback(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_creates_and_updates_feedback(store: AnalysisStore) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=44,
@@ -141,18 +131,14 @@ def test_store_creates_and_updates_feedback(tmp_path: Path) -> None:
     assert saved.feedback == updated
 
 
-def test_store_rejects_feedback_for_unknown_analysis(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_rejects_feedback_for_unknown_analysis(store: AnalysisStore) -> None:
 
     result = store.save_feedback(999, FeedbackRequest(accuracy=FeedbackAccuracy.INACCURATE))
 
     assert result is None
 
 
-def test_store_scopes_analysis_and_feedback_to_installations(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_scopes_analysis_and_feedback_to_installations(store: AnalysisStore) -> None:
     for run_id, installation_id in [(45, 7), (46, 8)]:
         store.create_if_absent(
             AnalysisRecord(
@@ -178,9 +164,7 @@ def test_store_scopes_analysis_and_feedback_to_installations(tmp_path: Path) -> 
     )
 
 
-def test_store_filters_analysis_history(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_filters_analysis_history(store: AnalysisStore) -> None:
     records = [
         (61, "acme/api", AnalysisStatus.COMPLETED, ErrorCategory.TEST),
         (62, "acme/api", AnalysisStatus.FAILED, ErrorCategory.BUILD),
@@ -221,9 +205,7 @@ def test_store_filters_analysis_history(tmp_path: Path) -> None:
     ] == [61]
 
 
-def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_persists_analysis_trust_level(store: AnalysisStore) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=47,
@@ -248,9 +230,7 @@ def test_store_persists_analysis_trust_level(tmp_path: Path) -> None:
     assert saved.baseline_sha == "last-success-sha"
 
 
-def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_store_records_analysis_timing_and_stage_history(store: AnalysisStore) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=48,
@@ -281,9 +261,7 @@ def test_store_records_analysis_timing_and_stage_history(tmp_path: Path) -> None
     ]
 
 
-def test_new_analysis_attempt_fences_stale_worker_updates(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+def test_new_analysis_attempt_fences_stale_worker_updates(store: AnalysisStore) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=49,

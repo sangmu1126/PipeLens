@@ -1,6 +1,5 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -22,9 +21,9 @@ from pipelens.store import AnalysisStore
 
 
 @pytest.mark.asyncio
-async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+async def test_context_failure_does_not_discard_log_diagnosis(
+    store: AnalysisStore,
+) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=44,
@@ -110,9 +109,9 @@ async def test_context_failure_does_not_discard_log_diagnosis(tmp_path: Path) ->
 
 
 @pytest.mark.asyncio
-async def test_llm_failure_records_attempt_and_uses_rule_fallback(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "test.db"))
-    store.initialize()
+async def test_llm_failure_records_attempt_and_uses_rule_fallback(
+    store: AnalysisStore,
+) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=45,
@@ -164,11 +163,9 @@ async def test_llm_failure_records_attempt_and_uses_rule_fallback(tmp_path: Path
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("pull_request_number", "expected_method"), [(55, "pr"), (None, "check")])
 async def test_publishes_pr_comment_or_commit_check(
-    tmp_path: Path, pull_request_number: int | None, expected_method: str
+    store: AnalysisStore, pull_request_number: int | None, expected_method: str
 ) -> None:
     run_id = 50 if pull_request_number else 51
-    store = AnalysisStore(str(tmp_path / f"{run_id}.db"))
-    store.initialize()
     store.create_if_absent(
         AnalysisRecord(
             run_id=run_id,
@@ -226,10 +223,8 @@ async def test_publishes_pr_comment_or_commit_check(
 
 @pytest.mark.asyncio
 async def test_untrusted_fork_uses_rules_without_llm_and_skips_commit_check(
-    tmp_path: Path,
+    store: AnalysisStore,
 ) -> None:
-    store = AnalysisStore(str(tmp_path / "fork.db"))
-    store.initialize()
     store.create_if_absent(
         AnalysisRecord(
             run_id=52,
@@ -283,9 +278,9 @@ async def test_untrusted_fork_uses_rules_without_llm_and_skips_commit_check(
 
 
 @pytest.mark.asyncio
-async def test_pipeline_records_failed_stage_and_attempt_duration(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "failed-stage.db"))
-    store.initialize()
+async def test_pipeline_records_failed_stage_and_attempt_duration(
+    store: AnalysisStore,
+) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=53,
@@ -321,9 +316,7 @@ async def test_pipeline_records_failed_stage_and_attempt_duration(tmp_path: Path
 
 
 @pytest.mark.asyncio
-async def test_new_attempt_fences_resumed_stale_pipeline(tmp_path: Path) -> None:
-    store = AnalysisStore(str(tmp_path / "fencing.db"))
-    store.initialize()
+async def test_new_attempt_fences_resumed_stale_pipeline(store: AnalysisStore) -> None:
     store.create_if_absent(
         AnalysisRecord(
             run_id=54,
