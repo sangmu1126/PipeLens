@@ -9,8 +9,8 @@
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-11·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
 | 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 443 passed, integration 2 skipped; CI에서 service integration 별도 통과 |
-| Python 정적 타입 | 통과 | production·operations·tests 97개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
+| 백엔드 테스트 | 통과 | 로컬 443 passed, integration 2 skipped, DB resource warning 0; CI에서 service integration 별도 통과 |
+| Python 정적 타입 | 통과 | production·operations·tests 98개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python coverage | 기준선 | branch 포함 전체 74.73%; production 86.50%, operations 67.15%; XML·JSON CI artifact 14일 보관 |
 | Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 412개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |

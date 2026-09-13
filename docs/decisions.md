@@ -1279,3 +1279,20 @@
   저장소 밖 서비스나 token 없이 CI에서 같은 보고서를 재생성할 수 있고 기존 `backend` required
   context를 유지한다. 후속 gate는 반복 측정의 안정성과 핵심 모듈의 미검증 분기를 검토한 뒤 정한다.
 - 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `CONTRIBUTING.md`, `docs/readiness.md`.
+
+## D-083. 테스트가 만든 database engine은 fixture가 결정적으로 종료
+
+- 결정: store·pipeline 단위 테스트가 직접 만들던 `AnalysisStore`를 공용 pytest fixture가 소유하고
+  `finally`에서 `close()`하도록 한다. pytest는 `ResourceWarning`과
+  `PytestUnraisableExceptionWarning`을 오류로 승격해 garbage collection에 의존하는 연결 정리가
+  다시 생기면 기존 backend gate를 실패시킨다.
+- 이유: coverage 최초 실행이 기능 테스트 443개 통과 뒤 닫히지 않은 SQLite connection 경고 16건을
+  드러냈다. production API와 worker는 이미 lifespan과 shutdown에서 store를 닫지만, 16개 단위 테스트는
+  engine 소유권을 끝내지 않았다. GC 시점에 맡긴 정리는 테스트 순서에 따라 다른 테스트 위치에서
+  경고가 나타나 원인을 숨기고 장시간 suite에서 connection·file handle을 불필요하게 유지한다.
+- 대안: 경고 무시 또는 필터링, 각 테스트 마지막 줄에 수동 `close()` 추가, `AnalysisStore.__del__`로
+  암묵적 정리, production store 구현 변경, pytest process 종료에만 위임.
+- 결과: 공용 fixture의 `try/finally`가 assertion 실패 때도 engine을 dispose한다. 경고를 오류로 바꾼
+  집중 17개와 전체 coverage 실행 443개가 경고 없이 통과했고, coverage 74.73%도 유지됐다. 제품 수명
+  주기는 변경하지 않았으며 새 fixture를 포함한 Python 98개 module이 mypy strict를 통과한다.
+- 관련: `tests/conftest.py`, `tests/test_store.py`, `tests/test_pipeline.py`, `pyproject.toml`.

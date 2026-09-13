@@ -1577,6 +1577,20 @@ Nginx는 별도 PR로 분리했다.
   `actions/upload-artifact`로 14일 보관한다. 외부 coverage service, repository token이나 새 required
   check는 추가하지 않는다.
 
+### SQLite 테스트 connection의 결정적 종료
+
+- coverage baseline의 전체 실행은 443 passed·2 skipped였지만 Python 3.14가 닫히지 않은 SQLite
+  connection `ResourceWarning` 16건을 보고했다. 경고가 다음 recovery·webhook 테스트 위치에서
+  나타났으나, 집중 재현 결과 실제 소유자는 `test_store.py`의 10개와 `test_pipeline.py`의 6개
+  `AnalysisStore`였다. engine pool이 GC될 때까지 남아 테스트 위치와 원인 위치가 어긋난 사례다.
+- production의 FastAPI lifespan과 worker shutdown은 이미 queue 뒤 store를 명시적으로 닫으므로 제품
+  코드는 바꾸지 않았다. 대신 초기화한 store를 yield하고 `finally`에서 닫는 공용 pytest fixture를
+  추가해 성공·실패와 무관하게 각 테스트가 자신이 만든 engine의 수명을 끝내게 했다.
+- pytest 기본 warning filter가 `ResourceWarning`과 `PytestUnraisableExceptionWarning`을 오류로
+  승격한다. 수정 전 집중 17개는 기능상 통과하면서 unraisable 경고 12건을 냈고, 수정 뒤 같은 실행과
+  전체 coverage 실행은 경고 0건으로 통과했다. 전체 결과와 coverage 74.73%는 변하지 않았고 mypy
+  strict 범위는 fixture를 포함해 98개 module로 늘었다. 판단은 D-083에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
