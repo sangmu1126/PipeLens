@@ -17,7 +17,7 @@ test("completes OAuth, enters the dashboard, and logs out", async ({ context, pa
   await expect(page).toHaveURL("http://127.0.0.1:5173/");
   await expect(page.getByRole("heading", { name: /실패의 첫 원인을/ })).toBeVisible();
   await expect(page.getByText("octocat", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "최근 분석" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "실패 실행 기록" })).toBeVisible();
 
   const cookies = await context.cookies();
   const sessionCookie = cookies.find((cookie) => cookie.name === "pipelens_session");
