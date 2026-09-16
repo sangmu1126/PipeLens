@@ -1591,6 +1591,35 @@ Nginx는 별도 PR로 분리했다.
   전체 coverage 실행은 경고 0건으로 통과했다. 전체 결과와 coverage 74.73%는 변하지 않았고 mypy
   strict 범위는 fixture를 포함해 98개 module로 늘었다. 판단은 D-083에 기록했다.
 
+### 2026-09-16 주간 의존성 업데이트
+
+- Dependabot PR 6개를 변경 범위별로 유지하고 각각 최신 `main`에 rebase한 뒤 필수
+  CI 6개, Dependency Review, CodeQL 2개를 전부 통과시켜 선형 이력으로 병합했다.
+  애플리케이션 소스 코드나 새 직접 의존성은 없다.
+- [PR #117](https://github.com/sangmu1126/PipeLens/pull/117)은 Alembic 1.19.1→1.19.2를
+  `e4ebc48`로, [PR #118](https://github.com/sangmu1126/PipeLens/pull/118)은 Ruff
+  0.16.6→0.16.7을 `9042b76`으로 병합했다. 각 변경은 runtime과 development 하한만
+  조정했으며 PR CI `34792063434`, `35056463153`이 통과했다.
+- [PR #119](https://github.com/sangmu1126/PipeLens/pull/119)는 React·React DOM 19.3.0,
+  Vite 8.3.0, Playwright 1.63.0, React type 19.3.0을 `6f0b079`로 병합했다. lockfile
+  갱신 후 Vitest, Chromium E2E, TypeScript·Vite build와 dashboard image build가 CI
+  `35056697173`에서 통과했다.
+- [PR #121](https://github.com/sangmu1126/PipeLens/pull/121)은 Node 24 Alpine과 non-root
+  Nginx 1.31 Alpine의 tag를 유지하고 multi-platform digest만 `9c5d896`으로 갱신했다.
+  실제 두 container build와 runtime smoke를 포함한 CI `35057075683`이 통과했다.
+- [PR #122](https://github.com/sangmu1126/PipeLens/pull/122)는 Prometheus 3.13 LTS를
+  3.13.2→3.13.3으로 올리고 고정 digest를 갱신한 `074ec10`이다. config·rule 검증,
+  readiness와 Alertmanager 라우팅을 포함한 CI `35057386215`이 통과했다.
+- [PR #120](https://github.com/sangmu1126/PipeLens/pull/120)은 CodeQL action 4.37.9→4.38.0의
+  full commit SHA를 `3093d53`으로 갱신했다. 최초 backend 실행은 고정된 Grafana image를
+  Docker Hub에서 받는 도중 `connection reset by peer`로 실패했으며 업데이트 자체와
+  관련 없는 외부 registry 일시 오류로 판정했다. 실패 job 재실행 후 최신 `main`으로
+  다시 rebase한 CI `35057624189`와 CodeQL `35057624178`이 전부 통과했다.
+- 함께 돌아간 Dependency Review run은 `34792063455`, `35056463139`, `35056697190`,
+  `35057075671`, `35057386206`, `35057624161`이며 모두 성공했다. 각 PR의 Python과
+  JavaScript/TypeScript CodeQL도 성공해 병합 시점에 알려진 새 dependency 취약점과
+  정적 분석 회귀가 없음을 확인했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
