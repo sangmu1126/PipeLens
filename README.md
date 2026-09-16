@@ -3,6 +3,24 @@
 PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그와 실행 정보를 교차
 검증해 근거가 있는 원인과 해결 방향을 제시하는 CI 진단 시스템입니다.
 
+## 포트폴리오 데모
+
+현재 소스 버전은 **v0.2.0**이며, 별도 유료 도메인이나 OpenAI API 없이도 핵심 흐름을
+재현할 수 있습니다. 테스트용 GitHub Actions가 의도적으로 존재하지 않는 `pip==0.0.0`을
+설치해 실패하면 PipeLens가 signed webhook을 받고 로그의 비밀값을 제거한 뒤
+`dependency_installation_failure`로 분류하고 GitHub Commit Check를 게시합니다.
+
+- [의도적 실패 실행](https://github.com/sangmu1126/PipeLens-acceptance/actions/runs/35074952820)
+- [PipeLens가 게시한 Commit Check](https://github.com/sangmu1126/PipeLens-acceptance/runs/104725115425)
+- [무료 공개 E2E 검증 기록](docs/acceptance-runs/2026-09-16-free-quick-tunnel.md)
+
+이 검증에서는 실제 GitHub App OAuth, App 설치, webhook 서명, worker 분석, 대시보드 접근
+제어와 Check 게시까지 연결했습니다. 분석은 규칙 기반 fallback을 사용해 OpenAI 호출과 비용이
+발생하지 않았고, 합성 `ghp_...` 문자열이 저장 결과와 게시물에 남지 않는 것도 확인했습니다.
+Cloudflare Quick Tunnel 주소는 시연할 때마다 바뀌는 임시 주소이므로 공개 데모 URL은 고정해서
+제공하지 않습니다. 고정 도메인, HSTS, 운영용 secret manager와 실제 호출 알림 채널은 제품
+배포 범위이며 이 포트폴리오의 완료 조건에는 포함하지 않습니다.
+
 개발 과정과 현재 판단을 포함한 상세 기록은 [`docs/`](docs/README.md)에서 확인할 수
 있습니다.
 
@@ -20,7 +38,7 @@ PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그�
 - [행동강령](CODE_OF_CONDUCT.md)
 - [비공개 보안 신고 정책](SECURITY.md)
 
-현재 저장소에는 첫 번째 실행 가능한 백엔드 수직 슬라이스가 들어 있습니다.
+현재 저장소에는 다음 기능이 구현돼 있습니다.
 
 - `workflow_run.completed` webhook 수신 및 HMAC-SHA256 서명 검증
 - 실패한 workflow만 수집하고 workflow run ID로 중복 분석 방지
