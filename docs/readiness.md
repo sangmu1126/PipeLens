@@ -2,7 +2,7 @@
 
 ## 1. 상태 요약
 
-기준 시점: **2026-09-10**, 변경 전 기준 main commit `1d456c9`, v0.1.0 source `320f6ae`.
+기준 시점: **2026-09-16**, 기준 main commit `3093d53`, v0.1.0 source `320f6ae`.
 
 | 영역 | 상태 | 근거 |
 | --- | --- | --- |
@@ -23,7 +23,7 @@
 | GHCR release | 통과 | v0.1.0 이미지 2개와 digest별 provenance·SBOM attestation 검증 |
 | GHCR 보존 정책 | 통과 | 정식 release·attestation 영구 보존, 월별 tag/digest 읽기 전용 감사 |
 | Compose service image | 통과 | 5개 외부 image의 multi-platform digest 고정과 CI 정책 검사 |
-| Prometheus runtime | 통과 | 3.13.2 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
+| Prometheus runtime | 통과 | 3.13.3 LTS 설정·규칙 5개 검증과 실제 readiness smoke |
 | Alertmanager routing | 통과 | 0.33.1 strict mode, Prometheus→Alertmanager→webhook CI·로컬 drill |
 | Alertmanager 채널 증적 도구 | 준비됨 | 실채널 timeline, grouping·dedupe·억제·rotation·retry와 latency JSON 판정 |
 | Uvicorn runtime | 통과 | 0.52.4, Python 3.12·3.14와 실제 API `/readyz` 기동 검증 |
