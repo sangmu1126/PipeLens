@@ -1620,6 +1620,20 @@ Nginx는 별도 PR로 분리했다.
   JavaScript/TypeScript CodeQL도 성공해 병합 시점에 알려진 새 dependency 취약점과
   정적 분석 회귀가 없음을 확인했다.
 
+### OpenAI 없는 무료 public GitHub 경계 재검증
+
+- 현재 `main` Docker Compose 스택을 Cloudflare account-less Quick Tunnel로 공개하고
+  `pipelens-staging-acceptance` App의 client secret과 새 PEM을 연결했다. PEM은 mode
+  `0600`으로 repository 밖에 두고 API·worker에 read-only mount했으며 App JWT로
+  GitHub `/app` 인증을 실제 통과했다.
+- 실제 OAuth callback이 암호화 session과 installation 1개를 생성했고, acceptance run
+  `35074952820`의 completed webhook이 HTTP 202·0.5초로 수신됐다. Redis worker는
+  5.47초 만에 dependency installation failure로 분류해 Check `104725115425`를 게시했다.
+- LLM provider는 `none`이었고 `model_name`도 비어 있었다. 게시 결과와 DB 진단에
+  fixture의 `synthetic-token=`과 `ghp_` prefix가 없음을 확인했다. 상세 결과와
+  Quick Tunnel 한계는 [2026-09-16 acceptance 기록](acceptance-runs/2026-09-16-free-quick-tunnel.md)에
+  보존했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
