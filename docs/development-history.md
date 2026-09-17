@@ -1634,6 +1634,22 @@ Nginx는 별도 PR로 분리했다.
   Quick Tunnel 한계는 [2026-09-16 acceptance 기록](acceptance-runs/2026-09-16-free-quick-tunnel.md)에
   보존했다.
 
+### 후속 Workflow 기반 자동 해결 추적
+
+- 실패 webhook에서 저장소·Workflow·브랜치, PR 번호, GitHub `run_attempt`와 완료 시각을 저장하도록
+  migration `0010`을 추가했다. 다음 완료 webhook은 PR 번호를 우선하고 없으면 브랜치로 직전
+  미판정 실패 하나를 찾아 성공 전환 또는 계속 실패를 기록한다.
+- GitHub의 같은 run 재실행은 ID가 유지되므로 attempt 순서까지 비교한다. 두 번째 시도가 실패하고
+  세 번째 시도가 성공해도 최초 실패 레코드는 최종 `resolved`와 전체 복구 시간을 보존한다.
+- 자동 추적은 다음 실행의 상관관계만 증명한다. 제안이 해결을 일으켰다는 인과는 추정하지 않고 기존
+  수동 `suggestion_resolved` 피드백과 별도로 유지한다. 판단은 D-084에 기록했다.
+- API는 후속 run 링크·attempt·완료 시각·복구 시간을 반환하고, 대시보드는 대기·성공·계속 실패를
+  구분해 보여 준다. Prometheus에는 결과별 건수와 후속 완료까지의 시간을 추가했다.
+- store·webhook·migration 회귀 테스트와 대시보드 사용자 흐름·접근성 테스트를 추가했다.
+- Ruff, mypy strict 98개 module, Markdown·OpenAPI 계약, Python 전체 446 passed·2 integration skipped,
+  Vitest 5/5와 production build를 통과했다. 로컬 `.env`의 실제 credential이 test Settings에
+  주입되지 않도록 같은 worktree를 `.env` 없이 격리해 전체 결과를 확인했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

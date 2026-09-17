@@ -60,6 +60,7 @@ Cloudflare Quick Tunnel 주소는 시연할 때마다 바뀌는 임시 주소이
 - GitHub OAuth 로그인, 암호화된 사용자 토큰, installation 단위 분석 접근 제어
 - 외부 Fork 실행 판별과 비신뢰 입력의 LLM·Commit Check 격리
 - PR에는 멱등 코멘트, PR이 없는 실행에는 Commit Check로 진단 결과 게시
+- 같은 브랜치 또는 PR의 다음 Workflow 완료를 연결해 성공 전환·계속 실패와 복구 시간 자동 추적
 
 첫 [`v0.1.0` 릴리스](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)는 API와
 대시보드 GHCR image를 제공한다. 각 image는 취약점·기동 검사를 통과했고 SLSA provenance와
