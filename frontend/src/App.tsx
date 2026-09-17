@@ -180,9 +180,9 @@ function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
-          <span className="brand-name">PipeLens<small>CI FORENSICS</small></span>
+          <span className="brand-name">PipeLens<small>Workflow insights</small></span>
         </div>
-        <div className="system-state" aria-label="분석 시스템 상태"><i aria-hidden="true" />ANALYSIS NETWORK ONLINE</div>
+        <div className="system-state" aria-label="분석 시스템 상태"><i aria-hidden="true" />모든 시스템 정상</div>
         <div className="topbar-meta">
           {user.avatar_url && <img src={user.avatar_url} alt="" />}
           <span>{user.login}</span>
@@ -193,23 +193,23 @@ function App() {
       <main id="main-content">
         <section className="hero">
           <div className="hero-statement">
-            <div className="hero-serial" aria-hidden="true">PL / TRACE 002</div>
-            <p className="eyebrow">PIPELINE INCIDENT FORENSICS</p>
-            <h1>실패의 첫 원인을,<br /><em>사건처럼</em> 추적합니다.</h1>
-            <p className="hero-copy">로그의 소음은 걷어내고 코드 변경과 Workflow를 대조합니다. 추측이 아닌 재현 가능한 근거만 남깁니다.</p>
+            <div className="hero-serial" aria-hidden="true">GitHub Actions assistant</div>
+            <p className="eyebrow">실패 분석을 더 간단하게</p>
+            <h1>실패의 첫 원인을<br /><em>빠르고 명확하게</em></h1>
+            <p className="hero-copy">복잡한 로그를 직접 뒤질 필요 없어요. PipeLens가 코드 변경과 Workflow를 함께 살펴보고, 확인된 근거와 해결 방법을 정리해 드려요.</p>
             <div className="hero-tags" aria-label="PipeLens 분석 원칙">
-              <span>01 / SANITIZE</span><span>02 / CORRELATE</span><span>03 / VERIFY</span>
+              <span>민감정보 보호</span><span>변경 코드 비교</span><span>근거 기반 진단</span>
             </div>
           </div>
           <div className="telemetry-board">
-            <div className="telemetry-head"><span>LIVE / INCIDENT FEED</span><i aria-hidden="true" /></div>
+            <div className="telemetry-head"><span>분석 현황</span><i aria-hidden="true" /></div>
             <div className="stats" role="group" aria-label="분석 통계">
               <Stat label="불러온 실행" value={analyses.length.toString().padStart(2, "0")} />
               <Stat label="진단 완료" value={stats.completed.toString().padStart(2, "0")} accent />
               <Stat label="진행 중" value={stats.active.toString().padStart(2, "0")} />
               <Stat label="평균 신뢰도" value={`${Math.round(stats.average * 100)}%`} />
             </div>
-            <div className="telemetry-foot"><span>RULE + CONTEXT ENGINE</span><b>READY</b></div>
+            <div className="telemetry-foot"><span>30초마다 자동으로 업데이트해요</span><b>실시간</b></div>
           </div>
         </section>
 
@@ -230,7 +230,7 @@ function App() {
               {loading ? "분석 목록을 불러오는 중입니다." : `분석 ${analyses.length}개를 불러왔습니다.`}
             </span>
             <div className="section-heading">
-              <div><p className="eyebrow">INCIDENT INDEX</p><h2>실패 실행 기록</h2></div>
+              <div><p className="eyebrow">최근 실행</p><h2>분석한 Workflow</h2></div>
               <button
                 className="refresh"
                 onClick={() => void loadAnalyses(
@@ -348,17 +348,17 @@ function App() {
         </section>
         )}
       </main>
-      <footer><span>PipeLens / v0.2.0</span><span>Follow the evidence. Fix the pipeline.</span></footer>
+      <footer><span>PipeLens v0.2.0</span><span>실패 원인을 찾는 가장 편한 방법</span></footer>
     </div>
   );
 }
 
 function AccessScreen({ loading = false, error = null }: { loading?: boolean; error?: string | null }) {
   return <div className="access-shell">
-    <div className="access-brand"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>PipeLens<small>CI FORENSICS</small></span></div>
+    <div className="access-brand"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>PipeLens<small>Workflow insights</small></span></div>
     <div className="access-orbit" aria-hidden="true"><i /><i /><i /><b>PL</b></div>
     <main className="access-card" aria-live="polite">
-      <p className="eyebrow">SECURE INCIDENT WORKSPACE</p>
+      <p className="eyebrow">안전하게 연결하고 바로 시작하세요</p>
       <h1>{loading ? "연결 상태를 확인하고 있습니다." : "GitHub와 연결해 분석을 시작하세요."}</h1>
       <p>{error ?? "접근 가능한 GitHub App 설치만 확인하고, 해당 저장소의 실패 분석만 보여드립니다."}</p>
       {!loading && <a href="/auth/github/login">GitHub로 로그인 ↗</a>}
