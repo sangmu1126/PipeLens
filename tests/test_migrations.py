@@ -45,6 +45,16 @@ def test_initial_migration_upgrades_and_downgrades_sqlite(
         "execution_context",
         "queue_wait_seconds",
         "total_latency_seconds",
+        "run_attempt",
+        "head_branch",
+        "pull_request_number",
+        "run_completed_at",
+        "resolution_outcome",
+        "resolution_run_id",
+        "resolution_run_attempt",
+        "resolution_html_url",
+        "resolution_completed_at",
+        "recovery_seconds",
     }
     assert "analysis_stage_events" in inspector.get_table_names()
     command.check(config)

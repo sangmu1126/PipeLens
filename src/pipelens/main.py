@@ -3,7 +3,7 @@ import binascii
 import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
@@ -32,6 +32,25 @@ from pipelens.worker import AnalysisWorker
 API_V1_PREFIX = "/api/v1"
 LEGACY_API_DEPRECATION = "@1788134400"
 DEPRECATION_POLICY_URL = "https://github.com/sangmu1126/PipeLens/blob/main/docs/api-versioning.md"
+
+
+def _workflow_run_completed_at(value: object) -> datetime:
+    if not isinstance(value, str):
+        return datetime.now(UTC)
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        raise ValueError("workflow run timestamp must include a timezone")
+    return parsed.astimezone(UTC)
+
+
+def _pull_request_number(run: dict[str, object]) -> int | None:
+    pull_requests = run.get("pull_requests")
+    if not isinstance(pull_requests, list):
+        return None
+    for pull_request in pull_requests:
+        if isinstance(pull_request, dict) and isinstance(pull_request.get("number"), int):
+            return cast(int, pull_request["number"])
+    return None
 
 
 async def reconcile_queued_analyses(store: AnalysisStore, queue: AnalysisQueue) -> int:
@@ -291,8 +310,48 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except (json.JSONDecodeError, KeyError, TypeError) as exc:
             metrics.webhooks.labels(outcome="invalid_payload").inc()
             raise HTTPException(status_code=400, detail="invalid workflow_run payload") from exc
-        if run.get("conclusion") != "failure" or payload.get("action") != "completed":
+        conclusion = run.get("conclusion")
+        if payload.get("action") != "completed" or conclusion not in {"success", "failure"}:
             metrics.webhooks.labels(outcome="ignored_run").inc()
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+        try:
+            run_id = int(run["id"])
+            run_attempt = int(run.get("run_attempt", 1))
+            if run_attempt < 1:
+                raise ValueError
+            workflow_name = str(run.get("name", "unknown workflow"))
+            head_branch_value = run.get("head_branch")
+            head_branch = head_branch_value if isinstance(head_branch_value, str) else None
+            pull_request_number = _pull_request_number(run)
+            completed_at = _workflow_run_completed_at(run.get("updated_at"))
+            html_url = str(run["html_url"])
+        except (KeyError, TypeError, ValueError) as exc:
+            metrics.webhooks.labels(outcome="invalid_payload").inc()
+            raise HTTPException(status_code=400, detail="invalid workflow_run payload") from exc
+
+        resolution_match = analysis_store.record_followup_run(
+            repository=repository,
+            workflow_name=workflow_name,
+            head_branch=head_branch,
+            pull_request_number=pull_request_number,
+            run_id=run_id,
+            run_attempt=run_attempt,
+            html_url=html_url,
+            conclusion=cast(str, conclusion),
+            completed_at=completed_at,
+        )
+        if resolution_match is not None:
+            resolution = resolution_match.resolution
+            metrics.resolutions.labels(outcome=resolution.outcome.value).inc()
+            metrics.recovery_duration.labels(outcome=resolution.outcome.value).observe(
+                resolution.recovery_seconds
+            )
+
+        if conclusion == "success":
+            metrics.webhooks.labels(
+                outcome="resolution_recorded" if resolution_match else "ignored_run"
+            ).inc()
             return Response(status_code=status.HTTP_204_NO_CONTENT)
 
         installation_id = payload.get("installation", {}).get("id")
@@ -300,12 +359,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             metrics.webhooks.labels(outcome="invalid_payload").inc()
             raise HTTPException(status_code=400, detail="payload has no GitHub App installation id")
         record = AnalysisRecord(
-            run_id=run["id"],
+            run_id=run_id,
             delivery_id=x_github_delivery,
             repository=repository,
-            workflow_name=run.get("name", "unknown workflow"),
+            workflow_name=workflow_name,
             head_sha=run["head_sha"],
-            html_url=run["html_url"],
+            html_url=html_url,
+            run_attempt=run_attempt,
+            head_branch=head_branch,
+            pull_request_number=pull_request_number,
+            run_completed_at=completed_at,
             installation_id=installation_id,
         )
         created = analysis_store.create_if_absent(record)

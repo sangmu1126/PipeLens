@@ -1,3 +1,5 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 
 from pipelens.models import (
@@ -11,6 +13,7 @@ from pipelens.models import (
     FeedbackAccuracy,
     FeedbackRequest,
     RelatedFile,
+    ResolutionOutcome,
     StageStatus,
     TrustLevel,
 )
@@ -33,6 +36,93 @@ def test_store_deduplicates_workflow_run(store: AnalysisStore) -> None:
     saved = store.get(42)
     assert saved is not None
     assert saved.status == AnalysisStatus.QUEUED
+
+
+def test_store_links_latest_failure_to_followup_success(store: AnalysisStore) -> None:
+    failed_at = datetime(2026, 9, 18, 1, 0, tzinfo=UTC)
+    for run_id, offset in [(40, 0), (41, 60)]:
+        store.create_if_absent(
+            AnalysisRecord(
+                run_id=run_id,
+                delivery_id=f"delivery-{run_id}",
+                repository="acme/example",
+                workflow_name="CI",
+                head_sha=f"sha-{run_id}",
+                html_url=f"https://github.com/acme/example/actions/runs/{run_id}",
+                head_branch="main",
+                run_completed_at=failed_at + timedelta(seconds=offset),
+            )
+        )
+
+    match = store.record_followup_run(
+        repository="acme/example",
+        workflow_name="CI",
+        head_branch="main",
+        pull_request_number=None,
+        run_id=42,
+        run_attempt=1,
+        html_url="https://github.com/acme/example/actions/runs/42",
+        conclusion="success",
+        completed_at=failed_at + timedelta(seconds=180),
+    )
+
+    assert match is not None
+    assert match.failed_run_id == 41
+    assert match.resolution.outcome is ResolutionOutcome.RESOLVED
+    assert match.resolution.recovery_seconds == 120
+    older = store.get(40)
+    assert older is not None
+    assert older.resolution is None
+    saved = store.get(41)
+    assert saved is not None
+    assert saved.resolution == match.resolution
+
+
+def test_store_updates_same_run_retry_until_it_succeeds(store: AnalysisStore) -> None:
+    failed_at = datetime(2026, 9, 18, 1, 0, tzinfo=UTC)
+    store.create_if_absent(
+        AnalysisRecord(
+            run_id=50,
+            run_attempt=1,
+            delivery_id="delivery-50",
+            repository="acme/example",
+            workflow_name="CI",
+            head_sha="sha-50",
+            html_url="https://github.com/acme/example/actions/runs/50",
+            head_branch="main",
+            run_completed_at=failed_at,
+        )
+    )
+
+    first_retry = store.record_followup_run(
+        repository="acme/example",
+        workflow_name="CI",
+        head_branch="main",
+        pull_request_number=None,
+        run_id=50,
+        run_attempt=2,
+        html_url="https://github.com/acme/example/actions/runs/50/attempts/2",
+        conclusion="failure",
+        completed_at=failed_at + timedelta(seconds=60),
+    )
+    successful_retry = store.record_followup_run(
+        repository="acme/example",
+        workflow_name="CI",
+        head_branch="main",
+        pull_request_number=None,
+        run_id=50,
+        run_attempt=3,
+        html_url="https://github.com/acme/example/actions/runs/50/attempts/3",
+        conclusion="success",
+        completed_at=failed_at + timedelta(seconds=150),
+    )
+
+    assert first_retry is not None
+    assert first_retry.resolution.outcome is ResolutionOutcome.STILL_FAILING
+    assert successful_retry is not None
+    assert successful_retry.resolution.outcome is ResolutionOutcome.RESOLVED
+    assert successful_retry.resolution.followup_run_attempt == 3
+    assert successful_retry.resolution.recovery_seconds == 150
 
 
 def test_store_lists_only_runnable_queued_analyses(store: AnalysisStore) -> None:

@@ -13,6 +13,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     MetaData,
     String,
@@ -46,6 +47,8 @@ from pipelens.models import (
     GitHubInstallation,
     GitHubUser,
     RelatedFile,
+    ResolutionOutcome,
+    ResolutionRecord,
     StageStatus,
     TrustLevel,
 )
@@ -76,6 +79,12 @@ class AnalysisPage:
     next_cursor: AnalysisCursor | None
 
 
+@dataclass(frozen=True)
+class ResolutionMatch:
+    failed_run_id: int
+    resolution: ResolutionRecord
+
+
 class AuthSessionRow(TypedDict):
     github_user_id: int
     encrypted_access_token: str
@@ -93,6 +102,10 @@ analyses = Table(
     Column("workflow_name", String(255), nullable=False),
     Column("head_sha", String(64), nullable=False),
     Column("html_url", Text, nullable=False),
+    Column("run_attempt", Integer, nullable=False, default=1),
+    Column("head_branch", String(255)),
+    Column("pull_request_number", Integer),
+    Column("run_completed_at", DateTime(timezone=True)),
     Column("installation_id", BigInteger),
     Column("trust_level", String(32), nullable=False, default=TrustLevel.TRUSTED.value),
     Column("baseline_sha", String(64)),
@@ -110,9 +123,23 @@ analyses = Table(
     Column("duration_seconds", Float),
     Column("queue_wait_seconds", Float),
     Column("total_latency_seconds", Float),
+    Column("resolution_outcome", String(32)),
+    Column("resolution_run_id", BigInteger),
+    Column("resolution_run_attempt", Integer),
+    Column("resolution_html_url", Text),
+    Column("resolution_completed_at", DateTime(timezone=True)),
+    Column("recovery_seconds", Float),
     Column("attempt_token", String(64)),
     Column("created_at", DateTime(timezone=True), nullable=False, index=True),
     Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+Index(
+    "ix_analyses_resolution_lookup",
+    analyses.c.repository,
+    analyses.c.workflow_name,
+    analyses.c.head_branch,
+    analyses.c.resolution_outcome,
 )
 
 analysis_stage_events = Table(
@@ -218,6 +245,10 @@ class AnalysisStore:
             "workflow_name": record.workflow_name,
             "head_sha": record.head_sha,
             "html_url": record.html_url,
+            "run_attempt": record.run_attempt,
+            "head_branch": record.head_branch,
+            "pull_request_number": record.pull_request_number,
+            "run_completed_at": record.run_completed_at,
             "installation_id": record.installation_id,
             "trust_level": record.trust_level.value,
             "baseline_sha": record.baseline_sha,
@@ -244,6 +275,110 @@ class AnalysisStore:
         except IntegrityError:
             return False
         return True
+
+    def record_followup_run(
+        self,
+        *,
+        repository: str,
+        workflow_name: str,
+        head_branch: str | None,
+        pull_request_number: int | None,
+        run_id: int,
+        run_attempt: int,
+        html_url: str,
+        conclusion: str,
+        completed_at: datetime,
+    ) -> ResolutionMatch | None:
+        if conclusion not in {"success", "failure"}:
+            return None
+        if head_branch is None and pull_request_number is None:
+            return None
+
+        target_match = analyses.c.head_branch == head_branch
+        if pull_request_number is not None:
+            target_match = analyses.c.pull_request_number == pull_request_number
+            if head_branch is not None:
+                target_match = or_(
+                    target_match,
+                    and_(
+                        analyses.c.pull_request_number.is_(None),
+                        analyses.c.head_branch == head_branch,
+                    ),
+                )
+        prior_run = or_(
+            analyses.c.run_id < run_id,
+            and_(analyses.c.run_id == run_id, analyses.c.run_attempt < run_attempt),
+        )
+        unresolved_or_same_run_retry = or_(
+            analyses.c.resolution_outcome.is_(None),
+            and_(
+                analyses.c.run_id == run_id,
+                analyses.c.resolution_outcome == ResolutionOutcome.STILL_FAILING.value,
+                analyses.c.resolution_run_id == run_id,
+                analyses.c.resolution_run_attempt < run_attempt,
+            ),
+        )
+        statement = (
+            select(
+                analyses.c.run_id,
+                analyses.c.run_completed_at,
+                analyses.c.created_at,
+            )
+            .where(
+                analyses.c.repository == repository,
+                analyses.c.workflow_name == workflow_name,
+                unresolved_or_same_run_retry,
+                target_match,
+                prior_run,
+            )
+            .order_by(
+                analyses.c.run_completed_at.desc(),
+                analyses.c.run_id.desc(),
+                analyses.c.run_attempt.desc(),
+            )
+            .limit(1)
+        )
+        normalized_completed_at = _as_utc(completed_at)
+        with self.engine.begin() as connection:
+            candidate = connection.execute(statement).mappings().first()
+            if candidate is None:
+                return None
+            failed_at = _as_utc(candidate["run_completed_at"] or candidate["created_at"])
+            recovery_seconds = max(0.0, (normalized_completed_at - failed_at).total_seconds())
+            outcome = (
+                ResolutionOutcome.RESOLVED
+                if conclusion == "success"
+                else ResolutionOutcome.STILL_FAILING
+            )
+            result = connection.execute(
+                update(analyses)
+                .where(
+                    analyses.c.run_id == candidate["run_id"],
+                    unresolved_or_same_run_retry,
+                )
+                .values(
+                    resolution_outcome=outcome.value,
+                    resolution_run_id=run_id,
+                    resolution_run_attempt=run_attempt,
+                    resolution_html_url=html_url,
+                    resolution_completed_at=normalized_completed_at,
+                    recovery_seconds=recovery_seconds,
+                    updated_at=datetime.now(UTC),
+                )
+            )
+            if result.rowcount != 1:
+                return None
+        return ResolutionMatch(
+            failed_run_id=candidate["run_id"],
+            resolution=ResolutionRecord(
+                outcome=outcome,
+                followup_run_id=run_id,
+                followup_run_attempt=run_attempt,
+                followup_html_url=html_url,
+                followup_completed_at=normalized_completed_at,
+                recovery_seconds=recovery_seconds,
+            ),
+        )
 
     def update(
         self,
@@ -698,6 +833,8 @@ class AnalysisStore:
         row: RowMapping, stage_history: builtins.list[AnalysisStageEvent]
     ) -> AnalysisRecord:
         values = dict(row)
+        if values["run_completed_at"] is not None:
+            values["run_completed_at"] = _as_utc(values["run_completed_at"])
         feedback_run_id = values.pop("feedback_run_id")
         feedback_values = {
             "run_id": feedback_run_id,
@@ -710,6 +847,23 @@ class AnalysisStore:
         values["feedback"] = (
             FeedbackRecord.model_validate(feedback_values) if feedback_run_id else None
         )
+        resolution_outcome = values.pop("resolution_outcome")
+        resolution_values = {
+            "outcome": resolution_outcome,
+            "followup_run_id": values.pop("resolution_run_id"),
+            "followup_run_attempt": values.pop("resolution_run_attempt"),
+            "followup_html_url": values.pop("resolution_html_url"),
+            "followup_completed_at": (
+                _as_utc(values["resolution_completed_at"])
+                if values["resolution_completed_at"] is not None
+                else None
+            ),
+            "recovery_seconds": values.pop("recovery_seconds"),
+        }
+        values["resolution"] = (
+            ResolutionRecord.model_validate(resolution_values) if resolution_outcome else None
+        )
+        values.pop("resolution_completed_at")
         values["stage_history"] = stage_history
         return AnalysisRecord.model_validate(values)
 

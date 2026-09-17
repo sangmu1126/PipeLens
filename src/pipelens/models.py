@@ -51,6 +51,11 @@ class TrustLevel(StrEnum):
     UNTRUSTED_FORK = "untrusted_fork"
 
 
+class ResolutionOutcome(StrEnum):
+    RESOLVED = "resolved"
+    STILL_FAILING = "still_failing"
+
+
 class Evidence(BaseModel):
     source: str
     content: str
@@ -134,6 +139,15 @@ class FeedbackRecord(FeedbackRequest):
     updated_at: datetime
 
 
+class ResolutionRecord(BaseModel):
+    outcome: ResolutionOutcome
+    followup_run_id: int
+    followup_run_attempt: int
+    followup_html_url: str
+    followup_completed_at: datetime
+    recovery_seconds: float
+
+
 class AnalysisStageEvent(BaseModel):
     stage: AnalysisStage
     status: StageStatus
@@ -148,6 +162,10 @@ class AnalysisRecord(BaseModel):
     workflow_name: str
     head_sha: str
     html_url: str
+    run_attempt: int = 1
+    head_branch: str | None = None
+    pull_request_number: int | None = None
+    run_completed_at: datetime | None = None
     installation_id: int | None = None
     trust_level: TrustLevel = TrustLevel.TRUSTED
     baseline_sha: str | None = None
@@ -160,6 +178,7 @@ class AnalysisRecord(BaseModel):
     model_name: str | None = None
     prompt_version: str | None = None
     feedback: FeedbackRecord | None = None
+    resolution: ResolutionRecord | None = None
     error: str | None = None
     analysis_started_at: datetime | None = None
     analysis_completed_at: datetime | None = None

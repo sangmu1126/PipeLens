@@ -24,9 +24,13 @@ def _failure_payload() -> dict[str, Any]:
         "repository": {"full_name": "acme/widgets"},
         "workflow_run": {
             "id": 1234,
+            "run_attempt": 1,
             "name": "CI",
             "conclusion": "failure",
             "head_sha": "abc123",
+            "head_branch": "main",
+            "pull_requests": [],
+            "updated_at": "2026-09-18T01:00:00Z",
             "html_url": "https://github.com/acme/widgets/actions/runs/1234",
         },
     }
@@ -159,3 +163,58 @@ def test_webhook_ignores_successful_run(tmp_path: Path) -> None:
         )
 
     assert response.status_code == 204
+
+
+def test_webhook_tracks_success_after_related_failure(tmp_path: Path) -> None:
+    settings = Settings(
+        webhook_secret="secret", database_path=str(tmp_path / "db.sqlite"), auth_required=False
+    )
+    app = create_app(settings)
+    app.state.queue.enqueue = AsyncMock(return_value=True)
+    failure = _failure_payload()
+    failure_body = json.dumps(failure).encode()
+    success = _failure_payload()
+    success["workflow_run"].update(
+        {
+            "id": 1235,
+            "conclusion": "success",
+            "head_sha": "fixed456",
+            "updated_at": "2026-09-18T01:04:30Z",
+            "html_url": "https://github.com/acme/widgets/actions/runs/1235",
+        }
+    )
+    success_body = json.dumps(success).encode()
+
+    with TestClient(app) as client:
+        failed = client.post(
+            "/webhooks/github",
+            content=failure_body,
+            headers={
+                "X-GitHub-Event": "workflow_run",
+                "X-GitHub-Delivery": "delivery-failure",
+                "X-Hub-Signature-256": _signature(failure_body, settings.webhook_secret),
+            },
+        )
+        resolved = client.post(
+            "/webhooks/github",
+            content=success_body,
+            headers={
+                "X-GitHub-Event": "workflow_run",
+                "X-GitHub-Delivery": "delivery-success",
+                "X-Hub-Signature-256": _signature(success_body, settings.webhook_secret),
+            },
+        )
+        detail = client.get("/api/v1/analyses/1234")
+        metrics = client.get("/metrics")
+
+    assert failed.status_code == 202
+    assert resolved.status_code == 204
+    assert detail.json()["resolution"] == {
+        "outcome": "resolved",
+        "followup_run_id": 1235,
+        "followup_run_attempt": 1,
+        "followup_html_url": "https://github.com/acme/widgets/actions/runs/1235",
+        "followup_completed_at": "2026-09-18T01:04:30Z",
+        "recovery_seconds": 270.0,
+    }
+    assert 'pipelens_resolution_outcomes_total{outcome="resolved"} 1.0' in metrics.text
