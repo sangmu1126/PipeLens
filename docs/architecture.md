@@ -5,8 +5,8 @@
 PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않는다. 실패 job·step, 정제된 핵심
 로그, 변경 파일, workflow 설정과 실행 환경을 교차 검증한 뒤 근거가 있는 진단만 게시한다.
 
-MVP의 입력은 GitHub Actions `workflow_run.completed` 실패 이벤트 하나이며, 출력은 다음과
-같다.
+MVP의 주 입력은 GitHub Actions `workflow_run.completed` 실패 이벤트다. 이후 같은 Workflow와
+브랜치 또는 PR에서 완료된 실행도 해결 상태를 연결하기 위해 수신한다. 출력은 다음과 같다.
 
 - 저장된 구조화 분석 결과
 - PR이 연결된 실행의 멱등 PR 코멘트
@@ -58,11 +58,14 @@ CI가 새 Dockerfile과 multi-stage build까지 저장소 전체에서 검사한
 
 1. 요청 원문에 대해 `X-Hub-Signature-256` HMAC-SHA256을 상수 시간 비교로 검증한다.
 2. `workflow_run` 이벤트가 아니면 무시한다.
-3. `action=completed`, `conclusion=failure`가 아니면 무시한다.
-4. GitHub delivery ID와 workflow run ID를 저장한다.
-5. 이미 존재하는 run은 새 분석 레코드를 만들지 않는다.
-6. DB 기록 뒤 분석 요청을 queue에 넣고 `202 Accepted`를 반환한다.
-7. DB 저장 후 queue 전달이 실패해도 webhook 재전달 또는 API 시작 시 reconciliation이
+3. `action=completed`인 성공·실패 실행만 처리하고 나머지는 무시한다.
+4. 저장소·Workflow와 PR 번호를 우선하고, 없으면 브랜치를 기준으로 직전 미판정 실패를 찾는다.
+5. 후속 성공은 `resolved`, 후속 실패는 `still_failing`으로 기록하고 실패 완료부터 후속 실행
+   완료까지 시간을 계산한다. 동일 GitHub run 재실행은 `run_attempt` 순서로 연결한다.
+6. 실패 실행이면 GitHub delivery ID와 workflow run ID를 저장한다.
+7. 이미 존재하는 run은 새 분석 레코드를 만들지 않는다.
+8. DB 기록 뒤 분석 요청을 queue에 넣고 `202 Accepted`를 반환한다.
+9. DB 저장 후 queue 전달이 실패해도 webhook 재전달 또는 API 시작 시 reconciliation이
    `queued` 레코드를 다시 적재한다.
 
 Webhook 요청은 긴 분석을 직접 수행하지 않는다. 이를 통해 GitHub 재전달 시간과 분석
@@ -194,6 +197,7 @@ migration은 다음 순서로 확장됐다.
 | `0007` | attempt fencing token |
 | `0008` | 마스킹된 실행 context |
 | `0009` | 시작·완료·queue wait·전체 latency |
+| `0010` | 브랜치·PR·run attempt와 후속 실행 해결 상태·복구 시간 |
 
 분석 상태는 `queued`, `running`, `completed`, `failed`다. 단계 이벤트는 각 단계의
 `started`, `completed`, `failed`와 제한된 오류 메시지를 보존한다.
@@ -224,6 +228,7 @@ React 대시보드는 다음을 제공한다.
 - 분석 상태, 오류 범주와 신뢰 경계 필터
 - 과거 페이지 추가 로딩
 - 단계 진행·소요 시간과 실행 context
+- 다음 관련 Workflow의 성공 전환·계속 실패와 자동 관측 복구 시간
 - 근거, 관련 파일, 비교 범위, GitHub run 딥링크
 - 정확도와 제안 해결 여부 피드백
 - keyboard·label·live region 중심의 접근성 semantics

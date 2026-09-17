@@ -1,7 +1,7 @@
 # MVP 요구사항 추적성
 
-이 문서는 최초 PipeLens 프로젝트 명세의 기능 요구사항 FR-01~FR-11과 비기능 요구사항을 현재
-구현·자동 검증·외부 인수 증적에 연결한다. 기준은 2026-09-09 `main`이며, 상세 운영 상태는
+이 문서는 최초 PipeLens 프로젝트 명세의 기능 요구사항 FR-01~FR-11, 제품 확장 FR-12와 비기능
+요구사항을 현재 구현·자동 검증·외부 인수 증적에 연결한다. 기준은 2026-09-18이며, 상세 운영 상태는
 [검증 및 운영 준비 현황](readiness.md)을 함께 본다.
 
 ## 상태 정의
@@ -30,6 +30,7 @@
 | FR-09 | PR comment 또는 Commit Check에 요약·근거·관련 파일·제안·상세 링크 게시 | `src/pipelens/publication.py`, `src/pipelens/github.py`, `src/pipelens/pipeline.py` | `tests/test_publication.py`, `tests/test_github.py`, `tests/test_pipeline.py` | 구현·자동 검증과 실제 comment·Check 게시·upsert 완료 |
 | FR-10 | 저장소별 실행·상태·분류·진단·시간·feedback·GitHub 링크 dashboard | `src/pipelens/main.py`, `src/pipelens/store.py`, `frontend/src/App.tsx` | `tests/test_analysis_api.py`, `frontend/src/App.test.tsx`, `frontend/e2e/oauth-dashboard.spec.ts` | 구현·자동 검증 완료. production 접근은 [#62](https://github.com/sangmu1126/PipeLens/issues/62) |
 | FR-11 | 정확도·부분 정확도·부정확·해결 여부 feedback 저장과 지표화 | `src/pipelens/models.py`, `src/pipelens/store.py`, `src/pipelens/main.py`, `frontend/src/App.tsx` | `tests/test_feedback_api.py`, `tests/test_store.py`, dashboard build | 구현·자동 검증 완료 |
+| FR-12 | 같은 Workflow·PR/브랜치의 다음 실행 결과와 복구 시간 자동 추적 | `src/pipelens/main.py`, `src/pipelens/store.py`, `frontend/src/App.tsx` | `tests/test_webhook.py`, `tests/test_store.py`, `frontend/src/App.test.tsx` | 구현·자동 검증 완료; 실제 사용자 수정과 성공 사이의 인과는 주장하지 않음 |
 
 ## 비기능 요구사항
 
@@ -38,7 +39,7 @@
 | 보안 | HMAC webhook, encrypted OAuth token, installation 접근 격리, LLM 전 마스킹, untrusted fork 격리, production fail-closed 설정 | `tests/test_webhook.py`, `tests/test_auth.py`, `tests/test_sanitizer.py`, `tests/test_security.py`, `tests/test_pipeline.py`, CodeQL·secret scan·dependency review | 실제 GitHub 경계 완료. production HTTPS [#62](https://github.com/sangmu1126/PipeLens/issues/62), secret manager [#65](https://github.com/sangmu1126/PipeLens/issues/65) |
 | 성능 | 비동기 queue·worker, run dedupe, 시작 60초·완료 120초 SLO 기록 | `tests/test_queue.py`, `tests/test_worker.py`, CI 200-job drill·실제 4-container smoke, [1시간 worker soak](acceptance-runs/2026-09-09-worker-soak/README.md) | launch 모델 완료; 실제 traffic이 1 job/s를 넘으면 재산정 |
 | 신뢰성 | GitHub/LLM retry, Redis ack·lease recovery, 단계 이력, LLM 실패 시 규칙 fallback, stale attempt fencing | `tests/test_http_retry.py`, `tests/test_worker.py`, PostgreSQL·Redis integration, 실제 worker SIGKILL·Redis network CI smoke, [launch 규모 recovery](acceptance-runs/2026-09-08-recovery-scale/README.md), [worker fault soak](acceptance-runs/2026-09-09-worker-soak/README.md) | 운영량 증가 시 실제 provider·payload 분포로 재산정 |
-| 관측성 | 성공·지연·범주·LLM token/cost·feedback·redaction·queue·Redis 연결 복구·SLO Prometheus 지표와 Grafana dashboard | `tests/test_metrics.py`, `tests/test_pipeline.py`, `tests/test_feedback_api.py`, Prometheus rule·Grafana provisioning CI | 실제 incident receiver와 acknowledgement [#64](https://github.com/sangmu1126/PipeLens/issues/64) |
+| 관측성 | 성공·지연·범주·LLM token/cost·feedback·후속 실행 해결 상태·복구 시간·redaction·queue·Redis 연결 복구·SLO Prometheus 지표와 Grafana dashboard | `tests/test_metrics.py`, `tests/test_pipeline.py`, `tests/test_feedback_api.py`, `tests/test_webhook.py`, Prometheus rule·Grafana provisioning CI | 실제 incident receiver와 acknowledgement [#64](https://github.com/sangmu1126/PipeLens/issues/64) |
 
 ## 서비스 완료를 막는 외부 인수 조건
 

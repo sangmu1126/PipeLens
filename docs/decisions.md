@@ -1296,3 +1296,19 @@
   집중 17개와 전체 coverage 실행 443개가 경고 없이 통과했고, coverage 74.73%도 유지됐다. 제품 수명
   주기는 변경하지 않았으며 새 fixture를 포함한 Python 98개 module이 mypy strict를 통과한다.
 - 관련: `tests/conftest.py`, `tests/test_store.py`, `tests/test_pipeline.py`, `pyproject.toml`.
+
+## D-084. 해결은 다음 관련 Workflow의 관측 결과로 기록하고 인과로 표현하지 않음
+
+- 결정: 실패 분석 뒤 같은 저장소·Workflow의 PR 번호를 우선하고, 없으면 브랜치를 기준으로 다음
+  완료 실행을 연결한다. 성공은 `resolved`, 실패는 `still_failing`으로 기록하며 GitHub 재실행은
+  `run_attempt` 순서를 사용한다. 자동 관측값은 사용자가 제출하는 `suggestion_resolved`와 분리한다.
+- 이유: 후속 성공은 복구와 시간을 객관적으로 보여 주지만 PipeLens 제안 때문에 해결됐다는 인과는
+  webhook만으로 증명할 수 없다. 자동값과 사람의 평가를 합치면 제품 효과가 과장되고 학습·평가
+  데이터의 의미도 흐려진다.
+- 대안: 다음 저장소 성공을 모두 연결, head SHA만 비교, 수동 피드백을 자동으로 갱신, RAG나 LLM으로
+  수정 커밋의 인과를 추정, 성공 실행만 저장.
+- 결과: 직전 미판정 실패 하나만 원자적으로 갱신하고, 후속 실패도 보존해 연속 재실행의 상태를
+  표시한다. 동일 run의 여러 재실행은 최종 성공까지 상태를 갱신하며 복구 시간과 결과별 Prometheus
+  지표를 제공한다. 대시보드는 이를 "다음 관련 실행"으로 표현한다.
+- 관련: `src/pipelens/main.py`, `src/pipelens/store.py`, `src/pipelens/models.py`,
+  `frontend/src/App.tsx`, migration `0010`, FR-12.
