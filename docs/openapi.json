@@ -109,6 +109,17 @@
               }
             ]
           },
+          "head_branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Branch"
+          },
           "head_sha": {
             "title": "Head Sha",
             "type": "string"
@@ -150,6 +161,17 @@
             ],
             "title": "Prompt Version"
           },
+          "pull_request_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pull Request Number"
+          },
           "queue_wait_seconds": {
             "anyOf": [
               {
@@ -171,6 +193,33 @@
           "repository": {
             "title": "Repository",
             "type": "string"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResolutionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run_attempt": {
+            "default": 1,
+            "title": "Run Attempt",
+            "type": "integer"
+          },
+          "run_completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Completed At"
           },
           "run_id": {
             "title": "Run Id",
@@ -713,6 +762,52 @@
           "reasons"
         ],
         "title": "RelatedFile",
+        "type": "object"
+      },
+      "ResolutionOutcome": {
+        "enum": [
+          "resolved",
+          "still_failing"
+        ],
+        "title": "ResolutionOutcome",
+        "type": "string"
+      },
+      "ResolutionRecord": {
+        "properties": {
+          "followup_completed_at": {
+            "format": "date-time",
+            "title": "Followup Completed At",
+            "type": "string"
+          },
+          "followup_html_url": {
+            "title": "Followup Html Url",
+            "type": "string"
+          },
+          "followup_run_attempt": {
+            "title": "Followup Run Attempt",
+            "type": "integer"
+          },
+          "followup_run_id": {
+            "title": "Followup Run Id",
+            "type": "integer"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/ResolutionOutcome"
+          },
+          "recovery_seconds": {
+            "title": "Recovery Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "outcome",
+          "followup_run_id",
+          "followup_run_attempt",
+          "followup_html_url",
+          "followup_completed_at",
+          "recovery_seconds"
+        ],
+        "title": "ResolutionRecord",
         "type": "object"
       },
       "StageStatus": {

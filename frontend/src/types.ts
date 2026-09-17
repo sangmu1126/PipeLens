@@ -1,5 +1,6 @@
 export type AnalysisStatus = "queued" | "running" | "completed" | "failed";
 export type FeedbackAccuracy = "accurate" | "partial" | "inaccurate";
+export type ResolutionOutcome = "resolved" | "still_failing";
 
 export interface CurrentUser {
   github_user_id: number;
@@ -40,6 +41,10 @@ export interface Analysis {
   workflow_name: string;
   head_sha: string;
   html_url: string;
+  run_attempt: number;
+  head_branch: string | null;
+  pull_request_number: number | null;
+  run_completed_at: string | null;
   trust_level: "trusted" | "untrusted_fork";
   baseline_sha: string | null;
   status: AnalysisStatus;
@@ -78,6 +83,14 @@ export interface Analysis {
   model_name: string | null;
   prompt_version: string | null;
   feedback: Feedback | null;
+  resolution: {
+    outcome: ResolutionOutcome;
+    followup_run_id: number;
+    followup_run_attempt: number;
+    followup_html_url: string;
+    followup_completed_at: string;
+    recovery_seconds: number;
+  } | null;
   error: string | null;
   analysis_started_at: string | null;
   analysis_completed_at: string | null;

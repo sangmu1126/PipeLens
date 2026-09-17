@@ -24,6 +24,10 @@ function analysis(overrides: Partial<Analysis>): Analysis {
     workflow_name: "CI",
     head_sha: "abcdef123456",
     html_url: "https://github.com/acme/api/actions/runs/1",
+    run_attempt: 1,
+    head_branch: "main",
+    pull_request_number: null,
+    run_completed_at: "2026-08-29T12:00:00Z",
     trust_level: "trusted",
     baseline_sha: null,
     status: "completed",
@@ -41,6 +45,7 @@ function analysis(overrides: Partial<Analysis>): Analysis {
     model_name: null,
     prompt_version: null,
     feedback: null,
+    resolution: null,
     error: null,
     analysis_started_at: null,
     analysis_completed_at: null,
@@ -165,5 +170,32 @@ describe("PipeLens dashboard", () => {
       rules: { "color-contrast": { enabled: false } },
     });
     expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  });
+
+  it("shows the automatically observed follow-up workflow outcome", async () => {
+    const resolved = analysis({
+      resolution: {
+        outcome: "resolved",
+        followup_run_id: 2,
+        followup_run_attempt: 2,
+        followup_html_url: "https://github.com/acme/api/actions/runs/2",
+        followup_completed_at: "2026-08-29T12:04:30Z",
+        recovery_seconds: 270,
+      },
+    });
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async (input: RequestInfo | URL) =>
+      String(input) === "/api/v1/me"
+        ? jsonResponse(currentUser)
+        : jsonResponse([resolved]),
+    ));
+
+    render(<App />);
+
+    expect(await screen.findByText("다음 관련 실행 성공")).toBeInTheDocument();
+    expect(screen.getByText(/4분 30초 만에 성공 실행/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /RUN #2 · 시도 2/ })).toHaveAttribute(
+      "href",
+      "https://github.com/acme/api/actions/runs/2",
+    );
   });
 });

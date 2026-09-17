@@ -416,6 +416,7 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
           <span>Fork에서 생성된 로그·코드·Workflow는 LLM에 전송하지 않았으며 규칙 기반 결과만 제공합니다.</span>
         </div>
       )}
+      <ResolutionStatus analysis={analysis} />
 
       {diagnosis && <>
         <DetailSection number="01" title="추정 원인">
@@ -479,6 +480,28 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
       </>}
     </div>
   );
+}
+
+function ResolutionStatus({ analysis }: { analysis: Analysis }) {
+  const resolution = analysis.resolution;
+  if (!resolution) {
+    return <section className="resolution-card resolution-pending" aria-label="자동 해결 추적">
+      <div><i aria-hidden="true" /><span>후속 실행 확인 중</span></div>
+      <p>같은 브랜치 또는 PR의 다음 {analysis.workflow_name} 실행을 기다리고 있어요.</p>
+    </section>;
+  }
+  const resolved = resolution.outcome === "resolved";
+  return <section className={`resolution-card ${resolved ? "resolution-resolved" : "resolution-failing"}`} aria-label="자동 해결 추적">
+    <div><i aria-hidden="true" /><span>{resolved ? "다음 관련 실행 성공" : "다음 관련 실행도 실패"}</span></div>
+    <p>
+      {resolved
+        ? `${formatDuration(resolution.recovery_seconds)} 만에 성공 실행을 확인했어요.`
+        : `${formatDuration(resolution.recovery_seconds)} 뒤에도 같은 Workflow가 실패했어요.`}
+      <a href={resolution.followup_html_url} target="_blank" rel="noreferrer">
+        RUN #{resolution.followup_run_id}{resolution.followup_run_attempt > 1 ? ` · 시도 ${resolution.followup_run_attempt}` : ""} ↗
+      </a>
+    </p>
+  </section>;
 }
 
 function DetailSection({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {

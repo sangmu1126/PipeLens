@@ -135,6 +135,18 @@ class Metrics:
             ("dimension", "value"),
             registry=self.registry,
         )
+        self.resolutions = Counter(
+            "pipelens_resolution_outcomes_total",
+            "Follow-up workflow outcomes linked to a prior failed run.",
+            ("outcome",),
+            registry=self.registry,
+        )
+        self.recovery_duration = Histogram(
+            "pipelens_recovery_seconds",
+            "Time from a failed workflow completion to its next related workflow completion.",
+            ("outcome",),
+            registry=self.registry,
+        )
 
     def record_redactions(self, counts: dict[str, int]) -> None:
         for kind, count in counts.items():
