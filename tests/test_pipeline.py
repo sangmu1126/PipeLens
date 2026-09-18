@@ -54,7 +54,16 @@ async def test_context_failure_does_not_discard_log_diagnosis(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
     github.repository_context = AsyncMock(side_effect=RuntimeError("GitHub unavailable"))
-    pipeline = AnalysisPipeline(Settings(database_path=store.database_path), store, github)
+    github.upsert_pull_request_comment = AsyncMock()
+    github.upsert_check = AsyncMock()
+    provider = MagicMock(model_name="test-model")
+    provider.analyze = AsyncMock()
+    pipeline = AnalysisPipeline(
+        Settings(database_path=store.database_path, publish_checks=True),
+        store,
+        github,
+        provider,
+    )
 
     await pipeline.analyze(
         AnalysisRequest(
@@ -71,6 +80,9 @@ async def test_context_failure_does_not_discard_log_diagnosis(
     assert result.execution_context is not None
     assert result.diagnosis is not None
     assert result.status is AnalysisStatus.COMPLETED
+    assert result.trust_level is TrustLevel.UNVERIFIED
+    assert result.model_name is None
+    assert result.prompt_version is None
     assert result.classification.category == "test_failure"
     assert result.classification.related_step == "tests [REDACTED:EMAIL] / Run pytest"
     assert result.execution_context.head_branch == "feature/fix"
@@ -78,7 +90,14 @@ async def test_context_failure_does_not_discard_log_diagnosis(
         "ubuntu-latest",
         "API_KEY=[REDACTED]",
     ]
-    assert result.diagnosis.notes == ["로그와 직접 연결되는 변경 파일을 찾지 못했습니다."]
+    assert result.diagnosis.notes == [
+        "저장소 신뢰 수준을 확인하지 못해 로그·코드·Workflow를 LLM에 전송하지 않고 "
+        "규칙 기반 진단만 수행했습니다.",
+        "로그와 직접 연결되는 변경 파일을 찾지 못했습니다.",
+    ]
+    provider.analyze.assert_not_awaited()
+    github.upsert_pull_request_comment.assert_not_awaited()
+    github.upsert_check.assert_not_awaited()
     assert result.duration_seconds is not None
     assert result.queue_wait_seconds is not None
     assert result.queue_wait_seconds > 60
@@ -101,6 +120,8 @@ async def test_context_failure_does_not_discard_log_diagnosis(
     assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
     assert 'pipelens_error_categories_total{category="test_failure"} 1.0' in metrics
     assert 'pipelens_log_chunks_total{kind="processed"} 1.0' in metrics
+    assert 'pipelens_analysis_trust_total{level="unverified"} 1.0' in metrics
+    assert 'pipelens_llm_requests_total{model="test-model"' not in metrics
     assert 'pipelens_slo_results_total{outcome="breached",phase="start"} 1.0' in metrics
     assert (
         'pipelens_slo_results_total{outcome="breached",phase="completion"} 1.0'
@@ -131,11 +152,13 @@ async def test_llm_failure_records_attempt_and_uses_rule_fallback(
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
-    github.repository_context = AsyncMock(return_value=RepositoryContext())
+    github.repository_context = AsyncMock(
+        return_value=RepositoryContext(trust_level=TrustLevel.TRUSTED)
+    )
     provider = MagicMock(model_name="test-model")
     provider.analyze = AsyncMock(side_effect=RuntimeError("LLM unavailable"))
     pipeline = AnalysisPipeline(
-        Settings(database_path=store.database_path), store, github, provider
+        Settings(database_path=store.database_path, publish_checks=False), store, github, provider
     )
 
     await pipeline.analyze(
@@ -186,7 +209,10 @@ async def test_publishes_pr_comment_or_commit_check(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
     github.repository_context = AsyncMock(
-        return_value=RepositoryContext(pull_request_number=pull_request_number)
+        return_value=RepositoryContext(
+            pull_request_number=pull_request_number,
+            trust_level=TrustLevel.TRUSTED,
+        )
     )
     github.upsert_pull_request_comment = AsyncMock()
     github.upsert_check = AsyncMock()
@@ -348,7 +374,9 @@ async def test_new_attempt_fences_resumed_stale_pipeline(store: AnalysisStore) -
     github.download_logs = AsyncMock(
         return_value=[JobLog(job_name="tests", text="pytest: 1 failed, 2 passed")]
     )
-    github.repository_context = AsyncMock(return_value=RepositoryContext())
+    github.repository_context = AsyncMock(
+        return_value=RepositoryContext(trust_level=TrustLevel.TRUSTED)
+    )
     github.upsert_check = AsyncMock()
     pipeline = AnalysisPipeline(
         Settings(

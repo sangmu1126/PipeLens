@@ -311,7 +311,7 @@ function App() {
                           onClick={() => selectRun(analysis.run_id)}
                         >
                           <strong>{analysis.repository}</strong>
-                          <span>{analysis.trust_level === "untrusted_fork" ? "외부 Fork · " : ""}{analysis.workflow_name} · {analysis.head_sha.slice(0, 7)}</span>
+                          <span>{analysis.trust_level === "untrusted_fork" ? "외부 Fork · " : analysis.trust_level === "unverified" ? "신뢰 미확인 · " : ""}{analysis.workflow_name} · {analysis.head_sha.slice(0, 7)}</span>
                         </button>
                       </td>
                       <td><StatusBadge status={analysis.status} /></td>
@@ -414,6 +414,12 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
         <div className="trust-warning">
           <strong>외부 Fork의 비신뢰 실행</strong>
           <span>Fork에서 생성된 로그·코드·Workflow는 LLM에 전송하지 않았으며 규칙 기반 결과만 제공합니다.</span>
+        </div>
+      )}
+      {analysis.trust_level === "unverified" && (
+        <div className="trust-warning">
+          <strong>저장소 신뢰 수준을 확인하지 못했어요</strong>
+          <span>외부 전송과 GitHub 게시를 차단하고 규칙 기반 진단만 제공했습니다.</span>
         </div>
       )}
       <ResolutionStatus analysis={analysis} />

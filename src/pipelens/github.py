@@ -285,13 +285,30 @@ class GitHubClient:
         if pull_request:
             head = pull_request.get("head", {}).get("repo") or {}
             base = pull_request.get("base", {}).get("repo") or {}
+            base_full_name = base.get("full_name")
+            if (
+                not isinstance(base_full_name, str)
+                or base_full_name.casefold() != repository.casefold()
+            ):
+                return TrustLevel.UNVERIFIED
             if head.get("id") is not None and base.get("id") is not None:
                 return TrustLevel.UNTRUSTED_FORK if head["id"] != base["id"] else TrustLevel.TRUSTED
+            head_full_name = head.get("full_name")
+            if isinstance(head_full_name, str):
+                return (
+                    TrustLevel.TRUSTED
+                    if head_full_name.casefold() == base_full_name.casefold()
+                    else TrustLevel.UNTRUSTED_FORK
+                )
             head_repository = head or head_repository
         head_full_name = head_repository.get("full_name")
-        if head_full_name and head_full_name.casefold() != repository.casefold():
-            return TrustLevel.UNTRUSTED_FORK
-        return TrustLevel.TRUSTED
+        if isinstance(head_full_name, str):
+            return (
+                TrustLevel.TRUSTED
+                if head_full_name.casefold() == repository.casefold()
+                else TrustLevel.UNTRUSTED_FORK
+            )
+        return TrustLevel.UNVERIFIED
 
     async def _changed_files(
         self,

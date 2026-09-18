@@ -45,7 +45,7 @@ export interface Analysis {
   head_branch: string | null;
   pull_request_number: number | null;
   run_completed_at: string | null;
-  trust_level: "trusted" | "untrusted_fork";
+  trust_level: "trusted" | "untrusted_fork" | "unverified";
   baseline_sha: string | null;
   status: AnalysisStatus;
   classification: {

@@ -27,6 +27,36 @@ def test_app_jwt_is_signed_with_configured_rsa_key() -> None:
     assert claims["exp"] > claims["iat"]
 
 
+def test_trust_level_requires_repository_identity() -> None:
+    assert GitHubClient._trust_level("acme/widgets", {}) is TrustLevel.UNVERIFIED
+    assert (
+        GitHubClient._trust_level(
+            "acme/widgets", {"head_repository": {"full_name": "acme/widgets"}}
+        )
+        is TrustLevel.TRUSTED
+    )
+    assert (
+        GitHubClient._trust_level(
+            "acme/widgets", {"head_repository": {"full_name": "contributor/widgets"}}
+        )
+        is TrustLevel.UNTRUSTED_FORK
+    )
+    assert (
+        GitHubClient._trust_level(
+            "acme/widgets",
+            {
+                "pull_requests": [
+                    {
+                        "head": {"repo": {"id": 7, "full_name": "other/widgets"}},
+                        "base": {"repo": {"id": 7, "full_name": "other/widgets"}},
+                    }
+                ]
+            },
+        )
+        is TrustLevel.UNVERIFIED
+    )
+
+
 @pytest.mark.asyncio
 async def test_repository_context_uses_pr_files_and_workflow_at_head_sha() -> None:
     requested: list[str] = []
@@ -285,6 +315,7 @@ async def test_repository_context_compares_from_previous_successful_run() -> Non
                 json={
                     "workflow_id": 7,
                     "head_branch": "main",
+                    "head_repository": {"full_name": "acme/widgets"},
                     "created_at": "2026-08-29T10:00:00Z",
                     "pull_requests": [],
                 },
@@ -325,6 +356,7 @@ async def test_repository_context_compares_from_previous_successful_run() -> Non
     context = await github.repository_context("acme/widgets", 200, "failedsha", "token")
 
     assert context.baseline_sha == "lastgood"
+    assert context.trust_level is TrustLevel.TRUSTED
     assert context.changed_files[0].filename == "src/regression.py"
     assert any("branch=main" in url and "status=success" in url for url in requested)
     assert any("/compare/lastgood...failedsha" in url for url in requested)
