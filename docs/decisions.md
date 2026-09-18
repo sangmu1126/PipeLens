@@ -1312,3 +1312,21 @@
   지표를 제공한다. 대시보드는 이를 "다음 관련 실행"으로 표현한다.
 - 관련: `src/pipelens/main.py`, `src/pipelens/store.py`, `src/pipelens/models.py`,
   `frontend/src/App.tsx`, migration `0010`, FR-12.
+
+## D-085. 저장소 신뢰는 명시적으로 증명된 경우에만 부여
+
+- 결정: GitHub run 또는 PR의 head/base 저장소 식별자가 대상 저장소와 일치할 때만 `trusted`로
+  판정한다. context 조회 실패, 식별자 누락 또는 예상 base 불일치는 `unverified`로 보존하고 LLM
+  호출과 PR 코멘트·Commit Check를 모두 차단한다. 외부 fork가 확인되면 기존처럼
+  `untrusted_fork` 규칙 진단과 확인된 base PR 경고 코멘트만 허용한다.
+- 이유: 이전 fallback `RepositoryContext()`의 기본값은 `trusted`였다. 로그 수집은 성공하고 context
+  조회만 실패하면 외부 fork 여부를 확인하지 못한 로그가 LLM으로 전송되고 Commit Check 게시까지
+  시도될 수 있었다. 마스킹은 비밀값 노출을 줄이지만 신뢰할 수 없는 입력의 외부 전송 허가를
+  대체하지 못한다.
+- 대안: context 실패 시 전체 분석 실패, 모든 미확인을 `untrusted_fork`로 표시, 로그 마스킹만 신뢰,
+  GitHub API retry 뒤에는 trusted로 간주.
+- 결과: 규칙 기반 로그 진단과 단계 기록은 유지하면서 외부 전송·게시만 fail-closed로 격리한다.
+  context 실패 테스트는 provider·게시를 활성화한 상태에서 LLM·PR comment·Commit Check 호출 0회를
+  검증하고, GitHub 신뢰 판정 테스트는 식별자 누락과 예상 base 불일치를 `unverified`로 고정한다.
+- 관련: `src/pipelens/github.py`, `src/pipelens/pipeline.py`, `src/pipelens/models.py`,
+  `tests/test_github.py`, `tests/test_pipeline.py`.
