@@ -1650,6 +1650,22 @@ Nginx는 별도 PR로 분리했다.
   Vitest 5/5와 production build를 통과했다. 로컬 `.env`의 실제 credential이 test Settings에
   주입되지 않도록 같은 worktree를 `.env` 없이 격리해 전체 결과를 확인했다.
 
+### 저장소 context 실패의 신뢰 경계 fail-closed 보강
+
+- 외부 검토에서 저장소 context 조회 실패 시 빈 `RepositoryContext()`의 기본 `trusted`가 사용되어
+  LLM 호출이 가능한 경로가 확인됐다. 기존 context 실패 테스트는 provider와 게시를 활성화하지 않아
+  규칙 진단 유지 여부만 검증했고 신뢰 경계 회귀를 발견하지 못했다.
+- `unverified` 상태를 추가하고 RepositoryContext·분석 레코드의 초기값을 fail-closed로 바꿨다.
+  GitHub head/base 저장소 식별자가 대상 저장소와 일치하는 경우에만 `trusted`로 승격하며, metadata
+  누락이나 예상하지 않은 base 저장소도 `unverified`로 유지한다.
+- 파이프라인은 `trusted`에서만 LLM을 호출하고 Commit Check를 게시한다. 확인된 외부 fork는 기존
+  base PR 경고 코멘트를 유지하지만 `unverified`에서는 모든 GitHub 게시를 차단한다. 규칙 기반 로그
+  진단은 계속 제공하고 대시보드에 차단 이유를 표시한다. 판단은 D-085에 기록했다.
+- 회귀 테스트는 context 예외 상황에서 provider·PR comment·Commit Check 호출이 모두 0인지와 불완전한
+  GitHub 식별자가 trusted로 승격되지 않는지를 직접 검증한다.
+- Ruff, mypy strict 98개 module, Markdown·OpenAPI 계약, Python 전체 447 passed·2 integration skipped,
+  Vitest 6/6과 frontend production build를 통과했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

@@ -236,7 +236,9 @@ run ID로 기존 게시물을 찾아 갱신하므로 같은 분석이 중복 게
 외부 Fork의 head 저장소가 base 저장소와 다르면 해당 실행은 `untrusted_fork`로 기록합니다.
 이 경우 로그·diff·Workflow는 LLM에 전송하지 않고 규칙 기반 진단만 수행합니다. PR 번호를
 확인할 수 있으면 경고가 포함된 PR 코멘트만 게시하며, PR을 확인할 수 없는 fork SHA에는
-Commit Check를 생성하지 않습니다. 대시보드에도 같은 신뢰 경계가 표시됩니다.
+Commit Check를 생성하지 않습니다. 저장소 context 조회 실패나 불완전한 GitHub 메타데이터로
+동일 저장소임을 증명하지 못하면 `unverified`로 기록하고 LLM 전송과 모든 GitHub 게시를
+차단합니다. 대시보드에도 같은 신뢰 경계가 표시됩니다.
 
 GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하고, 없으면 jitter가
 포함된 지수 backoff로 재시도합니다. GitHub의 403은 rate-limit 응답으로 확인된 경우에만

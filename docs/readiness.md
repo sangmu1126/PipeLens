@@ -9,12 +9,12 @@
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-12·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
 | 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
-| 백엔드 테스트 | 통과 | 로컬 446 passed, integration 2 skipped, DB resource warning 0; CI에서 service integration 별도 통과 |
+| 백엔드 테스트 | 통과 | 로컬 447 passed, integration 2 skipped, DB resource warning 0; CI에서 service integration 별도 통과 |
 | Python 정적 타입 | 통과 | production·operations·tests 98개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python coverage | 기준선 | branch 포함 전체 74.73%; production 86.50%, operations 67.15%; XML·JSON CI artifact 14일 보관 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 446개와 진단 평가 13/13 |
+| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 447개와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
-| 대시보드 테스트 | 통과 | Vitest 5에서 5/5, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
+| 대시보드 테스트 | 통과 | Vitest 5에서 6/6, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | 자동 해결 추적 | 통과 | 같은 Workflow·PR/브랜치와 run attempt의 후속 성공·계속 실패, 복구 시간 회귀 검증 |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
 | Dockerfile base image | 통과 | Python·Node·Nginx multi-platform digest 고정과 CI 정책 검사 |

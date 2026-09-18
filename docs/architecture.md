@@ -92,9 +92,11 @@ flowchart LR
 - PR 또는 직전 성공 실행을 기준으로 변경 파일과 patch를 수집한다.
 - 실행 시점의 workflow 파일을 수집한다.
 - head 저장소와 base 저장소가 다르면 `untrusted_fork`로 분류한다.
+- 동일 저장소임을 명시적으로 확인할 정보가 부족하면 `unverified`로 분류한다.
 
 로그, job 정보와 저장소 context는 서로 독립적인 GitHub 요청이므로 가능한 부분을 동시에
-수집한다. 저장소 context 수집이 실패해도 로그 기반 분석은 계속한다.
+수집한다. 저장소 context 수집이 실패해도 로그 기반 분석은 계속하지만 신뢰 수준은
+`unverified`로 고정한다.
 
 ### 4.2 sanitizing
 
@@ -144,7 +146,8 @@ LLM 결과는 다음 조건을 다시 검증한다.
 검증 실패 또는 provider 장애 시 규칙 진단을 유지한다. 사용 모델과 prompt version,
 token·지연·추정 비용은 별도로 기록한다.
 
-`untrusted_fork`에서는 로그, diff와 workflow를 LLM으로 보내지 않고 규칙 진단만 사용한다.
+LLM은 신뢰 수준이 명시적으로 `trusted`인 경우에만 호출한다. `untrusted_fork`와 `unverified`에서는
+로그, diff와 workflow를 외부 provider로 보내지 않고 규칙 진단만 사용한다.
 
 ### 4.6 publishing
 
@@ -153,6 +156,7 @@ token·지연·추정 비용은 별도로 기록한다.
 - PR 번호가 있으면 숨은 run marker로 기존 코멘트를 찾아 생성 또는 갱신한다.
 - PR이 없고 신뢰 가능한 실행이면 head SHA에 Commit Check를 생성 또는 갱신한다.
 - 외부 fork이며 PR을 확인하지 못하면 fork SHA에 Check를 만들지 않는다.
+- `unverified` 실행은 PR 코멘트와 Commit Check를 모두 만들지 않는다.
 - 게시물에는 상세 대시보드 URL, 비교 SHA 범위와 신뢰 경계를 포함한다.
 
 ## 5. Queue 신뢰성 모델
