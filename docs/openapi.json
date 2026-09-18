@@ -249,7 +249,7 @@
           },
           "trust_level": {
             "$ref": "#/components/schemas/TrustLevel",
-            "default": "trusted"
+            "default": "unverified"
           },
           "updated_at": {
             "format": "date-time",
@@ -857,7 +857,8 @@
       "TrustLevel": {
         "enum": [
           "trusted",
-          "untrusted_fork"
+          "untrusted_fork",
+          "unverified"
         ],
         "title": "TrustLevel",
         "type": "string"

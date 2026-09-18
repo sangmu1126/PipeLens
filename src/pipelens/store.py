@@ -107,7 +107,7 @@ analyses = Table(
     Column("pull_request_number", Integer),
     Column("run_completed_at", DateTime(timezone=True)),
     Column("installation_id", BigInteger),
-    Column("trust_level", String(32), nullable=False, default=TrustLevel.TRUSTED.value),
+    Column("trust_level", String(32), nullable=False, default=TrustLevel.UNVERIFIED.value),
     Column("baseline_sha", String(64)),
     Column("status", String(32), nullable=False, index=True),
     Column("classification", JSON),

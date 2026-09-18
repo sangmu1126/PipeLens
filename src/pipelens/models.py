@@ -49,6 +49,7 @@ class FeedbackAccuracy(StrEnum):
 class TrustLevel(StrEnum):
     TRUSTED = "trusted"
     UNTRUSTED_FORK = "untrusted_fork"
+    UNVERIFIED = "unverified"
 
 
 class ResolutionOutcome(StrEnum):
@@ -98,7 +99,7 @@ class RepositoryContext(BaseModel):
     workflow_path: str | None = None
     workflow_content: str | None = None
     pull_request_number: int | None = None
-    trust_level: TrustLevel = TrustLevel.TRUSTED
+    trust_level: TrustLevel = TrustLevel.UNVERIFIED
     baseline_sha: str | None = None
 
 
@@ -167,7 +168,7 @@ class AnalysisRecord(BaseModel):
     pull_request_number: int | None = None
     run_completed_at: datetime | None = None
     installation_id: int | None = None
-    trust_level: TrustLevel = TrustLevel.TRUSTED
+    trust_level: TrustLevel = TrustLevel.UNVERIFIED
     baseline_sha: str | None = None
     status: AnalysisStatus = AnalysisStatus.QUEUED
     classification: Classification | None = None

@@ -198,4 +198,18 @@ describe("PipeLens dashboard", () => {
       "https://github.com/acme/api/actions/runs/2",
     );
   });
+
+  it("shows a fail-closed warning when repository trust is unverified", async () => {
+    const unverified = analysis({ trust_level: "unverified" });
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async (input: RequestInfo | URL) =>
+      String(input) === "/api/v1/me"
+        ? jsonResponse(currentUser)
+        : jsonResponse([unverified]),
+    ));
+
+    render(<App />);
+
+    expect(await screen.findByText("저장소 신뢰 수준을 확인하지 못했어요")).toBeInTheDocument();
+    expect(screen.getByText(/외부 전송과 GitHub 게시를 차단/)).toBeInTheDocument();
+  });
 });

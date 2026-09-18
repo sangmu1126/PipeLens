@@ -173,13 +173,19 @@ class AnalysisPipeline:
             diagnosis = fallback_diagnosis
             model_name: str | None = None
             prompt_version: str | None = None
+            is_trusted = repository_context.trust_level is TrustLevel.TRUSTED
             is_untrusted_fork = repository_context.trust_level is TrustLevel.UNTRUSTED_FORK
             if is_untrusted_fork:
                 diagnosis.notes.append(
                     "외부 Fork 실행이므로 신뢰할 수 없는 로그·코드·Workflow를 LLM에 "
                     "전송하지 않고 규칙 기반 진단만 수행했습니다."
                 )
-            if self.llm_provider and not is_untrusted_fork:
+            elif not is_trusted:
+                diagnosis.notes.append(
+                    "저장소 신뢰 수준을 확인하지 못해 로그·코드·Workflow를 LLM에 "
+                    "전송하지 않고 규칙 기반 진단만 수행했습니다."
+                )
+            if self.llm_provider and is_trusted:
                 model_name = self.llm_provider.model_name
                 prompt_version = PROMPT_VERSION
                 llm_context = LLMContext(
@@ -246,7 +252,9 @@ class AnalysisPipeline:
                     repository_context.baseline_sha,
                     request.head_sha,
                 )
-                if repository_context.pull_request_number is not None:
+                if repository_context.pull_request_number is not None and (
+                    is_trusted or is_untrusted_fork
+                ):
                     await self.github.upsert_pull_request_comment(
                         request.repository,
                         repository_context.pull_request_number,
@@ -254,7 +262,7 @@ class AnalysisPipeline:
                         access_token,
                         body,
                     )
-                elif not is_untrusted_fork:
+                elif is_trusted:
                     await self.github.upsert_check(
                         request.repository,
                         request.head_sha,
@@ -295,7 +303,7 @@ class AnalysisPipeline:
                 run_id,
                 exc_info=True,
             )
-            return RepositoryContext()
+            return RepositoryContext(trust_level=TrustLevel.UNVERIFIED)
 
     def _sanitize_execution_context(self, failed_jobs: list[FailedJob]) -> ExecutionContext:
         def clean(value: str | None) -> str | None:
