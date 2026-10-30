@@ -1426,3 +1426,19 @@
   `diagnosis-v2`로 갱신했다.
 - 관련: `src/pipelens/patching.py`, `src/pipelens/pipeline.py`, `src/pipelens/github.py`,
   `src/pipelens/publication.py`, `tests/test_patching.py`, D-084, D-085.
+
+## D-091. 적용 가능한 diff도 위험한 변경과 형식 손상은 게시하지 않음
+
+- 결정: diff 검증(D-090)에 내용 정책과 형식 검사를 추가한다. 규칙 diff는 `==` 뒤 버전 문자열만 바꿀 수
+  있다. 모든 diff의 추가 줄에서 원격 스크립트의 셸 실행, secret·`GITHUB_TOKEN` 참조, base64 decode·`eval`
+  실행, 실행 권한 추가를 거부하고, workflow diff는 권한·트리거 줄의 추가와 삭제를 거부한다. 적용 결과가
+  YAML·TOML·JSON 파일이면 파싱에 성공해야 한다.
+- 이유: 적용 가능성과 secret 검사만으로는 "적용되지만 해로운" diff를 막지 못한다. LLM 입력인 로그와 diff는
+  신뢰된 저장소에서도 dependency 출력 등 외부 내용을 포함하므로, prompt injection으로 유도된 diff가 검증됨
+  표시를 달고 PR 코멘트에 게시될 수 있었다. 사람이 그대로 반영하면 workflow 권한 확대나 원격 코드 실행으로
+  이어진다. 또 문맥은 맞지만 YAML을 깨는 diff는 다음 실행을 workflow 오류로 바꾼다.
+- 대안: LLM diff 전면 금지, LLM에 자기 검토를 요청, allowlist 명령만 허용, 경고 표시 후 게시.
+- 결과: 거부된 diff는 설명과 사유 note만 남는다. 정책은 패턴 기반이라 우회가 완전히 불가능하지는 않으며,
+  diff는 여전히 자동 적용 없이 사람이 검토하는 제안이다. 형식 검사를 위해 PyYAML을 transitive가 아닌 직접
+  runtime dependency로 선언했다.
+- 관련: `src/pipelens/patching.py`, `tests/test_patching.py`, D-085, D-090.

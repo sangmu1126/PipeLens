@@ -1,6 +1,11 @@
 import difflib
+import json
 import re
+import tomllib
 from dataclasses import dataclass
+from pathlib import PurePosixPath
+
+import yaml
 
 from pipelens.models import Diagnosis, Suggestion, SuggestionSource
 from pipelens.sanitizer import sanitize_log
@@ -15,6 +20,46 @@ PIP_UNSATISFIED = re.compile(
 )
 TABLE_SEPARATOR = re.compile(r"\s*[│|]\s*")
 VERSION_TOKEN = re.compile(r"^[0-9][A-Za-z0-9.+_:~-]*$")
+PINNED_VERSION_VALUE = re.compile(r"==[^\s;,\"'\\]+")
+WORKFLOW_PREFIX = ".github/workflows/"
+STRUCTURED_FORMATS = {".yml": "YAML", ".yaml": "YAML", ".toml": "TOML", ".json": "JSON"}
+
+# Added lines that no published fix may introduce, whatever produced the diff.
+FORBIDDEN_ADDITIONS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    (
+        "원격 스크립트를 셸로 실행",
+        re.compile(
+            r"\b(?:curl|wget)\b[^\n]*\|\s*(?:sudo\s+)?(?:ba|z|da)?sh\b"
+            r"|\b(?:ba|z)?sh\b[^\n]*\$\((?:curl|wget)\b",
+            re.I,
+        ),
+    ),
+    (
+        "secret·토큰 참조",
+        re.compile(
+            r"\$\{\{\s*(?:secrets\.|github\.token)"
+            r"|\b(?:GITHUB_TOKEN|ACTIONS_RUNTIME_TOKEN|ACTIONS_ID_TOKEN_REQUEST_TOKEN)\b",
+            re.I,
+        ),
+    ),
+    ("인코딩된 명령 실행", re.compile(r"\bbase64\s+(?:-d|--decode)\b|\beval\s", re.I)),
+    ("실행 권한 추가", re.compile(r"\bchmod\s+(?:[ugoa]*\+x|0?[0-7]*[1357][0-7]*)\b", re.I)),
+)
+# Workflow lines whose addition or removal changes privileges or triggers.
+WORKFLOW_SENSITIVE: tuple[tuple[str, re.Pattern[str]], ...] = (
+    (
+        "workflow 권한 변경",
+        re.compile(
+            r"^\s*permissions\s*:|\b(?:actions|checks|contents|deployments|id-token|issues|"
+            r"packages|pull-requests|security-events|statuses)\s*:\s*(?:read|write)\b",
+            re.I,
+        ),
+    ),
+    (
+        "workflow 트리거 변경",
+        re.compile(r"^\s*on\s*:|\b(?:pull_request_target|workflow_run)\b", re.I),
+    ),
+)
 
 
 class PatchError(ValueError):
@@ -171,10 +216,49 @@ def _patch_rejection(suggestion: Suggestion, files: dict[str, str]) -> str | Non
     _, redactions = sanitize_log(patch)
     if redactions:
         return "diff에 비밀값으로 보이는 내용이 포함돼 있습니다."
+    violation = _policy_violation(suggestion, patch)
+    if violation:
+        return f"diff에 허용되지 않는 변경이 포함돼 있습니다({violation})."
     try:
-        apply_unified_diff(files[suggestion.file], patch)
+        updated = apply_unified_diff(files[suggestion.file], patch)
     except PatchError as exc:
         return str(exc)
+    return _syntax_error(suggestion.file, updated)
+
+
+def _policy_violation(suggestion: Suggestion, patch: str) -> str | None:
+    body = [line for line in patch.splitlines() if not line.startswith(("+++", "---"))]
+    added = [line[1:] for line in body if line.startswith("+")]
+    removed = [line[1:] for line in body if line.startswith("-")]
+    if suggestion.source is SuggestionSource.RULE and (
+        len(added) != len(removed)
+        or any(
+            PINNED_VERSION_VALUE.sub("==", new) != PINNED_VERSION_VALUE.sub("==", old)
+            for old, new in zip(removed, added, strict=True)
+        )
+    ):
+        return "규칙 diff가 버전 문자열 외의 내용을 바꿈"
+    for label, pattern in FORBIDDEN_ADDITIONS:
+        if any(pattern.search(line) for line in added):
+            return label
+    if (suggestion.file or "").startswith(WORKFLOW_PREFIX):
+        for label, pattern in WORKFLOW_SENSITIVE:
+            if any(pattern.search(line) for line in added + removed):
+                return label
+    return None
+
+
+def _syntax_error(path: str, content: str) -> str | None:
+    format_name = STRUCTURED_FORMATS.get(PurePosixPath(path).suffix.lower())
+    try:
+        if format_name == "YAML":
+            list(yaml.safe_load_all(content))
+        elif format_name == "TOML":
+            tomllib.loads(content)
+        elif format_name == "JSON":
+            json.loads(content)
+    except (yaml.YAMLError, tomllib.TOMLDecodeError, json.JSONDecodeError):
+        return f"수정 결과가 유효한 {format_name} 문서가 아닙니다."
     return None
 
 

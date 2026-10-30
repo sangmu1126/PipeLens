@@ -161,6 +161,11 @@ LLM은 신뢰 수준이 명시적으로 `trusted`인 경우에만 호출한다. 
 - diff header가 제안 대상 파일만 가리키고 크기·변경 줄 수 제한 안인가
 - 모든 문맥·삭제 줄이 head 파일과 일치하는가(줄 번호가 다르면 유일한 위치로만 보정)
 - diff에 secret 마스킹 규칙이 하나도 걸리지 않는가
+- 규칙 diff는 `==` 뒤 버전 문자열 외에는 바꾸지 않는가
+- 추가 줄에 원격 스크립트의 셸 실행, secret·토큰 참조, 인코딩된 명령 실행, 실행 권한 추가가 없는가
+- workflow diff가 `permissions`·job 권한이나 `on`·`pull_request_target`·`workflow_run` 트리거 줄을
+  추가하거나 삭제하지 않는가
+- 적용 결과가 YAML·TOML·JSON 파일이면 해당 형식으로 파싱되는가
 
 검증에 실패하면 diff만 제거하고 설명은 남긴다. 해시가 고정된 lock 항목은 텍스트 치환으로 해시가
 깨지므로 diff 대신 재생성을 안내한다. `untrusted_fork`와 `unverified`에서는 파일을 읽지 않고 모든 diff를
