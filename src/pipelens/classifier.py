@@ -18,6 +18,36 @@ def _patterns(*values: str) -> tuple[re.Pattern[str], ...]:
 
 RULES = (
     DetectionRule(
+        "security.secret",
+        ErrorCategory.SECURITY,
+        0.95,
+        _patterns(
+            r"leaks? found: [1-9]",
+            r"secret scanning .*(?:detected|found|blocked)",
+            r"\b[1-9]\d* secrets? (?:detected|found)",
+        ),
+    ),
+    DetectionRule(
+        "security.vulnerability",
+        ErrorCategory.SECURITY,
+        0.93,
+        _patterns(
+            r"total: \d+ \(.*\b(?:high|critical): [1-9]",
+            r"\b[1-9]\d* (?:low|moderate|high|critical) severity vulnerabilit",
+            r"found [1-9]\d* known vulnerabilit",
+            r"dependency review detected vulnerable packages",
+        ),
+    ),
+    DetectionRule(
+        "security.code_scanning",
+        ErrorCategory.SECURITY,
+        0.90,
+        _patterns(
+            r"code scanning alerts? (?:found|detected)",
+            r"(?:codeql|semgrep).*\b[1-9]\d* (?:alerts?|findings?)",
+        ),
+    ),
+    DetectionRule(
         "env.missing",
         ErrorCategory.MISSING_ENV,
         0.94,

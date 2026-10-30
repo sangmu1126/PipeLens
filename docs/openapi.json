@@ -482,6 +482,7 @@
           "timeout",
           "resource_exhaustion",
           "github_actions_workflow_error",
+          "security_scan_failure",
           "unknown"
         ],
         "title": "ErrorCategory",

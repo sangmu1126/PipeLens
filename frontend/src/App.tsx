@@ -20,6 +20,7 @@ const categoryLabels: Record<string, string> = {
   timeout: "Timeout",
   resource_exhaustion: "리소스",
   github_actions_workflow_error: "Workflow",
+  security_scan_failure: "보안 검사",
   unknown: "미분류",
 };
 

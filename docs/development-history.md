@@ -1702,6 +1702,14 @@ Nginx는 별도 PR로 분리했다.
 - worker soak Dockerfile이 Dependabot 대상에서 빠져 이전 base digest에 머물러 있어 대상에 추가하고
   digest를 맞췄다. 판단은 D-088에 기록했다.
 
+### 보안 검사 차단 범주
+
+- CI 실패 중 Trivy·npm audit·pip-audit·Dependency Review·secret·code scanning에 의한 차단을 새
+  `security_scan_failure` 범주로 분류하도록 규칙 3개, 진단 안내, 관련 파일 가중치와 대시보드 라벨을
+  추가했다. 판단은 D-089에 기록했다.
+- 합성 평가 fixture 3건을 추가해 고정 평가가 16/16이 됐고, 스캐너 안내·0건 결과를 오탐하지 않는
+  회귀 테스트를 고정했다. OpenAPI 계약에 새 enum 값이 반영됐다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

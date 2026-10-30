@@ -22,6 +22,12 @@ from pipelens.models import ErrorCategory
         ("alert state not observed at http://alertmanager/api/v2/alerts", ErrorCategory.TIMEOUT),
         ("fatal: no space left on device", ErrorCategory.RESOURCE),
         ("Invalid workflow file: YAML syntax error", ErrorCategory.WORKFLOW),
+        ("Total: 2 (HIGH: 1, CRITICAL: 1)", ErrorCategory.SECURITY),
+        ("3 high severity vulnerabilities", ErrorCategory.SECURITY),
+        ("Found 2 known vulnerabilities in 1 package", ErrorCategory.SECURITY),
+        ("Dependency review detected vulnerable packages.", ErrorCategory.SECURITY),
+        ("10:42AM WRN leaks found: 1", ErrorCategory.SECURITY),
+        ("CodeQL analysis reported 2 alerts", ErrorCategory.SECURITY),
     ],
 )
 def test_required_error_categories(log: str, expected: ErrorCategory) -> None:
@@ -73,3 +79,25 @@ def test_python_wheel_resolution_keeps_actionable_requirement() -> None:
     assert result.category is ErrorCategory.DEPENDENCY
     assert "psycopg-binary==3.3.4" in result.first_error
     assert result.matched_rules == ["dependency.install"]
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "INFO [vuln] Vulnerability scanning is enabled",
+        "Total: 3 (HIGH: 0, CRITICAL: 0)",
+        "found 0 vulnerabilities",
+        "10:42AM INF no leaks found",
+        "Secret scanning is enabled for this repository",
+    ],
+)
+def test_security_scan_noise_is_not_a_blocking_finding(line: str) -> None:
+    assert classify_log(line).category is not ErrorCategory.SECURITY
+
+
+def test_security_rules_record_the_scanner_subtype() -> None:
+    result = classify_log("Run gitleaks detect\n10:42AM WRN leaks found: 1")
+
+    assert result.category is ErrorCategory.SECURITY
+    assert result.matched_rules == ["security.secret"]
+    assert result.first_error == "10:42AM WRN leaks found: 1"

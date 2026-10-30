@@ -1390,3 +1390,20 @@
   바로잡았다.
 - 관련: `requirements.in`, `requirements.txt`, `Dockerfile`, `ops/worker/Dockerfile`,
   `tests/test_dependency_lock.py`, `.github/dependabot.yml`.
+
+## D-089. 보안 검사 차단은 별도 범주로 분류하고 발견 1건 이상만 신호로 사용
+
+- 결정: `security_scan_failure` 범주를 추가하고 `security.vulnerability`, `security.secret`,
+  `security.code_scanning` 규칙으로 하위 유형을 남긴다. 취약점 요약의 HIGH/CRITICAL 1건 이상,
+  npm audit·pip-audit 발견 수, Dependency Review 차단, secret·code scanning 발견 수 1 이상인 줄만
+  차단 신호로 본다.
+- 이유: 이 저장소의 CI도 Trivy image·secret gate와 Dependency Review로 실제 차단되며, 이런 실패는
+  기존 범주로 분류하면 `unknown`이 되거나 의존성 설치 실패로 오분류된다. 조치도 다르다. 설치 실패는
+  version 해석을, 보안 차단은 수정 version 적용이나 secret 폐기·교체를 요구한다. 스캐너는 시작 안내와
+  0건 요약도 출력하므로 단어 일치만으로는 오탐이 생긴다.
+- 대안: 의존성·Docker 범주에 흡수, 취약점·secret·코드 스캔을 세 범주로 분리, LLM에만 맡김.
+- 결과: secret 규칙을 가장 높은 confidence로 두어 같은 줄 경합 시 secret 노출을 우선한다. 고정 평가는
+  합성 fixture 3건(image 취약점, npm audit, secret 탐지)을 더해 16/16이며, 오탐 방지 회귀 테스트가
+  스캐너 안내·0건 출력을 고정한다. 관련 파일 점수는 lockfile·manifest와 Dockerfile에 가중치를 둔다.
+- 관련: `src/pipelens/classifier.py`, `src/pipelens/diagnosis.py`, `src/pipelens/relevance.py`,
+  `evaluation/logs/14-image-vulnerability.log`–`16-secret-scan.log`, `tests/test_classifier.py`.

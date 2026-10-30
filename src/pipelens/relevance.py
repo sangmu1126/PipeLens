@@ -6,6 +6,14 @@ from pipelens.sanitizer import sanitize_log
 
 TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_-]{2,}")
 PATCH_LINE = re.compile(r"^[+-](?![+-])")
+DEPENDENCY_MANIFESTS = {
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "poetry.lock",
+    "requirements.txt",
+    "pyproject.toml",
+}
 STOP_WORDS = {
     "error",
     "failed",
@@ -75,15 +83,12 @@ def _category_affinity(path: PurePosixPath, category: ErrorCategory) -> tuple[fl
         return 0.3, "Workflow 오류 범주와 Actions 설정 파일이 일치함"
     if category is ErrorCategory.DOCKER and path.name.lower().startswith("dockerfile"):
         return 0.25, "Docker 실패 범주와 Dockerfile이 일치함"
-    if category is ErrorCategory.DEPENDENCY and path.name.lower() in {
-        "package-lock.json",
-        "pnpm-lock.yaml",
-        "yarn.lock",
-        "poetry.lock",
-        "requirements.txt",
-        "pyproject.toml",
-    }:
+    if category is ErrorCategory.DEPENDENCY and path.name.lower() in DEPENDENCY_MANIFESTS:
         return 0.2, "의존성 실패 범주와 패키지 설정 파일이 일치함"
+    if category is ErrorCategory.SECURITY and (
+        path.name.lower() in DEPENDENCY_MANIFESTS or path.name.lower().startswith("dockerfile")
+    ):
+        return 0.2, "보안 검사 범주와 의존성·이미지 정의 파일이 일치함"
     return 0.0, ""
 
 

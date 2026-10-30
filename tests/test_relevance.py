@@ -1,3 +1,5 @@
+import pytest
+
 from pipelens.models import ChangedFile, ErrorCategory
 from pipelens.relevance import correlate_changed_files
 
@@ -41,6 +43,18 @@ def test_dependency_category_recognizes_lockfile() -> None:
 
     assert result[0].score == 0.2
     assert "패키지 설정" in result[0].reasons[0]
+
+
+@pytest.mark.parametrize("filename", ["requirements.txt", "frontend/Dockerfile"])
+def test_security_category_recognizes_dependency_and_image_files(filename: str) -> None:
+    result = correlate_changed_files(
+        "Total: 1 (HIGH: 0, CRITICAL: 1)",
+        [ChangedFile(filename=filename, status="modified")],
+        ErrorCategory.SECURITY,
+    )
+
+    assert result[0].score == 0.2
+    assert "보안 검사" in result[0].reasons[0]
 
 
 def test_patch_excerpt_is_redacted_before_it_is_returned() -> None:

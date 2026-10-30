@@ -112,12 +112,16 @@ flowchart LR
 
 ### 4.3 classifying
 
-규칙 엔진은 최초 오류 신호를 우선해 다음 10개 범주와 `unknown`을 판정한다.
+규칙 엔진은 최초 오류 신호를 우선해 다음 11개 범주와 `unknown`을 판정한다.
 
 `test_failure`, `build_failure`, `dependency_installation_failure`,
 `lint_or_formatter_failure`, `docker_build_failure`,
 `deployment_authentication_failure`, `missing_environment_variable`, `timeout`,
-`resource_exhaustion`, `github_actions_workflow_error`.
+`resource_exhaustion`, `github_actions_workflow_error`, `security_scan_failure`.
+
+`security_scan_failure`는 MVP 10개 범주 이후의 확장이다. 취약점 요약에서 HIGH/CRITICAL이 1건
+이상이거나, secret·code scanning 발견 수가 1 이상인 줄만 차단 신호로 본다. 스캐너 시작 안내와 0건
+결과는 제외하며 관련 파일은 lockfile·package manifest와 Dockerfile을 우선한다.
 
 결과에는 confidence, 최초 오류, 관련 job/step과 일치한 규칙을 포함한다.
 관측 제한을 소진한 `alert state not observed`는 timeout으로 분류한다. 반면 선행한 설정
