@@ -36,6 +36,7 @@ dev = [
 
 [project.scripts]
 pipelens-evaluate = "pipelens.evaluation:main"
+pipelens-evaluate-patches = "pipelens.patch_evaluation:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pipelens"]

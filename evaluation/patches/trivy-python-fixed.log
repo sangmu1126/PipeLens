@@ -1,0 +1,8 @@
+2026-10-30T03:10:02Z Run aquasecurity/trivy-action
+Python (python-pkg)
+===================
+Total: 1 (HIGH: 1, CRITICAL: 0)
+
+│ example-crypto (METADATA) │ CVE-2026-11111 │ HIGH     │ fixed    │ 50.0.1            │ 50.0.2, 51.0.1 │
+│ example-zlib              │ CVE-2026-22222 │ CRITICAL │ affected │ 1.3.1             │                │
+##[error]Process completed with exit code 1.

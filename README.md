@@ -205,6 +205,7 @@ mypy
 pytest -q
 python ops/ci/verify_markdown_links.py
 pipelens-evaluate --minimum-accuracy 0.8
+pipelens-evaluate-patches
 npm --prefix frontend test
 npx --prefix frontend playwright install chromium
 npm --prefix frontend run test:e2e
@@ -226,6 +227,19 @@ CI는 지원 범위 하한인 Python 3.12에서 전체 통합 검사를, 상한 
 ```bash
 pipelens-evaluate
 pipelens-evaluate --json
+```
+
+### 수정 diff 평가
+
+[`evaluation/patch_scenarios.json`](evaluation/patch_scenarios.json)은 로그, head 시점 파일, LLM 후보
+diff를 묶은 14개 사례로 실제 파이프라인과 같은 `propose_and_verify_patches` 경로를 채점합니다. 규칙 diff
+생성 4건, diff를 만들면 안 되는 3건, 정상 LLM diff 1건, 원격 스크립트·secret 참조·권한 확대·비밀값·
+오래된 문맥·형식 손상 LLM diff 6건이며, 기대한 파일·적용 결과·거부 수·거부 사유가 모두 맞아야
+통과합니다. 결과가 결정적이므로 CI 기준은 100%입니다.
+
+```bash
+pipelens-evaluate-patches
+pipelens-evaluate-patches --json
 ```
 
 ### PostgreSQL·Redis 통합 테스트

@@ -200,6 +200,7 @@ jobs:
         if: always()
         run: ops/ci/integration-services.sh stop
       - run: pipelens-evaluate --minimum-accuracy 0.8
+      - run: pipelens-evaluate-patches --minimum-accuracy 1.0
 
   python-compatibility:
     name: Python 3.14 compatibility

@@ -1,0 +1,9 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -7,5 +7,5 @@
+     runs-on: ubuntu-latest
+     timeout-minutes: 10
+-    steps:
++    steps: [
+       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+       - run: python -m pip install pip==0.0.0

@@ -1,0 +1,4 @@
+2026-10-30T03:05:40Z Run python -m pip install -r requirements-ci.txt
+ERROR: Could not find a version that satisfies the requirement legacy-driver==3.3.4 (from versions: none)
+ERROR: No matching distribution found for legacy-driver==3.3.4
+##[error]Process completed with exit code 1.
