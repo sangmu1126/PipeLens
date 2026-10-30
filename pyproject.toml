@@ -19,7 +19,7 @@ dependencies = [
   "redis>=8.1.0,<9",
   "SQLAlchemy>=2.0.54,<3",
   "psycopg[binary]>=3.3.5,<4",
-  "uvicorn[standard]>=0.52.4,<1",
+  "uvicorn[standard]>=0.53.0,<1",
 ]
 
 [project.optional-dependencies]
