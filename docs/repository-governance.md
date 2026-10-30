@@ -21,6 +21,7 @@
 | CI | `backend` |
 | CI | `Repository secret scan` |
 | CI | `Python 3.14 compatibility` |
+| CI | `Python 3.15 compatibility` |
 | CI | `dashboard` |
 | CI | `Build container (api)` |
 | CI | `Build container (dashboard)` |
@@ -33,7 +34,7 @@
 1. 최신 `main`에서 목적별 branch를 만든다.
 2. 서로 독립적으로 검토할 변경은 별도 commit으로 유지한다.
 3. branch를 push하고 PR을 만든다.
-4. 9개 필수 check와 추가 workflow가 성공했는지 확인한다.
+4. 10개 필수 check와 추가 workflow가 성공했는지 확인한다.
 5. review conversation이 모두 해결된 뒤 squash 또는 rebase 방식으로 merge한다.
 6. merge commit의 `main` CI·CodeQL도 성공하는지 확인한다.
 
@@ -48,7 +49,7 @@ GITHUB_TOKEN="$(gh auth token)" \
 
 감사는 공개성, 기본 branch, description·homepage·topics, squash·rebase 허용과 merge commit 금지,
 병합 branch 자동 삭제, secret scanning·push protection·Dependabot security update·private reporting,
-`main`의 strict PR·관리자·선형 이력·conversation·force/delete 보호를 확인한다. 9개 필수 check는 이름뿐
+`main`의 strict PR·관리자·선형 이력·conversation·force/delete 보호를 확인한다. 10개 필수 check는 이름뿐
 아니라 GitHub Actions app ID `15368`까지 정확히 일치해야 한다. 필드나 endpoint를 읽지 못하면
 성공으로 추정하지 않고 exit 2, 정책 이탈은 redacted JSON과 함께 exit 1, 전체 일치는 exit 0이다.
 
@@ -76,8 +77,9 @@ issue는 목적, 측정 가능한 acceptance criteria, 보안 검증과 제외 �
 acceptance criteria로 다시 연다.
 
 production readiness를 막지 않는 품질 확장은 `priority:p2`로 분리한다. runtime과 dependency
-지원 범위는 `area:compatibility`로 표시하며 milestone 완료율에는 포함하지 않는다. 첫 대상은
-[Python 3.15 GA 승격 #71](https://github.com/sangmu1126/PipeLens/issues/71)이다.
+지원 범위는 `area:compatibility`로 표시하며 milestone 완료율에는 포함하지 않는다. 첫 대상인
+[Python 3.15 GA 승격 #71](https://github.com/sangmu1126/PipeLens/issues/71)은 2026-10-30 지원 범위
+`<3.16`과 필수 `Python 3.15 compatibility` check로 완료했다(D-087).
 
 ## 공개 저장소 메타데이터
 

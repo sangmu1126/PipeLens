@@ -34,6 +34,7 @@ REQUIRED_CHECKS: Final = frozenset(
     {
         "backend",
         "Python 3.14 compatibility",
+        "Python 3.15 compatibility",
         "dashboard",
         "Build container (api)",
         "Build container (dashboard)",

@@ -176,52 +176,8 @@ jobs:
           GRAFANA_IMAGE="$grafana_image" \
           GRAFANA_VERSION="$grafana_version" \
             ops/recovery/verify-live-restore.sh
-      - name: Start Compose PostgreSQL service
-        run: |
-          postgres_image="$(docker compose config --format json | python -c '
-          import json
-          import sys
-
-          print(json.load(sys.stdin)["services"]["postgres"]["image"])
-          ')"
-          postgres_container="pipelens-postgres-integration"
-          postgres_volume="pipelens-postgres-integration-data"
-          docker pull "$postgres_image"
-          docker volume create "$postgres_volume"
-          docker run --detach --name "$postgres_container" --publish 5432:5432 \
-            --env POSTGRES_DB=pipelens_test \
-            --env POSTGRES_USER=pipelens \
-            --env POSTGRES_PASSWORD=pipelens \
-            --mount "type=volume,source=$postgres_volume,target=/var/lib/postgresql" \
-            "$postgres_image"
-          for attempt in {1..30}; do
-            if docker exec "$postgres_container" \
-              pg_isready -U pipelens -d pipelens_test >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          docker logs "$postgres_container"
-          exit 1
-      - name: Start Compose Redis service
-        run: |
-          redis_image="$(docker compose config --format json | python -c '
-          import json
-          import sys
-
-          print(json.load(sys.stdin)["services"]["redis"]["image"])
-          ')"
-          redis_container="pipelens-redis-integration"
-          docker pull "$redis_image"
-          docker run --detach --name "$redis_container" --publish 6379:6379 "$redis_image"
-          for attempt in {1..10}; do
-            if test "$(docker exec "$redis_container" redis-cli ping 2>/dev/null)" = "PONG"; then
-              exit 0
-            fi
-            sleep 1
-          done
-          docker logs "$redis_container"
-          exit 1
+      - name: Start Compose PostgreSQL and Redis services
+        run: ops/ci/integration-services.sh start
       - name: Test PostgreSQL and Redis integration
         run: pytest -q tests/integration
         env:
@@ -240,24 +196,9 @@ jobs:
           --profile smoke
           --run-id worker-soak-ci
           --output-dir /tmp/pipelens-worker-soak-ci
-      - name: Stop Compose Redis service
+      - name: Stop Compose PostgreSQL and Redis services
         if: always()
-        run: |
-          redis_container="pipelens-redis-integration"
-          if docker container inspect "$redis_container" >/dev/null 2>&1; then
-            docker rm --force "$redis_container"
-          fi
-      - name: Stop Compose PostgreSQL service
-        if: always()
-        run: |
-          postgres_container="pipelens-postgres-integration"
-          postgres_volume="pipelens-postgres-integration-data"
-          if docker container inspect "$postgres_container" >/dev/null 2>&1; then
-            docker rm --force "$postgres_container"
-          fi
-          if docker volume inspect "$postgres_volume" >/dev/null 2>&1; then
-            docker volume rm "$postgres_volume"
-          fi
+        run: ops/ci/integration-services.sh stop
       - run: pipelens-evaluate --minimum-accuracy 0.8
 
   python-compatibility:
@@ -273,76 +214,38 @@ jobs:
       - run: pytest -q --ignore=tests/integration
       - run: pipelens-evaluate --minimum-accuracy 0.8
 
-  python-preview:
-    name: Python 3.15 preview
+  python-latest:
+    name: Python 3.15 compatibility
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        id: preview_python
-        continue-on-error: true
         with:
           python-version: "3.15"
-          allow-prereleases: true
           cache: pip
-      - name: Report preview interpreter
-        id: interpreter
-        if: steps.preview_python.outcome == 'success'
-        continue-on-error: true
-        run: |
-          python -VV
-          python -c 'import sys; assert sys.version_info[:2] == (3, 15)'
-      - name: Install dependencies outside the declared support range
-        id: install
-        if: steps.interpreter.outcome == 'success'
-        continue-on-error: true
-        run: python ops/ci/install_python_preview.py
-      - name: Report preview PostgreSQL implementation
-        id: postgres_driver
-        if: steps.install.outcome == 'success'
-        continue-on-error: true
-        run: python -c 'import psycopg.pq; assert psycopg.pq.__impl__ == "python"; print(psycopg.pq.__impl__)'
-      - name: Check dependency consistency
-        id: dependencies
-        if: steps.postgres_driver.outcome == 'success'
-        continue-on-error: true
-        run: python -m pip check
-      - name: Run non-integration backend tests
-        id: tests
-        if: steps.dependencies.outcome == 'success'
-        continue-on-error: true
-        run: pytest -q --ignore=tests/integration
-      - name: Run diagnostic evaluation
-        id: evaluation
-        if: steps.tests.outcome == 'success'
-        continue-on-error: true
-        run: pipelens-evaluate --minimum-accuracy 0.8
-      - name: Report advisory result
-        if: always()
+      - run: python -c 'import sys; assert sys.version_info[:2] == (3, 15) and sys.version_info.releaselevel == "final"'
+      - run: pip install -e '.[dev]'
+      - run: python -m pip check
+      - name: Verify binary PostgreSQL driver
+        run: python -c 'import psycopg.pq; assert psycopg.pq.__impl__ == "binary", psycopg.pq.__impl__'
+      - run: pytest -q --ignore=tests/integration
+      - name: Start Compose PostgreSQL and Redis services
+        run: ops/ci/integration-services.sh start
+      - name: Test PostgreSQL and Redis integration
+        run: pytest -q tests/integration
         env:
-          PYTHON_OUTCOME: ${{ steps.preview_python.outcome }}
-          INTERPRETER_OUTCOME: ${{ steps.interpreter.outcome }}
-          INSTALL_OUTCOME: ${{ steps.install.outcome }}
-          POSTGRES_DRIVER_OUTCOME: ${{ steps.postgres_driver.outcome }}
-          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
-          TESTS_OUTCOME: ${{ steps.tests.outcome }}
-          EVALUATION_OUTCOME: ${{ steps.evaluation.outcome }}
-        run: |
-          summary="runtime=$PYTHON_OUTCOME interpreter=$INTERPRETER_OUTCOME install=$INSTALL_OUTCOME postgres_driver=$POSTGRES_DRIVER_OUTCOME dependencies=$DEPENDENCIES_OUTCOME tests=$TESTS_OUTCOME evaluation=$EVALUATION_OUTCOME"
-          if [[ "$summary" == *"failure"* || "$summary" == *"skipped"* ]]; then
-            echo "::warning title=Python 3.15 preview is not ready::$summary"
-            status="Not ready; inspect the first failed preview step."
-          else
-            echo "::notice title=Python 3.15 preview passed::$summary"
-            status="All preview checks passed."
-          fi
-          {
-            echo "### Python 3.15 preview"
-            echo
-            echo "$status"
-            echo
-            echo "\`$summary\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          PIPELENS_TEST_DATABASE_URL: postgresql+psycopg://pipelens:pipelens@localhost:5432/pipelens_test
+          PIPELENS_TEST_REDIS_URL: redis://localhost:6379/0
+      - name: Verify worker replica load, recovery, and SLO
+        run: >-
+          python -m ops.worker.verify_replica_recovery
+          --redis-url redis://localhost:6379/0
+          --jobs 200
+          --replicas 4
+      - name: Stop Compose PostgreSQL and Redis services
+        if: always()
+        run: ops/ci/integration-services.sh stop
+      - run: pipelens-evaluate --minimum-accuracy 0.8
 
   dashboard:
     runs-on: ubuntu-latest

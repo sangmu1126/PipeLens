@@ -118,7 +118,7 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
 
 | 영역 | 사용 기술 |
 | --- | --- |
-| Backend | Python 3.12–3.14, FastAPI, Pydantic Settings, httpx, PyJWT, cryptography(Fernet) |
+| Backend | Python 3.12–3.15, FastAPI, Pydantic Settings, httpx, PyJWT, cryptography(Fernet) |
 | 저장·큐 | SQLAlchemy 2, Alembic, SQLite / PostgreSQL 18(psycopg 3), Redis 8 |
 | Frontend | React 19, TypeScript, Vite, Vitest, Testing Library, axe-core, Playwright |
 | 관측 | prometheus-client, Prometheus, Alertmanager, Grafana 13 |
@@ -128,7 +128,7 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
 
 ### 로컬 (SQLite + memory queue)
 
-Python 3.12 이상 3.15 미만, 대시보드 개발에는 Node.js 22 또는 24가 필요합니다.
+Python 3.12 이상 3.16 미만, 대시보드 개발에는 Node.js 22 또는 24가 필요합니다.
 
 ```bash
 python -m venv .venv
