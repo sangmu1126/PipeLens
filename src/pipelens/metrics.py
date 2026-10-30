@@ -135,6 +135,12 @@ class Metrics:
             ("dimension", "value"),
             registry=self.registry,
         )
+        self.patch_proposals = Counter(
+            "pipelens_patch_proposals_total",
+            "Fix diffs proposed in diagnoses by source and verification outcome.",
+            ("source", "outcome"),
+            registry=self.registry,
+        )
         self.resolutions = Counter(
             "pipelens_resolution_outcomes_total",
             "Follow-up workflow outcomes linked to a prior failed run.",

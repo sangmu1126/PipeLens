@@ -5,6 +5,7 @@ from pipelens.models import (
     Evidence,
     RelatedFile,
     Suggestion,
+    SuggestionSource,
     TrustLevel,
 )
 from pipelens.publication import MAX_GITHUB_BODY_CHARS, render_github_diagnosis
@@ -81,3 +82,34 @@ def test_github_diagnosis_warns_for_untrusted_fork() -> None:
 
     assert "외부 Fork" in body
     assert "LLM에 전송하지 않았습니다" in body
+
+
+def test_only_verified_patches_are_published_with_their_origin() -> None:
+    body = render_github_diagnosis(
+        7,
+        Classification(category=ErrorCategory.DEPENDENCY, confidence=0.9, first_error="e"),
+        Diagnosis(
+            summary="s",
+            root_cause="r",
+            confidence=0.9,
+            evidence=[Evidence(source="log", content="e")],
+            suggestions=[
+                Suggestion(
+                    description="verified",
+                    file="ci.yml",
+                    patch="+pip==26.2.2",
+                    source=SuggestionSource.RULE,
+                    patch_verified=True,
+                ),
+                Suggestion(description="unverified", file="ci.yml", patch="+UNVERIFIED_PATCH"),
+            ],
+        ),
+        [],
+        "https://pipelens.example/?run_id=7",
+        head_sha="abc123def4567890",
+    )
+
+    assert "검증된 수정 diff (규칙) — head `abc123def456`에 그대로 적용됨을 확인" in body
+    assert "+pip==26.2.2" in body
+    assert "UNVERIFIED_PATCH" not in body
+

@@ -72,10 +72,17 @@ class Classification(BaseModel):
     matched_rules: list[str] = Field(default_factory=list)
 
 
+class SuggestionSource(StrEnum):
+    RULE = "rule"
+    LLM = "llm"
+
+
 class Suggestion(BaseModel):
     description: str
     file: str | None = None
     patch: str | None = None
+    source: SuggestionSource | None = None
+    patch_verified: bool = False
 
 
 class Diagnosis(BaseModel):

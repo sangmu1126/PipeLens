@@ -6,6 +6,7 @@ PipeLens는 GitHub Actions 실패를 **근거 중심으로 진단**하는 GitHub
 게시합니다.
 
 - LLM 없이도 동작하는 규칙 기반 분류(11개 실패 범주, 보안 검사 차단 포함)와 선택적 OpenAI 보강
+- 실패 commit의 실제 파일에 그대로 적용되는지 확인한 수정 diff만 제안 (규칙·LLM 공통 검증)
 - 로그·diff·workflow의 secret/개인정보 마스킹, 외부 fork 입력 격리
 - Redis worker replica, lease 복구, fencing token으로 중복·지연 실행 부작용 차단
 - React 대시보드, installation 단위 접근 제어, Prometheus·Grafana·Alertmanager 관측
@@ -56,7 +57,7 @@ flowchart LR
    | `sanitizing` | ANSI·timestamp 제거, chunk 단위 마스킹, 오류 신호 주변 구간 추출 |
    | `classifying` | 최초 오류 신호를 우선하는 규칙 엔진으로 11개 범주 또는 `unknown` 판정 |
    | `correlating` | 로그 경로·파일명·코드 토큰·범주 친화도로 변경 파일 점수화 |
-   | `diagnosing` | 규칙 진단을 먼저 만들고, `trusted` 입력이면 LLM Structured Outputs 결과를 근거·경로·분류 충돌 검증 후 채택 |
+   | `diagnosing` | 규칙 진단을 먼저 만들고, `trusted` 입력이면 LLM Structured Outputs 결과를 근거·경로·분류 충돌 검증 후 채택. 수정 diff는 head SHA 파일에 적용되는지 검증된 것만 유지 |
    | `publishing` | PR이 있으면 멱등 PR 코멘트, 없으면 Commit Check 생성 또는 갱신 |
 
 3. **확인** — 대시보드에서 근거, 관련 파일, 비교 SHA 범위, 해결 상태를 보고 정확도
@@ -108,6 +109,13 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
 - 입력에 실제 존재하는 근거·파일 경로만 허용하고 규칙 분류와 충돌하면 규칙 진단 유지
 - LLM 장애·검증 실패 시에도 규칙 기반 fallback 진단을 항상 보존
 
+**검증된 수정 제안**
+- pip `from versions` 목록이나 스캐너의 수정 버전처럼 로그가 정답을 알려 주는 경우 규칙으로 버전 변경 diff 생성
+- 규칙·LLM diff 모두 head SHA의 실제 파일에 문맥까지 그대로 적용되는지 확인하고, 대상 외 파일·크기 초과·
+  비밀값 포함 diff는 제외
+- 해시가 고정된 lock 항목은 diff 대신 lock 재생성을 안내
+- 저장소 쓰기 권한 없이 PR 코멘트로만 제안하며, 반영 여부는 다음 관련 실행의 해결 추적으로 측정
+
 **게시와 대시보드**
 - PR에는 숨은 run marker로 찾는 멱등 코멘트, PR이 없는 실행에는 Commit Check
 - 다음 Workflow 완료를 연결해 성공 전환·계속 실패와 복구 시간 자동 추적
@@ -117,7 +125,7 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
 **운영**
 - memory 또는 Redis queue, ack·재시도·lease 복구를 지원하는 독립 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
-- webhook·분석·범주·마스킹·queue·SLO·HTTP retry·LLM token/비용 Prometheus 지표
+- webhook·분석·범주·마스킹·queue·SLO·HTTP retry·LLM token/비용·수정 diff 검증 결과 Prometheus 지표
 - Prometheus alert 규칙, Alertmanager routing, provisioned Grafana dashboard
 
 ## 기술 스택

@@ -847,6 +847,21 @@
               }
             ],
             "title": "Patch"
+          },
+          "patch_verified": {
+            "default": false,
+            "title": "Patch Verified",
+            "type": "boolean"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuggestionSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -854,6 +869,14 @@
         ],
         "title": "Suggestion",
         "type": "object"
+      },
+      "SuggestionSource": {
+        "enum": [
+          "rule",
+          "llm"
+        ],
+        "title": "SuggestionSource",
+        "type": "string"
       },
       "TrustLevel": {
         "enum": [

@@ -17,6 +17,9 @@ class GitHubConfigurationError(RuntimeError):
     pass
 
 
+MAX_PATCH_TARGET_BYTES = 512_000
+
+
 @dataclass(frozen=True)
 class JobLog:
     job_name: str
@@ -226,6 +229,32 @@ class GitHubClient:
             trust_level=self._trust_level(repository, run),
             baseline_sha=baseline_sha,
         )
+
+    async def file_contents(
+        self, repository: str, paths: list[str], ref: str, token: str
+    ) -> dict[str, str]:
+        """Read UTF-8 files at a commit for patch verification, skipping missing or large ones."""
+        headers = {**self._headers(token), "Accept": "application/vnd.github.raw+json"}
+        contents: dict[str, str] = {}
+        async with httpx.AsyncClient(timeout=30, transport=self.transport) as client:
+            for path in dict.fromkeys(paths):
+                response = await self._request(
+                    client,
+                    "GET",
+                    f"{self.api_url}/repos/{repository}/contents/{path}",
+                    headers=headers,
+                    params={"ref": ref},
+                )
+                if response.status_code == 404:
+                    continue
+                response.raise_for_status()
+                if len(response.content) > MAX_PATCH_TARGET_BYTES:
+                    continue
+                try:
+                    contents[path] = response.content.decode("utf-8")
+                except UnicodeDecodeError:
+                    continue
+        return contents
 
     async def _resolve_external_pull_request(
         self,

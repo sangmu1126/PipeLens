@@ -7,7 +7,7 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from pipelens.github import GitHubClient
+from pipelens.github import MAX_PATCH_TARGET_BYTES, GitHubClient
 from pipelens.models import TrustLevel
 
 
@@ -427,3 +427,36 @@ async def test_pr_comment_publication_updates_only_own_marker() -> None:
     assert update[2] is not None
     assert update[1].endswith("/issues/comments/2")
     assert update[2]["body"] == "<!-- pipelens:run:123 -->\nnew body"
+
+
+@pytest.mark.asyncio
+async def test_file_contents_reads_head_files_and_skips_unusable_ones() -> None:
+    requested: list[tuple[str, str]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.path.removeprefix("/repos/acme/widgets/contents/")
+        requested.append((path, request.url.params["ref"]))
+        if path == "missing.txt":
+            return httpx.Response(404)
+        if path == "large.txt":
+            return httpx.Response(200, content=b"x" * (MAX_PATCH_TARGET_BYTES + 1))
+        if path == "binary.bin":
+            return httpx.Response(200, content=b"\xff\xfe")
+        return httpx.Response(200, text="pip==0.0.0\n")
+
+    github = GitHubClient(None, None, 1024, transport=httpx.MockTransport(handler))
+
+    contents = await github.file_contents(
+        "acme/widgets",
+        ["ci.yml", "missing.txt", "large.txt", "binary.bin", "ci.yml"],
+        "abc123",
+        "token",
+    )
+
+    assert contents == {"ci.yml": "pip==0.0.0\n"}
+    assert requested == [
+        ("ci.yml", "abc123"),
+        ("missing.txt", "abc123"),
+        ("large.txt", "abc123"),
+        ("binary.bin", "abc123"),
+    ]
