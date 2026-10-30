@@ -14,5 +14,7 @@
   {"case_id":"python-wheel-resolution","log_file":"logs/13-python-wheel-resolution.log","expected_category":"dependency_installation_failure","expected_evidence":"Could not find a version"},
   {"case_id":"image-vulnerability","log_file":"logs/14-image-vulnerability.log","expected_category":"security_scan_failure","expected_evidence":"CRITICAL: 1"},
   {"case_id":"npm-audit","log_file":"logs/15-npm-audit.log","expected_category":"security_scan_failure","expected_evidence":"high severity vulnerability"},
-  {"case_id":"secret-scan","log_file":"logs/16-secret-scan.log","expected_category":"security_scan_failure","expected_evidence":"leaks found: 1"}
+  {"case_id":"secret-scan","log_file":"logs/16-secret-scan.log","expected_category":"security_scan_failure","expected_evidence":"leaks found: 1"},
+  {"case_id":"real-trivy-api-image","log_file":"logs/17-real-trivy-api-image.log","expected_category":"security_scan_failure","expected_evidence":"Total: 3 (HIGH: 3, CRITICAL: 0)"},
+  {"case_id":"real-trivy-dashboard-image","log_file":"logs/18-real-trivy-dashboard-image.log","expected_category":"security_scan_failure","expected_evidence":"Total: 2 (HIGH: 2, CRITICAL: 0)"}
 ]

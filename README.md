@@ -220,7 +220,8 @@ CI는 지원 범위 하한인 Python 3.12에서 전체 통합 검사를, 상한 
 ### 진단 정확도 평가
 
 [`evaluation/scenarios.json`](evaluation/scenarios.json)에는 10개 요구 범주, 실제 PipeLens CI
-실패 3건, 보안 검사 차단(이미지 취약점·npm audit·secret 탐지) 3건을 재현한 16개 고정 로그가
+실패 3건, 보안 검사 차단(이미지 취약점·npm audit·secret 탐지) 합성 3건과 이 저장소 CI의 실제 Trivy
+이미지 스캔 실패 2건을 재현한 18개 고정 로그가
 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두
 채점하며 기본 통과 기준은 80%입니다.
 
@@ -232,8 +233,8 @@ pipelens-evaluate --json
 ### 수정 diff 평가
 
 [`evaluation/patch_scenarios.json`](evaluation/patch_scenarios.json)은 로그, head 시점 파일, LLM 후보
-diff를 묶은 14개 사례로 실제 파이프라인과 같은 `propose_and_verify_patches` 경로를 채점합니다. 규칙 diff
-생성 4건, diff를 만들면 안 되는 3건, 정상 LLM diff 1건, 원격 스크립트·secret 참조·권한 확대·비밀값·
+diff를 묶은 15개 사례로 실제 파이프라인과 같은 `propose_and_verify_patches` 경로를 채점합니다. 규칙 diff
+생성 4건, 실제 Trivy 로그의 병합 셀 행을 포함한 Python 패키지 수정 1건, diff를 만들면 안 되는 3건, 정상 LLM diff 1건, 원격 스크립트·secret 참조·권한 확대·비밀값·
 오래된 문맥·형식 손상 LLM diff 6건이며, 기대한 파일·적용 결과·거부 수·거부 사유가 모두 맞아야
 통과합니다. 결과가 결정적이므로 CI 기준은 100%입니다.
 

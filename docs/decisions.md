@@ -1457,3 +1457,22 @@
   확인한다. 실제 LLM이 만드는 diff의 품질과 비용은 OpenAI 호출이 필요하므로 별도 측정으로 남긴다.
 - 관련: `src/pipelens/patch_evaluation.py`, `src/pipelens/patching.py`, `evaluation/patches/`,
   `tests/test_patch_evaluation.py`, D-090, D-091.
+
+## D-093. 스캐너 표는 헤더 기준으로 읽고 문맥 추출 제한은 합쳐진 구간 수로 센다
+
+- 결정: 스캐너 표를 줄 단위가 아니라 `Library`·`Installed Version`·`Fixed Version` 헤더로 열을 찾아
+  읽고, 비어 있는 취약점·심각도·상태·버전 칸은 위 행 값을 이어받는다. 부분 경계 줄은 건너뛴다. HIGH·
+  CRITICAL 심각도 칸이 있는 행은 문맥 추출 신호로 쓰되 분류의 최초 오류 후보로는 쓰지 않는다. 문맥 추출의
+  `max_sections`는 처음 N개 신호 줄이 아니라 겹침을 합친 뒤의 구간 N개를 뜻한다.
+- 이유: 이 저장소의 실제 Trivy 실패 로그에서 합성 fixture로는 드러나지 않은 세 문제가 확인됐다. Trivy는
+  반복 값을 병합해 빈 칸으로 출력하고, 병합 영역의 경계가 `│`를 포함해 데이터 행처럼 보이며, 전처리가
+  처음 신호 2줄 주변만 남겨 표 중간의 수정 버전 행을 버렸다. 그 결과 실제 Python 패키지 취약점의 수정
+  버전이 diff로 이어지지 못했다.
+- 대안: 줄 단위 파서 유지와 fixture 단순화, Trivy JSON 출력 요구, 문맥 줄 수 확대, 원본 로그 전체로 버전
+  추출.
+- 결과: 실제 API·dashboard image 로그가 분류 18/18과 수정 diff 15/15에 포함되며, `msgpack`·`setuptools`
+  행을 포함한 수정 버전이 모두 읽힌다. 구간 수 기준은 같은 영역의 신호가 많아도 서로 떨어진 영역 수만
+  제한하므로 기존 분류 결과는 바뀌지 않았다. 원본 로그 전체를 저장하지 않는 원칙은 유지한다.
+- 관련: `src/pipelens/patching.py`, `src/pipelens/classifier.py`, `src/pipelens/preprocessing.py`,
+  `evaluation/logs/17-real-trivy-api-image.log`, `evaluation/logs/18-real-trivy-dashboard-image.log`,
+  D-089, D-092.

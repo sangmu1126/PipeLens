@@ -10,14 +10,14 @@ MANIFEST = Path("evaluation/patch_scenarios.json")
 def test_patch_scenarios_meet_the_required_accuracy() -> None:
     report = evaluate_patch_manifest(MANIFEST)
 
-    assert report.total == 14
+    assert report.total == 15
     assert report.accuracy == 1.0
-    assert report.verified == 5
+    assert report.verified == 7
     assert report.rejected == 6
 
 
 def test_wrong_expectations_fail_the_case(tmp_path: Path) -> None:
-    shutil.copytree(MANIFEST.parent / "patches", tmp_path / "patches")
+    shutil.copytree(MANIFEST.parent, tmp_path, dirs_exist_ok=True)
     cases = json.loads(MANIFEST.read_text())
     by_id = {case["case_id"]: case for case in cases}
     by_id["rule-pip-latest-listed"]["expected_patches"] = {

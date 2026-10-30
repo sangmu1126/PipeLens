@@ -101,3 +101,14 @@ def test_security_rules_record_the_scanner_subtype() -> None:
     assert result.category is ErrorCategory.SECURITY
     assert result.matched_rules == ["security.secret"]
     assert result.first_error == "10:42AM WRN leaks found: 1"
+
+
+def test_error_context_keeps_every_row_of_a_blocking_scanner_table() -> None:
+    rows = [f"│ package-{index} │ CVE-1 │ HIGH │ fixed │ 1.0 │ 1.1 │" for index in range(12)]
+    log = "\n".join(
+        ["Total: 12 (HIGH: 12, CRITICAL: 0)", "│ Library │ Severity │", *rows, "##[error] exit 1"]
+    )
+
+    context = extract_error_context(log, context_lines=2, max_sections=2)
+
+    assert all(row in context for row in rows)

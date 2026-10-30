@@ -1737,6 +1737,17 @@ Nginx는 별도 PR로 분리했다.
 - 파이프라인의 규칙 diff 생성·검증 결합을 `propose_and_verify_patches`로 옮겨 평가와 실제 동작이 같은
   코드를 쓰게 했다. 판단은 D-092에 기록했다.
 
+### 실제 Trivy 실패 로그로 스캐너 파싱 보강
+
+- 2026-08-29 이 저장소 CI의 container scan 실패(run 33268226647)에서 API·dashboard image 구간을 잘라
+  분류 fixture 2건과 수정 diff 사례 1건을 추가했다. image 이름은 `example-*`로 바꿨다.
+- 합성 fixture에서는 보이지 않던 세 가지 문제가 드러났다. Trivy가 같은 값을 병합해 다음 행의 취약점·
+  상태·버전 칸이 비고, 부분 경계 줄 `├──┤ │`가 데이터 행처럼 보이며, 전처리가 청크마다 처음 신호 2줄
+  주변만 남겨 표 중간 행을 버렸다. 실제 로그의 Python 패키지 `msgpack`·`setuptools` 수정 버전은 이전
+  구현으로는 읽히지 않았다.
+- 표 헤더로 열을 찾고 병합 셀을 이어받는 파서로 바꾸고, HIGH·CRITICAL 행을 문맥 신호로 넣었으며, 전처리
+  제한을 신호 줄 수가 아니라 합쳐진 구간 수로 셌다. 판단은 D-093에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -1746,7 +1757,7 @@ Nginx는 별도 PR로 분리했다.
 - pytest 기반 production·operations statement·branch coverage와 XML·JSON artifact
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
-- 16개 진단 fixture의 80% 정확도 gate와 14개 수정 diff 사례의 100% gate
+- 18개 진단 fixture의 80% 정확도 gate와 15개 수정 diff 사례의 100% gate
 - Vitest 대시보드 사용자 흐름·접근성 테스트
 - Playwright Chromium OAuth·session·dashboard·logout E2E
 - TypeScript와 Vite production build
