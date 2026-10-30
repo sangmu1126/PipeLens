@@ -6,6 +6,7 @@ from pipelens.patching import (
     VersionBump,
     apply_unified_diff,
     find_version_bumps,
+    manifest_paths_in_log,
     propose_version_patches,
     render_unified_diff,
     strip_patches,
@@ -287,3 +288,26 @@ def test_patches_that_break_the_file_format_are_rejected(
 
     assert verified.suggestions[0].patch is None
     assert f"유효한 {kind}" in verified.notes[-1]
+
+
+def test_manifest_paths_in_log_are_relative_and_bounded() -> None:
+    log = "\n".join(
+        [
+            "Run python -m pip install -r requirements-ci.txt",
+            "ERROR: cannot install (from -r ci/constraints.txt (line 3))",
+            "-r ../../etc/requirements.txt",
+            "cat ./pyproject.toml",
+            "backup my-requirements.txt.bak",
+            "usr/local/lib/python3.14/site-packages/x.dist-info/METADATA",
+            *(f"-r extra/requirements-{index}.txt" for index in range(5)),
+        ]
+    )
+
+    assert manifest_paths_in_log(log) == [
+        "requirements-ci.txt",
+        "ci/constraints.txt",
+        "pyproject.toml",
+        "extra/requirements-0.txt",
+        "extra/requirements-1.txt",
+    ]
+

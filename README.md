@@ -110,7 +110,8 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
 - LLM 장애·검증 실패 시에도 규칙 기반 fallback 진단을 항상 보존
 
 **검증된 수정 제안**
-- pip `from versions` 목록이나 스캐너의 수정 버전처럼 로그가 정답을 알려 주는 경우 규칙으로 버전 변경 diff 생성
+- pip `from versions` 목록이나 스캐너의 수정 버전처럼 로그가 정답을 알려 주는 경우 규칙으로 버전 변경 diff 생성.
+  대상은 관련 변경 파일, workflow, 로그에 이름이 나온 의존성 manifest(예: `-r ci/requirements.txt`)
 - 규칙·LLM diff 모두 head SHA의 실제 파일에 문맥까지 그대로 적용되는지 확인하고, 대상 외 파일·크기 초과·
   비밀값 포함 diff는 제외
 - 로그를 통한 prompt injection에 대비해 원격 스크립트 실행, secret·토큰 참조, workflow 권한·트리거 변경을

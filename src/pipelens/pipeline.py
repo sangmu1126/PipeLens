@@ -23,7 +23,12 @@ from pipelens.models import (
     StageStatus,
     TrustLevel,
 )
-from pipelens.patching import find_version_bumps, propose_and_verify_patches, strip_patches
+from pipelens.patching import (
+    find_version_bumps,
+    manifest_paths_in_log,
+    propose_and_verify_patches,
+    strip_patches,
+)
 from pipelens.preprocessing import preprocess_logs
 from pipelens.publication import render_github_diagnosis
 from pipelens.relevance import correlate_changed_files
@@ -299,9 +304,12 @@ class AnalysisPipeline:
         files: dict[str, str] = {}
         if repository_context.workflow_path and repository_context.workflow_content:
             files[repository_context.workflow_path] = repository_context.workflow_content
+        manifest_paths = manifest_paths_in_log(log) if bumps else []
         targets = [
             path
-            for path in dict.fromkeys([item.filename for item in related_files] + llm_patch_files)
+            for path in dict.fromkeys(
+                [item.filename for item in related_files] + llm_patch_files + manifest_paths
+            )
             if path not in files
         ]
         if targets:

@@ -504,3 +504,42 @@ async def test_untrusted_fork_never_reads_files_or_publishes_patches(
     assert all(item.patch is None for item in result.diagnosis.suggestions)
     github.file_contents.assert_not_awaited()
     assert "검증된 수정 diff" not in github.upsert_pull_request_comment.await_args.args[4]
+
+
+@pytest.mark.asyncio
+async def test_rule_patch_reads_a_manifest_named_only_in_the_log(store: AnalysisStore) -> None:
+    store.create_if_absent(_pip_failure_record(62))
+    github = _pip_failure_github(TrustLevel.TRUSTED)
+    github.download_logs = AsyncMock(
+        return_value=[
+            JobLog(
+                job_name="install",
+                text=(
+                    "Run python -m pip install -r ci/requirements-tools.txt\n"
+                    "ERROR: Could not find a version that satisfies the requirement "
+                    "example-tool==0.0.1 (from versions: 1.0.0, 1.2.0)\n"
+                    "ERROR: No matching distribution found for example-tool==0.0.1"
+                ),
+            )
+        ]
+    )
+    github.file_contents = AsyncMock(
+        return_value={"ci/requirements-tools.txt": "example-tool==0.0.1\n"}
+    )
+    pipeline = AnalysisPipeline(
+        Settings(database_path=store.database_path, publish_checks=True), store, github
+    )
+
+    await pipeline.analyze(
+        AnalysisRequest(
+            run_id=62, repository="acme/example", installation_id=7, head_sha="abc123def4567"
+        )
+    )
+
+    assert github.file_contents.await_args.args[1] == ["ci/requirements-tools.txt"]
+    result = store.get(62)
+    assert result is not None and result.diagnosis is not None
+    verified = [item for item in result.diagnosis.suggestions if item.patch_verified]
+    assert [item.file for item in verified] == ["ci/requirements-tools.txt"]
+    assert "+example-tool==1.2.0" in (verified[0].patch or "")
+

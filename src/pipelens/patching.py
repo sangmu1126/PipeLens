@@ -71,6 +71,14 @@ WORKFLOW_SENSITIVE: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 
+MAX_LOG_NAMED_MANIFESTS = 5
+LOG_NAMED_MANIFEST = re.compile(
+    r"(?<![\w./-])((?:\./)?(?:[\w-][\w.-]*/)*(?:requirements[\w.-]*\.txt|constraints[\w.-]*\.txt|"
+    r"pyproject\.toml))(?![\w.-])",
+    re.I,
+)
+
+
 class PatchError(ValueError):
     pass
 
@@ -135,6 +143,19 @@ def find_version_bumps(log: str) -> list[VersionBump]:
     for bump in bumps:
         unique.setdefault((bump.package.lower(), bump.current), bump)
     return list(unique.values())
+
+
+def manifest_paths_in_log(log: str) -> list[str]:
+    """Return relative dependency manifest paths that the log names, such as ``-r ci/req.txt``."""
+    paths: list[str] = []
+    for match in LOG_NAMED_MANIFEST.finditer(log):
+        path = match.group(1).removeprefix("./")
+        if ".." in PurePosixPath(path).parts or path in paths:
+            continue
+        paths.append(path)
+        if len(paths) == MAX_LOG_NAMED_MANIFESTS:
+            break
+    return paths
 
 
 def propose_version_patches(
