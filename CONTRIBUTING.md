@@ -21,6 +21,15 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 ```
 
+Runtime dependencies are declared twice on purpose: `pyproject.toml` for the package and
+`requirements.in` as the pip-compile source for the hashed `requirements.txt` that the API and worker
+images install. Keep both lists identical, and regenerate the lock with Python 3.14:
+
+```bash
+pip install pip-tools==7.6.2
+pip-compile --generate-hashes --strip-extras --output-file=requirements.txt requirements.in
+```
+
 Before submitting a change, run the checks relevant to it:
 
 ```bash

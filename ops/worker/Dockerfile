@@ -1,11 +1,12 @@
-FROM python:3.14-slim@sha256:cad9a2c871761c413caa6fdd6441c783451e740a48aaeba60ae62a8b53525ef6
+FROM python:3.14-slim@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY requirements.txt ./
 COPY src ./src
 COPY ops ./ops
 RUN apt-get update \
@@ -14,7 +15,7 @@ RUN apt-get update \
     && groupadd --system pipelens \
     && useradd --system --gid pipelens --home-dir /app --no-create-home \
         --shell /usr/sbin/nologin pipelens \
-    && pip install --no-cache-dir . \
+    && pip install --no-cache-dir --require-hashes --only-binary=:all: -r requirements.txt \
     && python -m pip uninstall --yes pip setuptools \
     && chown -R pipelens:pipelens /app
 

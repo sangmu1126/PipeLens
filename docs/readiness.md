@@ -18,6 +18,7 @@
 | 자동 해결 추적 | 통과 | 같은 Workflow·PR/브랜치와 run attempt의 후속 성공·계속 실패, 복구 시간 회귀 검증 |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
 | Dockerfile base image | 통과 | Python·Node·Nginx multi-platform digest 고정과 CI 정책 검사 |
+| Python runtime lock | 통과 | API·worker image가 `requirements.txt`의 해시 고정 36개 package만 binary로 설치, CI가 lock 최신 여부와 `pyproject.toml` 일치 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI·로컬에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
 | 컨테이너 SBOM | 통과 | CycloneDX 1.6: API 125개, 대시보드 71개 component artifact |
@@ -583,6 +584,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] 미래 GitHub Release의 repository 불변성 설정
 - [ ] `immutable: true`인 차기 GitHub Release와 digest-pinned production 배포
 - [x] API·대시보드 Dockerfile base image의 multi-platform digest 고정과 CI 정책 검사
+- [x] API·worker image Python dependency의 해시 고정 lock 설치와 CI 최신성 검사
 - [x] fixable HIGH/CRITICAL container vulnerability scan
 - [x] CI build image CycloneDX SBOM
 - [x] release image SBOM·provenance
