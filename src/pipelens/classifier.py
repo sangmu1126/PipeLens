@@ -156,11 +156,14 @@ RULES = (
 )
 
 ERROR_LINE = re.compile(r"(?:error|exception|failed|fatal|panic|timeout|denied|not found)", re.I)
+# Keeps blocking scanner table rows in the extracted context without making them first errors.
+SCANNER_FINDING_ROW = re.compile(r"[│|]\s*(?:HIGH|CRITICAL)\s*[│|]")
 
 
 def has_error_signal(text: str) -> bool:
     return bool(
         ERROR_LINE.search(text)
+        or SCANNER_FINDING_ROW.search(text)
         or any(pattern.search(text) for rule in RULES for pattern in rule.patterns)
     )
 
@@ -201,10 +204,12 @@ def extract_error_context(log: str, context_lines: int = 8, max_sections: int = 
         return "\n".join(lines[-min(len(lines), context_lines * 2) :])
 
     ranges: list[tuple[int, int]] = []
-    for index in indexes[:max_sections]:
+    for index in indexes:
         start, end = max(0, index - context_lines), min(len(lines), index + context_lines + 1)
         if ranges and start <= ranges[-1][1]:
             ranges[-1] = (ranges[-1][0], max(ranges[-1][1], end))
-        else:
+        elif len(ranges) < max_sections:
             ranges.append((start, end))
+        else:
+            break
     return "\n...\n".join("\n".join(lines[start:end]) for start, end in ranges)

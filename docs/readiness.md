@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-12·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
-| 수정 diff 평가 | 통과 | 14/14, 100%; 규칙 생성·생성 금지·정상 LLM·공격성/손상 LLM 사례, 검증 5·거부 6, CI 기준 100% |
-| 고정 진단 평가 | 통과 | 16/16, 100%; 요구 범주 10건, 실제 CI 회귀 3건, 보안 검사 차단 3건, CI 최소 기준은 80% |
+| 수정 diff 평가 | 통과 | 15/15, 100%; 규칙 생성(실제 Trivy 로그 포함)·생성 금지·정상 LLM·공격성/손상 LLM 사례, 검증 7·거부 6, CI 기준 100% |
+| 고정 진단 평가 | 통과 | 18/18, 100%; 요구 범주 10건, 실제 CI 회귀 3건, 보안 검사 차단 합성 3건·실제 2건, CI 최소 기준은 80% |
 | 백엔드 테스트 | 통과 | 로컬 447 passed, integration 2 skipped, DB resource warning 0; CI에서 service integration 별도 통과 |
 | Python 정적 타입 | 통과 | production·operations·tests 98개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python coverage | 기준선 | branch 포함 전체 74.73%; production 86.50%, operations 67.15%; XML·JSON CI artifact 14일 보관 |

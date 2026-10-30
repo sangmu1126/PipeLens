@@ -90,8 +90,9 @@ def test_pip_failure_without_available_versions_has_no_bump() -> None:
 
 def test_scanner_table_rows_bump_to_the_fixed_version() -> None:
     log = (
+        "│ Library │ Vulnerability │ Severity │ Status │ Installed Version │ Fixed Version │\n"
         "│ cryptography (METADATA) │ CVE-2026-1 │ HIGH │ fixed │ 50.0.1 │ 50.0.2, 51.0.0 │\n"
-        "| libexpat1 | CVE-2026-2 | CRITICAL | affected | 2.7.1-1 |  |\n"
+        "│ libexpat1 │ CVE-2026-2 │ CRITICAL │ affected │ 2.7.1-1 │  │\n"
     )
 
     assert find_version_bumps(log) == [

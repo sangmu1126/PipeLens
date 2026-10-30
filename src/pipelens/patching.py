@@ -19,6 +19,15 @@ PIP_UNSATISFIED = re.compile(
     re.I,
 )
 TABLE_SEPARATOR = re.compile(r"\s*[│|]\s*")
+TABLE_BORDER_CHARS = "┌├└─+-="
+# Trivy merges vertically repeated cells, leaving them blank on the following library rows.
+MERGED_SCANNER_COLUMNS = (
+    "vulnerability",
+    "severity",
+    "status",
+    "installed version",
+    "fixed version",
+)
 VERSION_TOKEN = re.compile(r"^[0-9][A-Za-z0-9.+_:~-]*$")
 PINNED_VERSION_VALUE = re.compile(r"==[^\s;,\"'\\]+")
 WORKFLOW_PREFIX = ".github/workflows/"
@@ -121,9 +130,7 @@ def find_version_bumps(log: str) -> list[VersionBump]:
                     VersionBump(package, current, available[-1], "설치 가능한 최신 버전")
                 )
             continue
-        bump = _scanner_row_bump(line)
-        if bump:
-            bumps.append(bump)
+    bumps.extend(_scanner_table_bumps(log))
     unique: dict[tuple[str, str], VersionBump] = {}
     for bump in bumps:
         unique.setdefault((bump.package.lower(), bump.current), bump)
@@ -343,17 +350,43 @@ def _is_hash_locked(content: str, pattern: re.Pattern[str]) -> bool:
     return False
 
 
-def _scanner_row_bump(line: str) -> VersionBump | None:
-    if "│" not in line and line.count("|") < 6:
+def _scanner_table_bumps(log: str) -> list[VersionBump]:
+    """Read scanner tables whose header names the columns, carrying merged cells downward."""
+    bumps: list[VersionBump] = []
+    columns: dict[str, int] | None = None
+    previous: dict[str, str] = {}
+    for line in log.splitlines():
+        if "│" not in line and line.count("|") < 4:
+            if line.strip() and line.lstrip()[0] not in TABLE_BORDER_CHARS:
+                columns = None
+            continue
+        cells = [cell.strip() for cell in TABLE_SEPARATOR.split(line.strip().strip("│|"))]
+        header = [cell.lower() for cell in cells]
+        if "library" in header and "installed version" in header and "fixed version" in header:
+            columns = {name: index for index, name in enumerate(header)}
+            previous = {}
+            continue
+        if columns is None or len(cells) < len(columns):
+            continue
+        row = {name: cells[index] for name, index in columns.items()}
+        if not row["library"] or row["library"][0] in "├┼┤─":
+            continue
+        for name in MERGED_SCANNER_COLUMNS:
+            if not row.get(name) and previous.get(name):
+                row[name] = previous[name]
+        previous = row
+        bump = _scanner_row_bump(row)
+        if bump:
+            bumps.append(bump)
+    return bumps
+
+
+def _scanner_row_bump(row: dict[str, str]) -> VersionBump | None:
+    if row.get("status", "").lower() != "fixed":
         return None
-    cells = [
-        cell.strip() for cell in TABLE_SEPARATOR.split(line.strip().strip("│|")) if cell.strip()
-    ]
-    if len(cells) < 6 or cells[3].lower() != "fixed":
-        return None
-    package = re.sub(r"\s*\(.*\)$", "", cells[0])
-    current = cells[4]
-    target = cells[5].split(",")[0].strip()
+    package = re.sub(r"\s*\(.*\)$", "", row["library"])
+    current = row["installed version"]
+    target = row["fixed version"].split(",")[0].strip()
     if not (VERSION_TOKEN.match(current) and VERSION_TOKEN.match(target)) or current == target:
         return None
-    return VersionBump(package, current, target, f"{cells[1]} 수정 버전")
+    return VersionBump(package, current, target, f"{row.get('vulnerability', '보안')} 수정 버전")
