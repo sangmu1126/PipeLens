@@ -154,7 +154,8 @@ LLM은 신뢰 수준이 명시적으로 `trusted`인 경우에만 호출한다. 
 로그, diff와 workflow를 외부 provider로 보내지 않고 규칙 진단만 사용한다.
 
 수정 diff도 `trusted`에서만 다룬다. 규칙은 로그가 목표 버전을 직접 제공하는 경우(pip `from versions`,
-스캐너 표의 `fixed` 행)에 관련 변경 파일과 workflow의 정확한 `name==version` 고정을 바꾸는 diff를 만든다.
+스캐너 표의 `fixed` 행)에 관련 변경 파일, workflow, 로그가 직접 이름을 댄 의존성 manifest(`requirements*.txt`,
+`constraints*.txt`, `pyproject.toml`, 상대 경로·최대 5개)의 정확한 `name==version` 고정을 바꾸는 diff를 만든다.
 규칙·LLM diff는 모두 같은 검증을 통과해야 유지된다.
 
 - 대상 파일이 관련 변경 파일 또는 workflow이고 head SHA 내용을 읽을 수 있는가

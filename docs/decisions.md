@@ -1476,3 +1476,16 @@
 - 관련: `src/pipelens/patching.py`, `src/pipelens/classifier.py`, `src/pipelens/preprocessing.py`,
   `evaluation/logs/17-real-trivy-api-image.log`, `evaluation/logs/18-real-trivy-dashboard-image.log`,
   D-089, D-092.
+
+## D-094. 규칙 diff는 로그가 이름을 댄 의존성 manifest도 대상으로 삼음
+
+- 결정: 버전 변경 후보가 있을 때 로그에 등장한 `requirements*.txt`, `constraints*.txt`, `pyproject.toml`
+  경로를 head SHA에서 읽어 규칙 diff 대상에 더한다. 상대 경로만 허용하고 `..`는 제외하며 최대 5개다. LLM
+  diff가 고칠 수 있는 파일 범위는 넓히지 않는다.
+- 이유: 대부분의 의존성 실패는 PR이 바꾸지 않은 manifest에서 발생한다(`pip install -r ci/requirements.txt`).
+  변경 파일과 workflow만 보면 이런 실패에 diff를 낼 수 없었다. 로그가 직접 경로를 대는 경우는 근거가
+  명확하고, 결과 diff는 기존 검증을 그대로 통과해야 한다.
+- 대안: 저장소 전체 manifest 탐색, 변경 파일만 유지, LLM에 대상 파일 선택을 맡김.
+- 결과: `trusted` 실행에서 추가 GitHub contents 요청이 최대 5건 늘 수 있다. 비신뢰 실행은 여전히 파일을
+  읽지 않는다.
+- 관련: `src/pipelens/patching.py`, `src/pipelens/pipeline.py`, D-090.
