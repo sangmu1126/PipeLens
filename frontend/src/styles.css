@@ -189,6 +189,8 @@ pre { max-width: 100%; overflow-x: auto; margin: 10px 0 0; padding: 11px; color:
 .suggestions p { margin: 2px 0 6px; font-size: 12px; line-height: 1.55; }
 .suggestions code { color: var(--subtle); font-size: 9px; }
 .suggestions .patch-verified { display: block; margin-top: 6px; color: var(--blue); font-size: 9px; font-weight: 600; }
+.suggestions li > div { min-width: 0; }
+.suggestions pre { white-space: pre; }
 .muted { color: var(--subtle); font-size: 11px; }
 .detail-empty { min-height: 470px; padding: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--subtle); text-align: center; line-height: 1.65; }
 .detail-empty span { width: 52px; height: 52px; display: grid; place-items: center; color: var(--blue); background: var(--blue-soft); border-radius: 50%; font-size: 28px; }
