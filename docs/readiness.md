@@ -18,7 +18,7 @@
 | 자동 해결 추적 | 통과 | 같은 Workflow·PR/브랜치와 run attempt의 후속 성공·계속 실패, 복구 시간 회귀 검증 |
 | API·대시보드 이미지 | 통과 | CI amd64와 Docker Desktop arm64 build, 최종 non-root USER 검사 |
 | Dockerfile base image | 통과 | Python·Node·Nginx multi-platform digest 고정과 CI 정책 검사 |
-| 검증된 수정 diff | 통과 | head SHA 파일 적용·대상·크기·secret 검증을 통과한 규칙·LLM diff만 게시, 비신뢰 실행은 파일 미조회 |
+| 검증된 수정 diff | 통과 | head SHA 파일 적용·대상·크기·secret·위험 변경 정책·YAML/TOML/JSON 파싱 검증을 통과한 규칙·LLM diff만 게시, 비신뢰 실행은 파일 미조회 |
 | Python runtime lock | 통과 | API·worker image가 `requirements.txt`의 해시 고정 36개 package만 binary로 설치, CI가 lock 최신 여부와 `pyproject.toml` 일치 검사 |
 | 대시보드 컨테이너 기동 | 통과 | CI·로컬에서 Nginx 기동 후 내부 8080 HTTP smoke test |
 | 컨테이너 취약점 gate | 통과 | 실제 빌드 이미지의 fixable HIGH/CRITICAL OS·library 항목 0 |
