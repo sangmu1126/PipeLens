@@ -1,78 +1,134 @@
 # PipeLens
 
-PipeLens는 GitHub Actions 실패 로그를 단순 요약하지 않고, 로그와 실행 정보를 교차
-검증해 근거가 있는 원인과 해결 방향을 제시하는 CI 진단 시스템입니다.
+PipeLens는 GitHub Actions 실패를 **근거 중심으로 진단**하는 GitHub App입니다. 실패 로그를
+단순 요약하지 않고 실패 job·step, 정제된 로그, 변경 diff, 실행 시점 workflow를 교차
+검증해 입력에 실제로 존재하는 근거가 있는 원인과 해결 방향만 PR 코멘트나 Commit Check로
+게시합니다.
 
-## 포트폴리오 데모
+- LLM 없이도 동작하는 규칙 기반 분류(10개 실패 범주)와 선택적 OpenAI 보강
+- 로그·diff·workflow의 secret/개인정보 마스킹, 외부 fork 입력 격리
+- Redis worker replica, lease 복구, fencing token으로 중복·지연 실행 부작용 차단
+- React 대시보드, installation 단위 접근 제어, Prometheus·Grafana·Alertmanager 관측
 
-현재 소스 버전은 **v0.2.0**이며, 별도 유료 도메인이나 OpenAI API 없이도 핵심 흐름을
-재현할 수 있습니다. 테스트용 GitHub Actions가 의도적으로 존재하지 않는 `pip==0.0.0`을
-설치해 실패하면 PipeLens가 signed webhook을 받고 로그의 비밀값을 제거한 뒤
-`dependency_installation_failure`로 분류하고 GitHub Commit Check를 게시합니다.
+현재 버전은 **v0.2.0**입니다 ([릴리스 노트](https://github.com/sangmu1126/PipeLens/releases/tag/v0.2.0)).
+
+## 목차
+
+- [동작 방식](#동작-방식)
+- [데모와 검증 증적](#데모와-검증-증적)
+- [주요 기능](#주요-기능)
+- [기술 스택](#기술-스택)
+- [빠른 시작](#빠른-시작)
+- [테스트와 품질 검사](#테스트와-품질-검사)
+- [GitHub App 설정](#github-app-설정)
+- [신뢰 경계](#신뢰-경계)
+- [신뢰성과 SLO](#신뢰성과-slo)
+- [API](#api)
+- [프로젝트 구조](#프로젝트-구조)
+- [문서](#문서)
+
+## 동작 방식
+
+```mermaid
+flowchart LR
+    GH[GitHub webhook<br/>workflow_run.completed] --> API[FastAPI API]
+    API --> DB[(SQLite / PostgreSQL)]
+    API --> Q{Queue}
+    Q -->|개발| MW[API 내장 memory worker]
+    Q -->|Compose·운영| R[(Redis)] --> W[독립 worker]
+    MW --> P[분석 파이프라인]
+    W --> P
+    P --> GHAPI[GitHub API<br/>로그·diff·게시]
+    P -.->|trusted 입력만| LLM[OpenAI 선택]
+    P --> DB
+    UI[React 대시보드] --> API
+```
+
+1. **수신** — `POST /webhooks/github`가 HMAC-SHA256 서명을 검증하고 실패한
+   `workflow_run`만 workflow run ID 기준으로 중복 없이 저장·큐에 적재한 뒤 `202`를 반환합니다.
+   성공한 실행은 같은 브랜치·PR의 직전 실패를 `resolved`/`still_failing`으로 연결하고 복구
+   시간을 기록합니다.
+2. **분석** — worker가 6단계 파이프라인을 실행하고 단계별 이력과 소요 시간을 남깁니다.
+
+   | 단계 | 내용 |
+   | --- | --- |
+   | `collecting` | installation token으로 실패 job·step·로그, PR 또는 직전 성공 이후 diff, 실행 시점 workflow 수집, 신뢰 수준 판정 |
+   | `sanitizing` | ANSI·timestamp 제거, chunk 단위 마스킹, 오류 신호 주변 구간 추출 |
+   | `classifying` | 최초 오류 신호를 우선하는 규칙 엔진으로 10개 범주 또는 `unknown` 판정 |
+   | `correlating` | 로그 경로·파일명·코드 토큰·범주 친화도로 변경 파일 점수화 |
+   | `diagnosing` | 규칙 진단을 먼저 만들고, `trusted` 입력이면 LLM Structured Outputs 결과를 근거·경로·분류 충돌 검증 후 채택 |
+   | `publishing` | PR이 있으면 멱등 PR 코멘트, 없으면 Commit Check 생성 또는 갱신 |
+
+3. **확인** — 대시보드에서 근거, 관련 파일, 비교 SHA 범위, 해결 상태를 보고 정확도
+   피드백을 남깁니다.
+
+분류 범주: `test_failure`, `build_failure`, `dependency_installation_failure`,
+`lint_or_formatter_failure`, `docker_build_failure`, `deployment_authentication_failure`,
+`missing_environment_variable`, `timeout`, `resource_exhaustion`,
+`github_actions_workflow_error` (해당 없음은 억지로 매핑하지 않고 `unknown`).
+
+자세한 설계는 [아키텍처 문서](docs/architecture.md)를 참고하세요.
+
+## 데모와 검증 증적
+
+유료 도메인이나 OpenAI API 없이 핵심 흐름을 실제 GitHub에서 재현했습니다. 테스트 저장소의
+workflow가 의도적으로 존재하지 않는 `pip==0.0.0`을 설치해 실패하면, PipeLens가 signed webhook을
+받아 로그의 비밀값을 제거하고 `dependency_installation_failure`로 분류한 뒤 Commit Check를
+게시합니다.
 
 - [의도적 실패 실행](https://github.com/sangmu1126/PipeLens-acceptance/actions/runs/35074952820)
 - [PipeLens가 게시한 Commit Check](https://github.com/sangmu1126/PipeLens-acceptance/runs/104725115425)
 - [무료 공개 E2E 검증 기록](docs/acceptance-runs/2026-09-16-free-quick-tunnel.md)
 
-이 검증에서는 실제 GitHub App OAuth, App 설치, webhook 서명, worker 분석, 대시보드 접근
-제어와 Check 게시까지 연결했습니다. 분석은 규칙 기반 fallback을 사용해 OpenAI 호출과 비용이
-발생하지 않았고, 합성 `ghp_...` 문자열이 저장 결과와 게시물에 남지 않는 것도 확인했습니다.
-Cloudflare Quick Tunnel 주소는 시연할 때마다 바뀌는 임시 주소이므로 공개 데모 URL은 고정해서
-제공하지 않습니다. 고정 도메인, HSTS, 운영용 secret manager와 실제 호출 알림 채널은 제품
-배포 범위이며 이 포트폴리오의 완료 조건에는 포함하지 않습니다.
+이 검증은 실제 GitHub OAuth, App 설치, webhook 서명, worker 분석, 대시보드 접근 제어, Check
+게시를 연결했습니다. 분석은 규칙 기반 fallback을 사용해 OpenAI 비용이 발생하지 않았고, 합성
+`ghp_...` 문자열이 저장 결과와 게시물에 남지 않는 것도 확인했습니다. Cloudflare Quick Tunnel
+주소는 시연마다 바뀌므로 고정 공개 데모 URL은 제공하지 않습니다. 고정 도메인, HSTS, 운영
+secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포트폴리오의 완료 조건에 포함하지
+않습니다.
 
-개발 과정과 현재 판단을 포함한 상세 기록은 [`docs/`](docs/README.md)에서 확인할 수
-있습니다.
+## 주요 기능
 
-- [개발 연혁](docs/development-history.md)
-- [현재 아키텍처](docs/architecture.md)
-- [주요 의사결정 기록](docs/decisions.md)
-- [검증 및 운영 준비 현황](docs/readiness.md)
-- [MVP 요구사항 추적성](docs/requirements-traceability.md)
-- [실제 GitHub App E2E 증적 절차](docs/github-app-acceptance.md)
-- [컨테이너 릴리스 정책과 절차](docs/release.md)
-- [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)
-- [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)
-- [저장소 보호와 변경 절차](docs/repository-governance.md)
-- [기여 가이드](CONTRIBUTING.md)
-- [행동강령](CODE_OF_CONDUCT.md)
-- [비공개 보안 신고 정책](SECURITY.md)
+**수집과 정제**
+- `workflow_run.completed` webhook 수신, HMAC-SHA256 서명 검증, run ID 기준 중복 방지
+- 실패 job·step·로그와 workflow·branch·runner labels 수집(마스킹 후 LLM 입력·대시보드 제공)
+- PR 변경 파일 또는 직전 성공 실행 이후 diff, 실행 시점 workflow 수집
+- GitHub token, AWS key, JWT, Authorization header, API key, 비밀번호 환경변수, 이메일 마스킹
+- 대용량 로그의 chunk별 마스킹과 오류 구간 추출 — 원본 로그 전체는 저장하지 않음
 
-현재 저장소에는 다음 기능이 구현돼 있습니다.
+**진단**
+- 최초 오류를 우선하는 10개 범주 규칙 분류와 관련 파일 점수화
+- 교체 가능한 LLM provider와 OpenAI Responses API Structured Outputs
+- 입력에 실제 존재하는 근거·파일 경로만 허용하고 규칙 분류와 충돌하면 규칙 진단 유지
+- LLM 장애·검증 실패 시에도 규칙 기반 fallback 진단을 항상 보존
 
-- `workflow_run.completed` webhook 수신 및 HMAC-SHA256 서명 검증
-- 실패한 workflow만 수집하고 workflow run ID로 중복 분석 방지
-- GitHub App installation token으로 실패 job·step과 로그 수집
-- 실패 job의 workflow·branch·runner labels를 마스킹해 LLM 입력과 대시보드에 제공
-- PR 변경 파일 또는 직전 성공 실행 이후 diff와 실행 시점 workflow 수집
-- ANSI/타임스탬프 제거 및 주요 secret/개인정보 마스킹
-- 대용량 로그의 청크별 마스킹·오류 구간 추출과 최초 규칙 오류 우선 판정
-- 요구사항의 10개 실패 범주 규칙 기반 분류
-- 로그 경로·파일명·오류 범주·변경 코드 식별자를 이용한 관련 파일 점수화
-- 교체 가능한 LLM provider와 OpenAI Responses API Structured Outputs 지원
-- LLM 근거·파일 경로·규칙 분류 충돌 검증 및 규칙 기반 fallback
-- 입력 로그에 실제로 존재하는 근거만 허용하는 결과 검증
-- Webhook·분석·오류 범주·마스킹·LLM 사용량과 비용의 Prometheus 지표
-- 수집·정제·분류·연관·진단·게시 단계 이력과 대기·실행·전체 소요 시간 기록
-- 메모리 또는 Redis queue와 ack·재시도를 지원하는 독립 분석 worker
+**게시와 대시보드**
+- PR에는 숨은 run marker로 찾는 멱등 코멘트, PR이 없는 실행에는 Commit Check
+- 다음 Workflow 완료를 연결해 성공 전환·계속 실패와 복구 시간 자동 추적
+- 분석 이력·근거·관련 diff·단계 진행·피드백·run 딥링크를 제공하는 React 대시보드
+- GitHub OAuth 로그인, Fernet 암호화 사용자 토큰, installation 단위 접근 제어
+
+**운영**
+- memory 또는 Redis queue, ack·재시도·lease 복구를 지원하는 독립 worker
 - SQLAlchemy 기반 SQLite/PostgreSQL 저장 계층과 Alembic migration
-- 분석 이력·근거·관련 diff·피드백과 run 딥링크를 제공하는 React 대시보드
-- GitHub OAuth 로그인, 암호화된 사용자 토큰, installation 단위 분석 접근 제어
-- 외부 Fork 실행 판별과 비신뢰 입력의 LLM·Commit Check 격리
-- PR에는 멱등 코멘트, PR이 없는 실행에는 Commit Check로 진단 결과 게시
-- 같은 브랜치 또는 PR의 다음 Workflow 완료를 연결해 성공 전환·계속 실패와 복구 시간 자동 추적
+- webhook·분석·범주·마스킹·queue·SLO·HTTP retry·LLM token/비용 Prometheus 지표
+- Prometheus alert 규칙, Alertmanager routing, provisioned Grafana dashboard
 
-첫 [`v0.1.0` 릴리스](https://github.com/sangmu1126/PipeLens/releases/tag/v0.1.0)는 API와
-대시보드 GHCR image를 제공한다. 각 image는 취약점·기동 검사를 통과했고 SLSA provenance와
-CycloneDX SBOM attestation이 digest에 연결돼 있다. 운영에서는 version tag보다
-[기록된 immutable digest](docs/releases/v0.1.0.md)를 사용한다.
-소스 Dockerfile의 Python·Node·Nginx base image도 읽을 수 있는 tag와 multi-platform digest를
-함께 고정하며 CI가 새 stage의 mutable reference를 차단한다.
+## 기술 스택
 
-## 로컬 실행
+| 영역 | 사용 기술 |
+| --- | --- |
+| Backend | Python 3.12–3.14, FastAPI, Pydantic Settings, httpx, PyJWT, cryptography(Fernet) |
+| 저장·큐 | SQLAlchemy 2, Alembic, SQLite / PostgreSQL 18(psycopg 3), Redis 8 |
+| Frontend | React 19, TypeScript, Vite, Vitest, Testing Library, axe-core, Playwright |
+| 관측 | prometheus-client, Prometheus, Alertmanager, Grafana 13 |
+| 배포·CI | Docker(digest 고정 base image), Docker Compose, GitHub Actions, CodeQL, GHCR(SBOM·SLSA provenance) |
 
-Python 3.12 이상 3.15 미만이 필요합니다. CI는 지원 범위의 하한인 3.12에서 전체 통합
-검사를, 상한 직전인 3.14에서 단위·API 호환성 검사를 실행합니다.
+## 빠른 시작
+
+### 로컬 (SQLite + memory queue)
+
+Python 3.12 이상 3.15 미만, 대시보드 개발에는 Node.js 22 또는 24가 필요합니다.
 
 ```bash
 python -m venv .venv
@@ -82,12 +138,56 @@ cp .env.example .env
 uvicorn pipelens.main:app --reload
 ```
 
-API 문서는 `http://localhost:8000/docs`에서 볼 수 있습니다. `/healthz`는 프로세스 생존
-여부를, `/readyz`는 데이터베이스와 분석 큐를 포함한 요청 처리 가능 여부를 확인합니다.
+기존 로컬 SQLite schema를 명시적으로 갱신하려면 `alembic upgrade head`를 실행합니다.
+
+API 문서는 `http://localhost:8000/docs`에서 볼 수 있습니다. `/healthz`는 프로세스 생존,
+`/readyz`는 데이터베이스와 분석 큐를 포함한 요청 처리 가능 여부를 확인합니다. 로컬에서 분석
+API를 인증 없이 호출하려면 `PIPELENS_AUTH_REQUIRED=false`를 명시합니다(운영 모드에서는 거부).
+
+### Docker Compose (PostgreSQL + Redis + 관측 스택)
 
 ```bash
-pytest
+cp .env.example .env
+docker compose up --build
+```
+
+Compose는 PostgreSQL health check 후 `alembic upgrade head`를 실행하고 API와 독립 worker를
+시작합니다. API healthcheck는 `/readyz`를 사용하며 대시보드는 API가 준비된 뒤 시작합니다.
+
+| 서비스 | 주소 |
+| --- | --- |
+| 대시보드 | http://localhost:3000 |
+| API 문서 | http://localhost:8000/docs |
+| Worker 지표 | http://localhost:8001/metrics |
+| Prometheus | http://localhost:9090 |
+| Alertmanager | http://localhost:9093 |
+| Grafana | http://localhost:3001 |
+
+> [!WARNING]
+> Compose의 Grafana는 로컬 관측용 익명 Viewer로 실행됩니다. 외부에 공개할 때는 반드시 인증을
+> 별도로 구성하세요. Alertmanager 기본 receiver는 외부 호출을 보내지 않으므로 운영에서는
+> [Alertmanager 절차](docs/alertmanager.md)에 따라 알림 채널을 연결합니다.
+
+> [!IMPORTANT]
+> 기존 PostgreSQL 17 volume이 있다면 [PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md),
+> Grafana 12 volume이 있다면 [Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)를 먼저
+> 따라 backup을 만들어야 합니다.
+
+### 릴리스 이미지
+
+정식 릴리스는 API와 대시보드 GHCR image를 제공합니다. 각 image는 취약점·non-root 기동 검사를
+통과했고 SLSA provenance와 CycloneDX SBOM attestation이 digest에 연결돼 있습니다. 운영에서는
+version tag보다 릴리스 노트에 기록된 immutable digest를 사용하세요
+([v0.2.0](https://github.com/sangmu1126/PipeLens/releases/tag/v0.2.0),
+[v0.1.0 증적](docs/releases/v0.1.0.md), [릴리스 절차](docs/release.md)).
+
+## 테스트와 품질 검사
+
+```bash
 ruff check .
+mypy
+pytest -q
+python ops/ci/verify_markdown_links.py
 pipelens-evaluate --minimum-accuracy 0.8
 npm --prefix frontend test
 npx --prefix frontend playwright install chromium
@@ -95,57 +195,26 @@ npm --prefix frontend run test:e2e
 npm --prefix frontend run build
 ```
 
-## MVP 정확도 평가
+CI는 지원 범위 하한인 Python 3.12에서 전체 통합 검사를, 상한 직전인 3.14에서 단위·API 호환성
+검사를 실행하며 Ruff, mypy(strict), 백엔드·대시보드 테스트, Chromium OAuth E2E, 정확도
+게이트, OpenAPI drift, action·Dockerfile pinning 검사를 함께 수행합니다. 브라우저 검증 범위는
+[브라우저 E2E 문서](docs/browser-e2e.md)에 있습니다.
 
-`evaluation/scenarios.json`에는 테스트·빌드·의존성·Lint·Docker·배포 인증·환경변수·
-Timeout·리소스·Workflow 오류의 10개 요구 범주와 실제 PipeLens CI 실패 3건을 재현하는
-13개 고정 로그가 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두 채점하며 기본 통과
-기준은 완료 조건과 같은 80%입니다.
+### 진단 정확도 평가
+
+[`evaluation/scenarios.json`](evaluation/scenarios.json)에는 10개 요구 범주와 실제 PipeLens CI
+실패 3건을 재현한 13개 고정 로그가 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두
+채점하며 기본 통과 기준은 80%입니다.
 
 ```bash
 pipelens-evaluate
 pipelens-evaluate --json
 ```
 
-GitHub Actions CI에서도 Ruff, 전체 백엔드·대시보드 테스트, Chromium OAuth E2E, 80% 정확도
-게이트와 대시보드 빌드를 함께 실행합니다. 브라우저 검증의 범위와 실제 GitHub 인수 테스트의
-구분은 [브라우저 E2E 문서](docs/browser-e2e.md)에 기록합니다.
+### PostgreSQL·Redis 통합 테스트
 
-실제 worker 컨테이너 4개, PostgreSQL pool, controlled provider와 worker·Redis 장애를 한 번에
-검증하는 짧은 격리 smoke는 Docker가 실행 중일 때 다음처럼 재현합니다. 고유 이름의 container,
-network, volume만 만들며 종료 시 정리하고 결과 디렉터리는 덮어쓰지 않습니다.
-
-```bash
-python -m ops.worker.run_container_soak \
-  --profile smoke \
-  --output-dir /tmp/pipelens-worker-soak
-```
-
-1시간 launch profile과 산출물 해석은
-[Worker replica drill 문서](docs/worker-replica-drill.md)를 참고합니다.
-
-Docker를 사용한다면 `.env`를 만든 뒤 다음 명령으로 실행합니다.
-
-```bash
-docker compose up --build
-```
-
-대시보드는 `http://localhost:3000`, API 문서는 `http://localhost:8000/docs`,
-Prometheus는 `http://localhost:9090`, Alertmanager는 `http://localhost:9093`, Grafana 운영
-대시보드는 `http://localhost:3001`에서 확인할 수 있습니다. Compose의 Grafana는 로컬 관측용
-익명 Viewer로 실행되므로
-외부에 공개하는 배포에서는 반드시 인증을 별도로 구성해야 합니다.
-기존 Grafana 12 volume을 보유한 환경은 13을 기동하기 전에
-[Grafana 13 업그레이드 절차](docs/grafana-13-upgrade.md)에 따라 정지 상태 backup을 만들어야
-합니다.
-Prometheus는 API·Worker를 각각 수집하고 서비스 중단, 분석 시작·완료 SLO 위반,
-큐 backlog 규칙을 Alertmanager로 전달합니다. 기본 receiver는 외부 호출을 보내지 않으므로
-운영 배포에서는 [Alertmanager 절차](docs/alertmanager.md)에 따라 secret manager로 조직의 알림
-채널을 연결하고 [production 채널 증적 drill](docs/alertmanager-channel-drill.md)로 firing·resolved,
-억제 정책, credential rotation과 retry 결과를 기록해야 합니다.
-
-PostgreSQL·Redis 통합 테스트는 외부 서비스 URL을 명시했을 때만 실행됩니다. 마이그레이션
-실수를 방지하기 위해 데이터베이스 이름은 반드시 `_test`로 끝나야 합니다.
+외부 서비스 URL을 명시했을 때만 실행됩니다. 실수로 실제 DB를 migration하지 않도록 데이터베이스
+이름은 반드시 `_test`로 끝나야 합니다.
 
 ```bash
 PIPELENS_TEST_DATABASE_URL=postgresql+psycopg://pipelens:pipelens@localhost:5432/pipelens_test \
@@ -153,32 +222,33 @@ PIPELENS_TEST_REDIS_URL=redis://localhost:6379/0 \
 pytest -q tests/integration
 ```
 
-Compose는 PostgreSQL health check 이후 `alembic upgrade head`를 실행하고 API와 worker를
-시작합니다. 기존 PostgreSQL 17 volume을 보유한 환경은 18을 기동하기 전에 반드시
-[PostgreSQL 18 업그레이드 절차](docs/postgres-18-upgrade.md)에 따라 dump/restore해야 합니다.
-로컬 SQLite schema를 명시적으로 갱신하려면 다음 명령을 사용합니다.
+### Worker container smoke
+
+Docker가 실행 중이면 실제 worker 컨테이너 4개, PostgreSQL pool, controlled provider와
+worker·Redis 장애를 한 번에 검증합니다. 고유 이름의 container·network·volume만 만들고 종료 시
+정리하며 결과 디렉터리는 덮어쓰지 않습니다. 1시간 profile과 산출물 해석은
+[Worker replica drill](docs/worker-replica-drill.md)을 참고하세요.
 
 ```bash
-alembic upgrade head
+python -m ops.worker.run_container_soak \
+  --profile smoke \
+  --output-dir /tmp/pipelens-worker-soak
 ```
 
 ## GitHub App 설정
 
-Webhook URL은 `https://<host>/webhooks/github`, 이벤트는 **Workflow run**으로 설정합니다.
-Callback URL은 `https://<host>/auth/github/callback`, Setup URL은
-`https://<host>/github/setup`으로 지정합니다. 사용자가 먼저 PipeLens에 로그인한 뒤 App을
-설치하고 Setup URL로 돌아오는 흐름이므로 **Request user authorization during
-installation**은 끕니다.
-공개 ingress를 연결한 뒤에는 [HTTPS acceptance preflight](docs/https-acceptance.md)로 TLS,
-HSTS, redirect, readiness와 OAuth 시작 경계를 확인하고, 같은 문서의 실제 E2E 증적 단계에서
-browser login·logout, forwarding과 signed webhook 결과를 redacted JSON으로 기록합니다.
-실제 App을 테스트 저장소에 설치한 뒤의 실패 run, PR 코멘트·Commit Check, 재전달, SLO와
-외부 fork 경계는 [GitHub App E2E 증적 절차](docs/github-app-acceptance.md)에 따라 별도로 기록합니다.
+| 항목 | 값 |
+| --- | --- |
+| Webhook URL | `https://<host>/webhooks/github` |
+| 구독 이벤트 | **Workflow run** |
+| Callback URL | `https://<host>/auth/github/callback` |
+| Setup URL | `https://<host>/github/setup` |
+| Request user authorization during installation | 끔 (로그인 후 설치 → Setup URL로 복귀하는 흐름) |
+| 권한 | Actions(read), Checks(read/write), Contents(read), Pull requests(read/write), Metadata(read) |
 
-Webhook secret과 아래 환경변수를 구성해야 실제 로그를 가져올 수 있습니다. 운영에서는
-HTTPS를 사용하고 `SESSION_COOKIE_SECURE=true`로 설정해야 합니다. Fernet 키는
-`python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'`로
-생성할 수 있습니다.
+### 환경변수
+
+전체 목록은 [`.env.example`](.env.example)에 있습니다. 운영 예시는 다음과 같습니다.
 
 ```dotenv
 PIPELENS_ENVIRONMENT=production
@@ -193,8 +263,11 @@ PIPELENS_SESSION_SECRET=...
 PIPELENS_TOKEN_ENCRYPTION_KEY=...
 PIPELENS_TOKEN_ENCRYPTION_FALLBACK_KEYS=...
 PIPELENS_SESSION_COOKIE_SECURE=true
+PIPELENS_DATABASE_URL=postgresql+psycopg://...
+PIPELENS_QUEUE_BACKEND=redis
+PIPELENS_REDIS_URL=redis://...
 PIPELENS_PUBLISH_CHECKS=true
-PIPELENS_LLM_PROVIDER=openai
+PIPELENS_LLM_PROVIDER=openai          # none이면 규칙 기반 진단만 사용
 PIPELENS_OPENAI_API_KEY=...
 PIPELENS_OPENAI_MODEL=gpt-5.6
 PIPELENS_LLM_INPUT_COST_PER_MILLION=0
@@ -208,94 +281,146 @@ PIPELENS_WORKER_LEASE_SECONDS=60
 PIPELENS_WORKER_HEARTBEAT_SECONDS=15
 ```
 
-`PIPELENS_ENVIRONMENT=production`에서는 인증 활성화, 외부 URL의 HTTPS 사용, Secure 세션
-쿠키, 32자 이상의 Webhook·세션 secret, 별도 Fernet 토큰 암호화 키를 시작 시 검증합니다.
-외부 URL은 credential·path·query·fragment가 없는 origin이어야 합니다. GitHub App ID·private
-key·slug·OAuth client ID/secret, `postgresql+psycopg` database URL과 Redis queue도 모두
-필수이며 안전하지 않거나 개발용 기본 설정이 남아 있으면 API와 worker가 시작되지 않습니다.
-OAuth token 암호화 키는 [비밀값 관리와 키 교체 절차](docs/secrets-and-rotation.md)에 따라
-primary와 fallback key ring으로 무중단 교체할 수 있습니다. fallback key로 읽은 기존 token은
-로그인 시 primary key로 다시 암호화됩니다.
-민감 설정은 값을 process environment에 직접 넣는 대신 대응하는 `PIPELENS_*_FILE`에 읽기 전용
-mount 경로를 지정할 수 있습니다. 예를 들어 `PIPELENS_GITHUB_PRIVATE_KEY_FILE=/run/secrets/github-private-key`
-형식이며 direct 값과 file 경로를 동시에 지정하면 시작을 거부합니다. 지원 목록과 file 검증 규칙은
-[비밀값 관리와 키 교체 절차](docs/secrets-and-rotation.md)에 있습니다.
-실제 manager의 inventory·workload identity·rotation 결과는
-[production secret manager 증적 drill](docs/secret-manager-drill.md)로 기록합니다.
-API 응답에는 MIME sniffing·iframe 삽입·불필요한 referrer와 브라우저 권한 사용을 제한하는
-보안 헤더가 포함됩니다. Compose 대시보드 Nginx는 같은 헤더와 Content Security Policy를
-정적 파일 및 프록시 응답에 적용합니다. HSTS는 HTTPS를 종료하는 외부 프록시에서 설정해야
-합니다.
+Fernet 키는 다음 명령으로 생성합니다.
 
-GitHub App 권한은 Actions(read), Checks(read/write), Contents(read), Pull
-requests(read/write), Metadata(read)를 사용합니다. `PIPELENS_PUBLISH_CHECKS=true`이면 PR이
-연결된 실행은 PR 코멘트로, PR이 없는 실행은 Commit Check로 게시합니다. 재시도 시 workflow
-run ID로 기존 게시물을 찾아 갱신하므로 같은 분석이 중복 게시되지 않습니다. 게시를 먼저
-검증하지 않을 때는 `PIPELENS_PUBLISH_CHECKS=false`로 두어도 분석 결과가 API에 저장됩니다.
+```bash
+python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'
+```
 
-외부 Fork의 head 저장소가 base 저장소와 다르면 해당 실행은 `untrusted_fork`로 기록합니다.
-이 경우 로그·diff·Workflow는 LLM에 전송하지 않고 규칙 기반 진단만 수행합니다. PR 번호를
-확인할 수 있으면 경고가 포함된 PR 코멘트만 게시하며, PR을 확인할 수 없는 fork SHA에는
-Commit Check를 생성하지 않습니다. 저장소 context 조회 실패나 불완전한 GitHub 메타데이터로
-동일 저장소임을 증명하지 못하면 `unverified`로 기록하고 LLM 전송과 모든 GitHub 게시를
-차단합니다. 대시보드에도 같은 신뢰 경계가 표시됩니다.
+`PIPELENS_PUBLISH_CHECKS=false`로 두면 GitHub에 게시하지 않고 분석 결과만 API에 저장하므로 게시
+전에 먼저 검증할 수 있습니다.
 
-GitHub와 OpenAI의 408, 429, 일시적 5xx 응답은 `Retry-After`를 우선하고, 없으면 jitter가
-포함된 지수 backoff로 재시도합니다. GitHub의 403은 rate-limit 응답으로 확인된 경우에만
-재시도하고, quota·billing처럼 사용자 조치가 필요한 429는 즉시 실패합니다. 지연이 설정
-상한보다 길면 너무 일찍 다시 요청하지 않고 현재 작업을 실패시킵니다. 재시도 횟수는
-`/metrics`의 `pipelens_http_retries_total`에서 확인할 수 있습니다.
+### 운영 모드 시작 검증
 
-분석 성능 SLO는 webhook 레코드가 저장된 시점을 기준으로 측정합니다. 기본값은 첫 분석
-시작까지 60초, 성공적인 완료까지 120초이며 위 환경변수로 조정할 수 있습니다.
-`/metrics`에서 `pipelens_queue_wait_seconds`, `pipelens_total_latency_seconds`,
-`pipelens_slo_results_total`을 확인할 수 있습니다.
+`PIPELENS_ENVIRONMENT=production`에서는 아래 조건 중 하나라도 어기면 API와 worker가 시작되지
+않습니다. 겉보기만 정상인 운영 인스턴스를 만들지 않기 위한 fail-closed 정책입니다.
+
+- 인증 활성화, Secure 세션 쿠키
+- `PIPELENS_PUBLIC_URL`이 credential·path·query·fragment 없는 HTTPS origin
+- 32자 이상의 webhook·세션 secret, 별도 Fernet 토큰 암호화 키
+- GitHub App ID·private key·slug·OAuth client ID/secret 모두 설정
+- `postgresql+psycopg` database URL과 Redis queue
+
+### 비밀값 관리
+
+- 민감 설정은 대응하는 `PIPELENS_*_FILE`에 읽기 전용 mount 경로를 지정할 수 있습니다
+  (예: `PIPELENS_GITHUB_PRIVATE_KEY_FILE=/run/secrets/github-private-key`). direct 값과 file
+  경로를 동시에 지정하면 시작을 거부합니다.
+- OAuth token 암호화 키는 primary·fallback key ring으로 무중단 교체할 수 있으며, fallback key로
+  읽은 token은 로그인 시 primary key로 다시 암호화됩니다.
+- 지원 목록과 절차는 [비밀값 관리와 키 교체](docs/secrets-and-rotation.md), 실제 manager 증적은
+  [production secret manager drill](docs/secret-manager-drill.md)에 있습니다.
+
+API 응답에는 MIME sniffing·iframe 삽입·referrer·브라우저 권한을 제한하는 보안 헤더가 포함되고,
+대시보드 Nginx는 같은 헤더와 Content Security Policy를 적용합니다. HSTS는 HTTPS를 종료하는
+외부 프록시에서 설정해야 합니다. 공개 ingress 연결 후에는
+[HTTPS acceptance](docs/https-acceptance.md)와
+[GitHub App E2E 증적 절차](docs/github-app-acceptance.md)로 검증합니다.
+
+## 신뢰 경계
+
+외부 fork 실행이나 출처를 증명할 수 없는 입력은 LLM으로 보내지 않습니다. 대시보드에도 같은
+신뢰 수준이 표시됩니다.
+
+| 신뢰 수준 | 판정 조건 | LLM 전송 | GitHub 게시 |
+| --- | --- | --- | --- |
+| `trusted` | head 저장소가 base 저장소와 같음이 확인됨 | 허용 | PR 코멘트 또는 Commit Check |
+| `untrusted_fork` | 외부 fork의 head 저장소가 base와 다름 | 차단(규칙 진단만) | PR을 확인할 수 있을 때 경고가 포함된 PR 코멘트만, fork SHA에 Check 생성 안 함 |
+| `unverified` | 저장소 context 조회 실패, 불완전한 메타데이터 | 차단(규칙 진단만) | 모든 게시 차단 |
+
+## 신뢰성과 SLO
+
+- **Queue 중복 방지** — 큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과
+  pending 적재가 원자적입니다. DB 기록 후 큐 장애가 나면 webhook 재전달이나 API 시작 시
+  reconciliation이 `queued` 분석을 다시 적재합니다.
+- **Worker lease** — Redis worker는 인스턴스별 processing 목록과 TTL lease를 사용합니다.
+  heartbeat가 끊겨 lease가 만료된 작업만 다른 worker가 원자적으로 복구하므로 여러 replica를
+  실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS`는 `PIPELENS_WORKER_LEASE_SECONDS`보다
+  충분히 작게 유지하세요.
+- **Fencing token** — 복구된 작업은 새 attempt token을 받습니다. lease가 만료됐던 이전 worker가
+  뒤늦게 재개되어도 token이 일치하지 않는 상태·단계 기록과 GitHub 게시는 거부됩니다.
+- **HTTP 재시도** — GitHub·OpenAI의 408, 429, 일시적 5xx는 `Retry-After`를 우선하고, 없으면
+  jitter가 포함된 지수 backoff로 재시도합니다. GitHub 403은 rate-limit으로 확인된 경우에만
+  재시도하고 quota·billing 429는 즉시 실패합니다. 지연이 상한을 넘으면 현재 작업을 실패시킵니다.
+- **SLO** — webhook 레코드 저장 시점부터 분석 시작 60초, 성공 완료 120초가 기본값입니다.
+  `pipelens_queue_wait_seconds`, `pipelens_total_latency_seconds`, `pipelens_slo_results_total`,
+  `pipelens_http_retries_total` 지표로 확인하고, Prometheus 규칙이 서비스 중단·SLO 위반·queue
+  backlog를 Alertmanager로 전달합니다.
+
+백업·복원 절차는 [PostgreSQL 복원 drill](docs/postgres-restore-drill.md)과
+[Grafana 복원 drill](docs/grafana-restore-drill.md)에 있습니다.
 
 ## API
 
-- `POST /webhooks/github`: GitHub webhook endpoint
-- `GET /auth/github/login`: GitHub OAuth 로그인 시작
-- `GET /auth/github/callback`: GitHub OAuth callback
-- `POST /auth/logout`: 현재 세션 종료
-- `GET /github/install`: GitHub App 설치 화면으로 이동
-- `GET /github/setup`: 설치 완료 후 사용자 접근 권한 재검증
-- `GET /api/v1/me`: 로그인 사용자와 접근 가능한 installation
-- `GET /api/v1/analyses`: 최근 분석 목록
-- `GET /api/v1/analyses/{run_id}`: 분석 상세
-- `PUT /api/v1/analyses/{run_id}/feedback`: 정확도·해결 여부 피드백 저장
+| Method | Path | 설명 |
+| --- | --- | --- |
+| `POST` | `/webhooks/github` | GitHub webhook endpoint |
+| `GET` | `/auth/github/login` | GitHub OAuth 로그인 시작 |
+| `GET` | `/auth/github/callback` | GitHub OAuth callback |
+| `POST` | `/auth/logout` | 현재 세션 종료 |
+| `GET` | `/github/install` | GitHub App 설치 화면으로 이동 |
+| `GET` | `/github/setup` | 설치 완료 후 사용자 접근 권한 재검증 |
+| `GET` | `/api/v1/me` | 로그인 사용자와 접근 가능한 installation |
+| `GET` | `/api/v1/analyses` | 최근 분석 목록 (`category`·`status`·`repository` 필터, cursor pagination) |
+| `GET` | `/api/v1/analyses/{run_id}` | 분석 상세 |
+| `PUT` | `/api/v1/analyses/{run_id}/feedback` | 정확도·해결 여부 피드백 저장 |
+| `GET` | `/healthz` | 프로세스 상태 |
+| `GET` | `/readyz` | 데이터베이스·분석 큐 readiness |
+| `GET` | `/metrics` | Prometheus exposition |
 
-무버전 `/api/*` 경로는 호환 alias로 유지하지만 deprecated다. 새 consumer는 `/api/v1`을 사용해야
-하며 호환성·폐기 조건과 생성된 OpenAPI 계약은
-[API versioning 정책](docs/api-versioning.md)을 따른다.
-- `GET /healthz`: 프로세스 상태
-- `GET /readyz`: 데이터베이스·분석 큐 readiness 상태
-- `GET /metrics`: Prometheus exposition endpoint
+분석 API는 기본적으로 인증이 필요하며 사용자가 접근할 수 있는 GitHub App installation의 결과만
+반환합니다. 목록의 다음 페이지 cursor는 `X-PipeLens-Next-Cursor` 응답 헤더로 전달됩니다.
+무버전 `/api/*` 경로는 deprecated 호환 alias이며, 새 consumer는 `/api/v1`을 사용해야 합니다.
+호환성·폐기 조건과 OpenAPI 계약([`docs/openapi.json`](docs/openapi.json))은
+[API versioning 정책](docs/api-versioning.md)을 따릅니다.
 
-## 다음 구현 경계
+## 프로젝트 구조
 
-기본 `memory` queue는 API 프로세스 안에서 worker를 함께 실행합니다. Docker Compose는
-Redis queue와 별도 worker를 사용하며 worker 지표를 `:8001/metrics`에서 제공합니다.
-Redis worker는 인스턴스별 processing 목록과 TTL lease를 사용합니다. heartbeat가 끊겨
-lease가 만료된 worker의 작업만 다른 worker가 원자적으로 pending queue에 복구하므로 여러
-worker replica를 실행할 수 있습니다. `PIPELENS_WORKER_HEARTBEAT_SECONDS`는
-`PIPELENS_WORKER_LEASE_SECONDS`보다 충분히 작게 유지해야 합니다.
-장시간 검증 전에는 [worker 부하·복구 drill](docs/worker-replica-drill.md)의 rate/burst option과
-JSON evidence를 사용해 arrival profile, latency percentile, throughput과 SLO 달성률을 기록합니다.
-Production PostgreSQL backup은 [복원 증적 drill](docs/postgres-restore-drill.md)을 사용해 새
-PostgreSQL 18 volume에 격리 복원하고 backup 크기·checksum, RTO/RPO, Alembic head와 대표 레코드
-수를 redacted JSON으로 남깁니다.
-Grafana volume backup은 [Grafana 복원 증적 drill](docs/grafana-restore-drill.md)로 새 volume에
-복원하고 Grafana 13 migration, provisioned·persistent dashboard, folder, datasource와 접근 정책을
-같은 형식의 redacted evidence로 확인합니다.
-Docker Compose에서 API healthcheck는 `/readyz`를 사용하며 대시보드는 API가 준비된
-후에 시작합니다.
-큐 적재는 workflow run ID로 중복 제거되며 Redis에서는 run ID 등록과 pending 적재가
-원자적으로 수행됩니다. DB 기록 후 큐 장애가 발생하면 webhook 재전달이 해당 `queued`
-분석을 다시 적재하고, API 시작 시에도 DB의 미처리 분석을 큐와 재조정합니다.
-복구된 작업이 시작되면 새 attempt fencing token이 발급됩니다. lease가 만료됐던 이전
-worker가 뒤늦게 재개되더라도 현재 token과 일치하지 않는 상태·단계 기록은 거부하며 GitHub
-게시 단계에 도달하기 전에 중단합니다.
-분석 API는 기본적으로 인증이 필요하며 사용자가 접근할 수 있는 GitHub App installation의
-결과만 반환합니다. 로컬 API 테스트처럼 인증을 의도적으로 끄려면
-`PIPELENS_AUTH_REQUIRED=false`를 명시합니다. 규칙 기반 진단은 LLM 장애 시에도 항상
-fallback 결과로 유지합니다.
+```text
+src/pipelens/
+  main.py           FastAPI 앱, 라우트, webhook 처리
+  pipeline.py       6단계 분석 파이프라인 오케스트레이션
+  github.py         GitHub App token, 로그·diff·workflow 수집
+  preprocessing.py  로그 정제와 오류 구간 추출
+  sanitizer.py      secret·개인정보 마스킹
+  classifier.py     규칙 기반 실패 범주 분류
+  relevance.py      변경 파일 관련도 점수화
+  llm.py            LLM provider와 OpenAI Structured Outputs
+  diagnosis.py      규칙·LLM 진단 결합과 근거 검증
+  publication.py    PR 코멘트·Commit Check 게시
+  queue.py          memory·Redis queue, lease 복구
+  worker.py         독립 분석 worker (python -m pipelens.worker)
+  store.py          SQLAlchemy 저장 계층
+  auth.py           GitHub OAuth, 세션, 토큰 암호화
+  config.py         설정 로딩과 운영 모드 검증
+  metrics.py        Prometheus 지표
+  evaluation.py     정확도 평가 러너 (pipelens-evaluate)
+frontend/           React 대시보드, Vitest, Playwright E2E, Nginx 설정
+migrations/         Alembic migration (0001–0010)
+evaluation/         정확도 평가용 고정 로그와 시나리오
+ops/                Prometheus·Alertmanager·Grafana 설정, CI 검증 스크립트, 복구·soak drill
+tests/              단위·API·통합 테스트
+docs/               아키텍처, 의사결정, 운영 절차, 인수 증적
+```
+
+## 문서
+
+개발 과정과 운영 판단은 [`docs/`](docs/README.md)에 정리돼 있습니다.
+
+- [개발 연혁](docs/development-history.md) · [아키텍처](docs/architecture.md) ·
+  [주요 의사결정 기록](docs/decisions.md)
+- [검증 및 운영 준비 현황](docs/readiness.md) ·
+  [MVP 요구사항 추적성](docs/requirements-traceability.md)
+- [GitHub App E2E 증적 절차](docs/github-app-acceptance.md) ·
+  [컨테이너 릴리스 정책](docs/release.md) · [저장소 보호와 변경 절차](docs/repository-governance.md)
+- [기여 가이드](CONTRIBUTING.md) · [행동강령](CODE_OF_CONDUCT.md) ·
+  [비공개 보안 신고 정책](SECURITY.md)
+
+## 범위 밖
+
+Slack·Jira 연동, 자동 merge·재배포, GitHub Actions 외 CI 플랫폼, Kubernetes 런타임 분석은 현재
+범위에 포함하지 않습니다.
+
+## 라이선스
+
+[MIT](LICENSE)
