@@ -1666,6 +1666,19 @@ Nginx는 별도 PR로 분리했다.
 - Ruff, mypy strict 98개 module, Markdown·OpenAPI 계약, Python 전체 447 passed·2 integration skipped,
   Vitest 6/6과 frontend production build를 통과했다.
 
+### 2026-10-30 포트폴리오 정리
+
+- README를 포트폴리오 독자 기준으로 재구성했다. 동작 흐름 다이어그램, 파이프라인 단계, 기술 스택,
+  서비스 포트, 신뢰 수준별 LLM·게시 정책, 모듈 구조를 추가하고 최신 릴리스 표기를 v0.2.0으로
+  갱신했다.
+- 테스트 공용 fixture가 `Settings`의 `.env` 로딩과 `PIPELENS_*` shell 변수를 차단하도록 했다.
+  기존에는 로컬 `.env`에 실제 App 설정이 있으면 auth·config 테스트 11개가 실패해 `.env` 없는
+  worktree로 따로 검증해야 했다. 수정 뒤 같은 환경에서 447 passed·2 skipped다.
+- 9월 21일부터 쌓인 Dependabot PR 15개를 #154 하나로 묶었다. strict branch protection에서 개별
+  병합 시 반복되는 rebase·CI를 피하기 위함이며, 충돌한 dashboard lockfile은 `package.json` 범위로
+  다시 생성했다. 이후 올라온 vite 8.3.5도 반영해 열린 PR은 0이다.
+- 실제 배포 환경이 필요한 #62·#64·#65를 포트폴리오 범위 밖으로 종료했다. 판단은 D-086에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

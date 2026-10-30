@@ -495,7 +495,10 @@ redirect·HSTS·고정 hostname 부재는 그대로이므로 이 결과도 #62�
 [#61 실제 GitHub App E2E 인수 테스트](https://github.com/sangmu1126/PipeLens/issues/61)는 단일
 repository strict evidence로 완료했다.
 
-1. [#62 공개 HTTPS OAuth·webhook 검증](https://github.com/sangmu1126/PipeLens/issues/62)
+[#62 공개 HTTPS OAuth·webhook 검증](https://github.com/sangmu1126/PipeLens/issues/62)은
+2026-10-30 포트폴리오 범위 밖으로 `not planned` 종료했다(D-086). 핵심 흐름은
+[무료 Quick Tunnel 재검증](acceptance-runs/2026-09-16-free-quick-tunnel.md)으로 실제 GitHub App에서
+확인했고, 고정 hostname·HSTS는 실제 배포를 시작할 때 다시 연다.
 
 ### P1 — 릴리스와 공급망
 
@@ -509,19 +512,22 @@ repository strict evidence로 완료했다.
 [#66 production 조건 worker soak/load](https://github.com/sangmu1126/PipeLens/issues/66)도
 [1시간 strict evidence](acceptance-runs/2026-09-09-worker-soak/README.md)로 완료했다.
 
-1. [#64 Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
-2. [#65 production secret manager와 credential rotation](https://github.com/sangmu1126/PipeLens/issues/65)
+[#64 Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)과
+[#65 production secret manager와 credential rotation](https://github.com/sangmu1126/PipeLens/issues/65)은
+조직별 운영 채널·secret manager가 필요한 배포 범위이므로 2026-10-30 `not planned` 종료했다(D-086).
+routing drill, `*_FILE` 주입, Fernet key ring과 strict evidence 도구는 저장소에 유지한다.
 
 여섯 항목은 모두
 [`v0.2.0 Production readiness`](https://github.com/sangmu1126/PipeLens/milestone/1)
-milestone에서 관리한다. `priority:p0`는 서비스 완료를 막는 외부 인수 조건,
+milestone에서 관리했으며 열린 issue는 없다(완료 3, 범위 밖 종료 3). `priority:p0`는 서비스 완료를 막는 외부 인수 조건,
 `priority:p1`은 production 신뢰성 증적을 뜻한다. issue를 닫으려면 본문의 acceptance criteria와
-redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 처리하지 않는다.
+redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 처리하지 않는다. 범위 밖 종료는 완료로
+집계하지 않고, 다시 열 때는 같은 acceptance criteria를 적용한다.
 
 ### P2 — 품질 확장
 
 제어된 OAuth provider를 사용하는 실제 Chromium OAuth·dashboard E2E는 완료했다. 실제 GitHub와
-공개 HTTPS 흐름은 위 P0 완료 조건으로 유지한다.
+공개 HTTPS 흐름은 실제 배포 시 #62를 다시 열어 검증한다.
 
 1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가. Alertmanager 관측 timeout,
    Linux bind-mount 권한 실패와 Python wheel resolution 실패 3건 반영 완료
@@ -567,11 +573,21 @@ P0/P1 항목은 issue #61–#66으로 분리해 milestone에 연결했다. #61·
 P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness 완료율과 독립적으로
 추적한다.
 
+2026-10-30 갱신:
+
+- open issues: 1 (`priority:p2` #71)
+- open pull requests: 0 (밀린 Dependabot 업데이트를 #154로 일괄 반영)
+- milestone `v0.2.0 Production readiness`: 열린 issue 0 (완료 3, 범위 밖 종료 3)
+- releases: 2 (`v0.1.0`, `v0.2.0` immutable true)
+
 ## 7. 운영 전 체크리스트
+
+포트폴리오 범위 밖으로 종료한 항목은 미완료(`[ ]`)로 유지하고 `범위 밖`으로 표시한다.
+
 
 - [x] [GitHub App 실제 설치와 E2E 증적](https://github.com/sangmu1126/PipeLens/issues/61)
 - [x] GitHub App 실제 run·게시·SLO·secret·fork의 redacted machine-readable evidence 도구
-- [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62)
+- [ ] [production HTTPS와 HSTS](https://github.com/sangmu1126/PipeLens/issues/62) — 범위 밖
 - [x] 공개 HTTPS 경계의 redacted machine-readable preflight 도구
 - [x] 실제 HTTPS OAuth·session·signed webhook의 redacted machine-readable evidence 도구
 - [x] `main` PR·필수 status check
@@ -592,7 +608,7 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] vendor-neutral read-only secret file 주입 경계와 fail-closed 검증
 - [x] production startup의 HTTPS origin·GitHub App·PostgreSQL·Redis fail-fast 계약
 - [x] production secret manager·credential rotation의 redacted machine-readable evidence 도구
-- [ ] [production secret manager·workload identity 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65)
+- [ ] [production secret manager·workload identity 연결과 실제 credential rotation drill](https://github.com/sangmu1126/PipeLens/issues/65) — 범위 밖
 - [x] PostgreSQL 17→18 합성 데이터 backup/restore CI drill
 - [x] PostgreSQL 18 격리 복원·machine-readable evidence 도구
 - [x] [launch 대표 규모 PostgreSQL backup/restore drill](https://github.com/sangmu1126/PipeLens/issues/63)
@@ -606,6 +622,6 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 - [x] worker arrival profile과 machine-readable capacity evidence 도구
 - [x] Alertmanager routing과 로컬 webhook 통합 검증
 - [x] Alertmanager production 채널의 redacted machine-readable evidence 도구
-- [ ] [Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64)
+- [ ] [Alertmanager 실제 호출 채널 연결](https://github.com/sangmu1126/PipeLens/issues/64) — 범위 밖
 - [x] [외부 fork 공격 입력 검증](https://github.com/sangmu1126/PipeLens/issues/61)
 - [x] [부하 상태에서 시작 60초·완료 120초 SLO 검증](https://github.com/sangmu1126/PipeLens/issues/66)

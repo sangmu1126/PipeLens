@@ -46,15 +46,19 @@
 | 우선순위 | Issue | 완료 증거 |
 | --- | --- | --- |
 | P0 완료 | [#61 실제 GitHub App E2E](https://github.com/sangmu1126/PipeLens/issues/61) | [strict evidence](acceptance-runs/2026-09-08-github-app-consolidated.json): 실제 PR·branch 실패, comment·check upsert, SLO, secret·fork 격리 |
-| P0 | [#62 공개 HTTPS OAuth·webhook](https://github.com/sangmu1126/PipeLens/issues/62) | TLS·HSTS, secure session, callback·forwarding, signed webhook |
+| P0 범위 밖 | [#62 공개 HTTPS OAuth·webhook](https://github.com/sangmu1126/PipeLens/issues/62) | TLS·HSTS, secure session, callback·forwarding, signed webhook |
 | P1 완료 | [#63 production 규모 recovery](https://github.com/sangmu1126/PipeLens/issues/63) | [strict evidence](acceptance-runs/2026-09-08-recovery-scale/evidence.json): launch 대표 규모 PostgreSQL·Grafana RTO/RPO, read-only cutover·보존 source rollback |
-| P1 | [#64 Alertmanager 실채널](https://github.com/sangmu1126/PipeLens/issues/64) | firing·resolved, grouping·dedupe·inhibition, rotation·retry |
-| P1 | [#65 secret manager](https://github.com/sangmu1126/PipeLens/issues/65) | workload identity, file injection, Fernet·외부 credential rotation |
+| P1 범위 밖 | [#64 Alertmanager 실채널](https://github.com/sangmu1126/PipeLens/issues/64) | firing·resolved, grouping·dedupe·inhibition, rotation·retry |
+| P1 범위 밖 | [#65 secret manager](https://github.com/sangmu1126/PipeLens/issues/65) | workload identity, file injection, Fernet·외부 credential rotation |
 | P1 완료 | [#66 production worker soak](https://github.com/sangmu1126/PipeLens/issues/66) | [strict evidence](acceptance-runs/2026-09-09-worker-soak/evidence.json): 1시간 resource·provider·fault telemetry, SLO와 capacity 승인 |
 
 각 절차의 strict JSON verifier와 redaction 규칙은 이미 저장소에 있다. example이나 짧은 합성 CI
 결과만으로 issue를 닫지 않으며, 승인된 acceptance 원본과 공개 가능한 SHA-256·비민감 식별자를
 함께 남긴다.
+
+`범위 밖`은 2026-10-30 포트폴리오 완료 조건에서 제외해 `not planned`로 종료한 issue다(D-086).
+외부 인수가 완료된 것이 아니므로 해당 비기능 요구의 판정은 `외부 인수 필요`로 유지하고, 실제 배포 시
+issue를 다시 열어 같은 증적을 요구한다.
 
 ## 변경 관리
 
