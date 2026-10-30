@@ -12,7 +12,7 @@ Participation in this project is governed by the [Code of Conduct](CODE_OF_CONDU
 
 ## Local setup
 
-PipeLens supports Python 3.12 through 3.14 and Node.js 22 or 24. Follow the complete runtime and Docker
+PipeLens supports Python 3.12 through 3.15 and Node.js 22 or 24. Follow the complete runtime and Docker
 instructions in [README.md](README.md). A typical backend setup is:
 
 ```bash

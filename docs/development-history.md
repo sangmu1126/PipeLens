@@ -1679,6 +1679,17 @@ Nginx는 별도 PR로 분리했다.
   다시 생성했다. 이후 올라온 vite 8.3.5도 반영해 열린 PR은 0이다.
 - 실제 배포 환경이 필요한 #62·#64·#65를 포트폴리오 범위 밖으로 종료했다. 판단은 D-086에 기록했다.
 
+### Python 3.15 정식 지원
+
+- 2026-10-30 기준 setup-python이 CPython 3.15.1 final을 제공하고 `psycopg-binary` 3.3.6이 cp315
+  배포본을 게시해 #71의 차단 조건이 해소됐다. 같은 날 `main` preview job은 대체 installer 경로로
+  모든 단계를 통과했다.
+- 지원 범위를 `>=3.12,<3.16`으로, `psycopg[binary]` 하한을 3.3.6으로 바꿨다. preview job과
+  `ops/ci/install_python_preview.py`·테스트를 제거하고 final·binary driver·`pip check`·비통합 테스트·
+  PostgreSQL/Redis integration·worker 복구·진단 평가를 실행하는 `Python 3.15 compatibility` job을 추가했다.
+- backend job의 integration service 기동·정리를 `ops/ci/integration-services.sh`로 분리해 두 job이
+  공유한다. 판단은 D-087에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

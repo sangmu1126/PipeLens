@@ -1348,3 +1348,21 @@
   [#62](https://github.com/sangmu1126/PipeLens/issues/62),
   [#64](https://github.com/sangmu1126/PipeLens/issues/64),
   [#65](https://github.com/sangmu1126/PipeLens/issues/65).
+
+## D-087. Python 3.15는 final과 binary driver 배포 뒤 필수 check로 정식 지원
+
+- 결정: `requires-python`을 `>=3.12,<3.16`으로 넓히고 `psycopg[binary]` 하한을 cp315 wheel이 있는
+  3.3.6으로 올린다. advisory `Python 3.15 preview` job과 순수 Python driver 대체 installer를 제거하고,
+  `Python 3.15 compatibility` job을 branch protection 필수 check로 승격한다.
+- 이유: setup-python이 CPython 3.15.1 final을 제공하고 `psycopg-binary` 3.3.6이 manylinux·musllinux·
+  macOS·Windows cp315 배포본을 게시해 #71의 차단 조건이 해소됐다. D-076의 대체 설치는 wheel 시차를
+  견디기 위한 임시 경계였으므로 남겨 두면 production과 다른 driver 구현을 검증하게 된다.
+- 대안: preview를 계속 advisory로 유지, backend job을 Python version matrix로 바꿔 필수 context 이름
+  변경, 3.15에서 비통합 테스트만 실행, production Docker image를 함께 3.15로 변경.
+- 결과: 3.15 job은 final 여부, `binary` driver, `pip check`, 비통합 테스트, PostgreSQL·Redis
+  integration, worker replica 복구·SLO와 진단 평가를 모두 필수로 실행한다. integration service
+  기동·정리는 `ops/ci/integration-services.sh`로 backend job과 공유한다. 새 job이 `main`에서 먼저
+  성공한 뒤 branch protection에 추가해 보호 공백 없이 승격한다. production image는 3.14를 유지한다.
+- 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `ops/ci/integration-services.sh`,
+  `ops/governance/audit_repository.py`, D-046, D-076,
+  [Python 3.15 지원 #71](https://github.com/sangmu1126/PipeLens/issues/71).

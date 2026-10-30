@@ -12,7 +12,7 @@
 | 백엔드 테스트 | 통과 | 로컬 447 passed, integration 2 skipped, DB resource warning 0; CI에서 service integration 별도 통과 |
 | Python 정적 타입 | 통과 | production·operations·tests 98개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python coverage | 기준선 | branch 포함 전체 74.73%; production 86.50%, operations 67.15%; XML·JSON CI artifact 14일 보관 |
-| Python 호환성 | 통과 | 3.12 전체 integration, 3.14 전체 447개와 진단 평가 13/13 |
+| Python 호환성 | 통과 | 지원 범위 `>=3.12,<3.16`; 3.12 전체 integration, 3.14 비통합 테스트, 3.15 final의 binary driver·integration·worker 복구와 진단 평가 13/13 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 5에서 6/6, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | 자동 해결 추적 | 통과 | 같은 Workflow·PR/브랜치와 run attempt의 후속 성공·계속 실패, 복구 시간 회귀 검증 |
@@ -267,26 +267,15 @@
 10. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
 11. `pipelens-evaluate --minimum-accuracy 0.8`
 
-별도 compatibility job은 Python 3.14에서 integration directory를 제외한 132개 테스트와
-13개 진단 평가를 실행한다. 지원 범위는 `>=3.12,<3.15`이며 3.12는 하한 전체 통합 검증,
-3.14는 상한 직전 호환성 검증을 담당한다. 로컬 3.14에서는 일부 dependency가 Python 3.16을
-앞두고 제거될 asyncio API에 대한 deprecation warning을 출력하지만 테스트 결과에는 영향을
-주지 않는다.
+별도 compatibility job은 Python 3.14에서 integration directory를 제외한 테스트와 13개 진단 평가를
+실행한다. 지원 범위는 `>=3.12,<3.16`이며 3.12는 하한 전체 통합 검증, 3.14는 Docker image runtime
+호환성, 3.15는 상한 검증을 담당한다.
 
-Python 3.15는 2026-10-01 final 예정이므로 아직 지원 범위에 포함하지 않는다. advisory preview
-job은 setup-python이 제공하는 최신 prerelease에서 root package의 Python 범위만 설치 시 우회한다.
-`psycopg[binary]` 배포본만 없을 때에는 production dependency 선언을 바꾸지 않고 preview installer가
-같은 version range의 순수 Python `psycopg`로 정확히 한 번 대체한다. 이어서 driver 구현이 `python`인지,
-`pip check`, 동일한 비통합 테스트와 평가가 모두 성공했는지 별도로 확인한다. 다른 dependency 누락이나
-중복 대체는 실패로 남긴다.
-
-PR run 34305850281의 CPython 3.15.0rc2에서는 순수 Python/libpq `psycopg` 3.3.5로 dependency
-검사, 425개 테스트와 13개 진단 평가가 모두 통과했다. 아직 wheel이 없는 `httptools`,
-`pydantic-core`, PyYAML, `uvloop`, MarkupSafe는 source build되어 설치 시간이 약 3분 10초였고,
-Starlette의 향후 AnyIO API 제거 warning이 한 건 남았다. 실패 단계는 warning과 Step Summary로
-남기되 advisory check는 성공 처리하며 branch protection의 필수 check가 아니다. final 뒤 binary
-driver 배포, 전체 service integration과 dependency metadata를 확인한 다음 `<3.16` 지원 선언과
-필수 check 승격을 결정한다.
+Python 3.15 compatibility job은 2026-10-30 advisory preview를 대체했다. final 릴리스(prerelease
+불허)인지 확인하고, `psycopg[binary]` 3.3.6의 cp315 wheel로 `binary` driver 구현과 `pip check`를
+검증한 뒤 비통합 테스트, Compose에 고정한 PostgreSQL 18·Redis 8.2 integration, 200-job worker
+replica 복구·SLO와 진단 평가를 실행한다. 이전 preview의 순수 Python driver 대체 installer는
+제거했다(D-087).
 
 FastAPI/Starlette 테스트 클라이언트는 dev extra의 `httpx2` 2.12.0을 사용한다. production의
 GitHub·OpenAI·retry client는 기존 `httpx` 0.28.1을 계속 사용하고 production image는 dev extra를
@@ -531,9 +520,8 @@ redacted evidence를 모두 충족해야 하며 코드 구현만으로 완료 �
 
 1. 실제 저장소 실패 사례를 evaluation fixture로 지속 추가. Alertmanager 관측 timeout,
    Linux bind-mount 권한 실패와 Python wheel resolution 실패 3건 반영 완료
-2. [#71 Python 3.15 GA 승격](https://github.com/sangmu1126/PipeLens/issues/71):
-   `psycopg-binary` 배포를 추적하고 final 뒤 dependency metadata·전체 integration을 확인해
-   정식 지원과 필수 check 승격 결정
+2. [#71 Python 3.15 GA 승격](https://github.com/sangmu1126/PipeLens/issues/71): 2026-10-30
+   지원 범위 `<3.16`과 필수 check 승격으로 완료(D-087)
 FastAPI·Starlette의 `httpx2` 테스트 클라이언트 전환은 완료했다.
 
 ## 6. 현재 GitHub 저장소 관리 상태
@@ -575,7 +563,8 @@ P2 compatibility는 milestone 밖의 issue #71로 분리해 production readiness
 
 2026-10-30 갱신:
 
-- open issues: 1 (`priority:p2` #71)
+- open issues: 0 (#71은 Python 3.15 지원으로 종료)
+- branch protection: 필수 check 10개 (`Python 3.15 compatibility` 추가)
 - open pull requests: 0 (밀린 Dependabot 업데이트를 #154로 일괄 반영)
 - milestone `v0.2.0 Production readiness`: 열린 issue 0 (완료 3, 범위 밖 종료 3)
 - releases: 2 (`v0.1.0`, `v0.2.0` immutable true)
