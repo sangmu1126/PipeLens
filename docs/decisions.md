@@ -1330,3 +1330,21 @@
   검증하고, GitHub 신뢰 판정 테스트는 식별자 누락과 예상 base 불일치를 `unverified`로 고정한다.
 - 관련: `src/pipelens/github.py`, `src/pipelens/pipeline.py`, `src/pipelens/models.py`,
   `tests/test_github.py`, `tests/test_pipeline.py`.
+
+## D-086. 실제 배포 환경이 필요한 운영 인수는 포트폴리오 범위 밖으로 종료
+
+- 결정: 고정 hostname의 공개 HTTPS(#62), Alertmanager 실제 호출 채널(#64), production secret
+  manager·credential rotation(#65)을 `not planned`로 종료한다. 완료로 집계하지 않고, 실제 배포를
+  시작하면 같은 acceptance criteria와 strict evidence로 다시 연다.
+- 이유: 세 항목은 저장소 코드가 아니라 유료 도메인, 조직 소유 incident 채널과 secret manager·
+  workload identity가 있어야 완료할 수 있다. 저장소에서 재현 가능한 부분인 Quick Tunnel 위 실제
+  GitHub App E2E, routing drill, `*_FILE` 주입과 Fernet key ring, evidence verifier는 이미 검증됐다.
+  열린 P0가 남아 있으면 프로젝트가 미완성으로 읽히지만 실제로는 외부 환경 대기 상태다.
+- 대안: 열린 상태로 유지, Quick Tunnel 결과로 #62를 완료 처리, 유료 도메인·채널을 마련해 증적 수집.
+- 결과: milestone의 열린 issue는 0이며 완료 3, 범위 밖 3으로 구분한다. readiness 체크리스트와
+  요구사항 추적성은 해당 항목을 미완료 `범위 밖`으로 표시해 외부 인수 필요 판정을 유지한다.
+- 관련: [readiness](readiness.md), [요구사항 추적성](requirements-traceability.md),
+  [저장소 관리](repository-governance.md),
+  [#62](https://github.com/sangmu1126/PipeLens/issues/62),
+  [#64](https://github.com/sangmu1126/PipeLens/issues/64),
+  [#65](https://github.com/sangmu1126/PipeLens/issues/65).

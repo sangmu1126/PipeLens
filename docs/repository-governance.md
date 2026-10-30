@@ -71,6 +71,9 @@ issue는 목적, 측정 가능한 acceptance criteria, 보안 검증과 제외 �
 병합됐다는 이유만으로 닫지 않고 run ID, 게시 URL, latency, redacted 운영 기록 등 issue가 요구한
 증적을 확인한 뒤 닫는다. 현재 범위는 issue
 [#61](https://github.com/sangmu1126/PipeLens/issues/61)–[#66](https://github.com/sangmu1126/PipeLens/issues/66)이다.
+#61·#63·#66은 증적으로 완료했고, 실제 배포 환경이 필요한 #62·#64·#65는 2026-10-30 포트폴리오
+범위 밖으로 `not planned` 종료했다. 범위 밖 종료는 완료로 집계하지 않으며 실제 배포를 시작하면 같은
+acceptance criteria로 다시 연다.
 
 production readiness를 막지 않는 품질 확장은 `priority:p2`로 분리한다. runtime과 dependency
 지원 범위는 `area:compatibility`로 표시하며 milestone 완료율에는 포함하지 않는다. 첫 대상은
