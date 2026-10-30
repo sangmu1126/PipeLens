@@ -16,6 +16,7 @@ dependencies = [
   "pydantic-settings>=2.15.0,<3",
   "prometheus-client>=0.26.0,<1",
   "PyJWT[crypto]>=2.13.0,<3",
+  "PyYAML>=6.0.2,<7",
   "redis>=8.1.0,<9",
   "SQLAlchemy>=2.0.54,<3",
   "psycopg[binary]>=3.3.6,<4",
@@ -30,6 +31,7 @@ dev = [
   "pytest-asyncio>=1.4.0,<2",
   "pytest-cov>=7.1.0,<8",
   "ruff>=0.16.8,<1",
+  "types-PyYAML>=6.0.12,<7",
 ]
 
 [project.scripts]
