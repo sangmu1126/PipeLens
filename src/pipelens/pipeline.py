@@ -23,12 +23,7 @@ from pipelens.models import (
     StageStatus,
     TrustLevel,
 )
-from pipelens.patching import (
-    find_version_bumps,
-    propose_version_patches,
-    strip_patches,
-    verify_patch_suggestions,
-)
+from pipelens.patching import find_version_bumps, propose_and_verify_patches, strip_patches
 from pipelens.preprocessing import preprocess_logs
 from pipelens.publication import render_github_diagnosis
 from pipelens.relevance import correlate_changed_files
@@ -323,14 +318,7 @@ class AnalysisPipeline:
                     exc_info=True,
                 )
 
-        rule_suggestions, rule_notes = propose_version_patches(bumps, files)
-        combined = diagnosis.model_copy(
-            update={
-                "suggestions": [*rule_suggestions, *diagnosis.suggestions],
-                "notes": [*diagnosis.notes, *rule_notes],
-            }
-        )
-        verified, outcomes = verify_patch_suggestions(combined, files)
+        verified, outcomes = propose_and_verify_patches(diagnosis, bumps, files)
         for (source, outcome), count in outcomes.items():
             self.metrics.patch_proposals.labels(source=source, outcome=outcome).inc(count)
         return verified

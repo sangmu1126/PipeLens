@@ -1442,3 +1442,18 @@
   diff는 여전히 자동 적용 없이 사람이 검토하는 제안이다. 형식 검사를 위해 PyYAML을 transitive가 아닌 직접
   runtime dependency로 선언했다.
 - 관련: `src/pipelens/patching.py`, `tests/test_patching.py`, D-085, D-090.
+
+## D-092. 수정 diff 품질은 파이프라인과 같은 경로의 결정적 평가로 측정
+
+- 결정: `evaluation/patch_scenarios.json`과 `pipelens-evaluate-patches`를 추가한다. 사례마다 로그, head
+  시점 파일, LLM 후보 diff를 넣고 `propose_and_verify_patches`를 실행해 검증된 diff의 파일, 적용 결과 내용,
+  거부 수와 거부 사유를 모두 채점한다. backend CI는 100%를 요구한다.
+- 이유: 분류 평가는 원인 범주만 채점해 D-090·D-091의 수정 제안 품질을 수치로 보여 주지 못했다. 평가가
+  파이프라인과 다른 코드를 쓰면 실제 동작과 어긋나므로 결합 로직을 `patching` 모듈로 옮겨 둘이 공유한다.
+  거부 수만 보면 다른 이유로 거부돼도 통과하므로 기대 사유도 확인한다. 규칙과 정책은 결정적이어서
+  80% 같은 허용 오차를 둘 이유가 없다.
+- 대안: 단위 테스트만 유지, 분류 평가 manifest에 필드 추가, LLM을 실제 호출하는 평가.
+- 결과: 14개 사례가 검증 5건·거부 6건으로 통과하며, 기대값을 바꾸면 해당 사례만 실패하는지 회귀 테스트로
+  확인한다. 실제 LLM이 만드는 diff의 품질과 비용은 OpenAI 호출이 필요하므로 별도 측정으로 남긴다.
+- 관련: `src/pipelens/patch_evaluation.py`, `src/pipelens/patching.py`, `evaluation/patches/`,
+  `tests/test_patch_evaluation.py`, D-090, D-091.

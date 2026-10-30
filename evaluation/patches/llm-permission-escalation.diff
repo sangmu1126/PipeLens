@@ -1,0 +1,9 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -2,5 +2,5 @@
+ on: push
+ permissions:
+-  contents: read
++  contents: write
+ jobs:
+   test:

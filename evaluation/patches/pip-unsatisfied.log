@@ -1,0 +1,5 @@
+2026-10-30T03:01:12Z Run python -m pip install pip==0.0.0
+ERROR: Ignored the following yanked versions: 0.2
+ERROR: Could not find a version that satisfies the requirement pip==0.0.0 (from versions: 25.3, 26.1.2, 26.2.2)
+ERROR: No matching distribution found for pip==0.0.0
+##[error]Process completed with exit code 1.

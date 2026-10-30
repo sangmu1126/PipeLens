@@ -188,6 +188,20 @@ def verify_patch_suggestions(
     return diagnosis.model_copy(update={"suggestions": suggestions, "notes": notes}), outcomes
 
 
+def propose_and_verify_patches(
+    diagnosis: Diagnosis, bumps: list[VersionBump], files: dict[str, str]
+) -> tuple[Diagnosis, dict[tuple[str, str], int]]:
+    """Add rule-generated version diffs, then verify every diff against the head files."""
+    rule_suggestions, rule_notes = propose_version_patches(bumps, files)
+    combined = diagnosis.model_copy(
+        update={
+            "suggestions": [*rule_suggestions, *diagnosis.suggestions],
+            "notes": [*diagnosis.notes, *rule_notes],
+        }
+    )
+    return verify_patch_suggestions(combined, files)
+
+
 def strip_patches(diagnosis: Diagnosis) -> Diagnosis:
     suggestions = [
         item.model_copy(update={"patch": None, "patch_verified": False})

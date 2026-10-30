@@ -1730,6 +1730,13 @@ Nginx는 별도 PR로 분리했다.
   dependency로 선언하고 lock을 다시 생성했다(버전 6.0.3 유지).
 - 위험 변경 9종·정상 workflow 수정·형식 3종 회귀 테스트를 추가했다. 판단은 D-091에 기록했다.
 
+### 수정 diff 평가 세트
+
+- 수정 제안 품질을 수치로 남기기 위해 14개 사례의 `pipelens-evaluate-patches`를 추가하고 backend CI에서
+  100%를 요구한다. 규칙 diff 생성, 생성 금지, 정상 LLM diff, 공격성·손상 LLM diff를 포함한다.
+- 파이프라인의 규칙 diff 생성·검증 결합을 `propose_and_verify_patches`로 옮겨 평가와 실제 동작이 같은
+  코드를 쓰게 했다. 판단은 D-092에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.
@@ -1739,7 +1746,7 @@ Nginx는 별도 PR로 분리했다.
 - pytest 기반 production·operations statement·branch coverage와 XML·JSON artifact
 - 백엔드 단위·API·migration 테스트
 - PostgreSQL과 Redis 실제 service 통합 테스트
-- 13개 진단 fixture의 80% 정확도 gate
+- 16개 진단 fixture의 80% 정확도 gate와 14개 수정 diff 사례의 100% gate
 - Vitest 대시보드 사용자 흐름·접근성 테스트
 - Playwright Chromium OAuth·session·dashboard·logout E2E
 - TypeScript와 Vite production build
