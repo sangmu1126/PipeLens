@@ -11,6 +11,10 @@ PipeLens는 GitHub Actions 실패를 **근거 중심으로 진단**하는 GitHub
 - Redis worker replica, lease 복구, fencing token으로 중복·지연 실행 부작용 차단
 - React 대시보드, installation 단위 접근 제어, Prometheus·Grafana·Alertmanager 관측
 
+![PipeLens 대시보드: 분석한 Workflow 목록과 선택한 실패의 진단 상세](docs/images/dashboard-analysis.png)
+
+<sub>화면은 실제 분석 파이프라인을 GitHub 응답만 모의한 상태로 실행해 만든 데모 데이터입니다.</sub>
+
 현재 버전은 **v0.2.0**입니다 ([릴리스 노트](https://github.com/sangmu1126/PipeLens/releases/tag/v0.2.0)).
 
 ## 목차
@@ -118,6 +122,8 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
   담은 diff를 거부하고, 적용 결과가 YAML·TOML·JSON으로 파싱되지 않으면 제외
 - 해시가 고정된 lock 항목은 diff 대신 lock 재생성을 안내
 - 저장소 쓰기 권한 없이 PR 코멘트로만 제안하며, 반영 여부는 다음 관련 실행의 해결 추적으로 측정
+
+<img src="docs/images/dashboard-fix-diff.png" alt="pip==0.0.0 설치 실패에 대해 규칙이 만들고 head에 적용을 확인한 workflow 수정 diff" width="560">
 
 **게시와 대시보드**
 - PR에는 숨은 run marker로 찾는 멱등 코멘트, PR이 없는 실행에는 Commit Check
