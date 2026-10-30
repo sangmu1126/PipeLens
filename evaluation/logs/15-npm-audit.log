@@ -1,0 +1,11 @@
+2026-10-30T02:20:31Z Run npm audit --audit-level=high
+# npm audit report
+
+example-parser  <2.4.1
+Severity: high
+Prototype pollution in example-parser - https://github.com/advisories/GHSA-0000-0000-0000
+fix available via `npm audit fix`
+node_modules/example-parser
+
+1 high severity vulnerability
+##[error]Process completed with exit code 1.

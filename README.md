@@ -5,7 +5,7 @@ PipeLens는 GitHub Actions 실패를 **근거 중심으로 진단**하는 GitHub
 검증해 입력에 실제로 존재하는 근거가 있는 원인과 해결 방향만 PR 코멘트나 Commit Check로
 게시합니다.
 
-- LLM 없이도 동작하는 규칙 기반 분류(10개 실패 범주)와 선택적 OpenAI 보강
+- LLM 없이도 동작하는 규칙 기반 분류(11개 실패 범주, 보안 검사 차단 포함)와 선택적 OpenAI 보강
 - 로그·diff·workflow의 secret/개인정보 마스킹, 외부 fork 입력 격리
 - Redis worker replica, lease 복구, fencing token으로 중복·지연 실행 부작용 차단
 - React 대시보드, installation 단위 접근 제어, Prometheus·Grafana·Alertmanager 관측
@@ -54,7 +54,7 @@ flowchart LR
    | --- | --- |
    | `collecting` | installation token으로 실패 job·step·로그, PR 또는 직전 성공 이후 diff, 실행 시점 workflow 수집, 신뢰 수준 판정 |
    | `sanitizing` | ANSI·timestamp 제거, chunk 단위 마스킹, 오류 신호 주변 구간 추출 |
-   | `classifying` | 최초 오류 신호를 우선하는 규칙 엔진으로 10개 범주 또는 `unknown` 판정 |
+   | `classifying` | 최초 오류 신호를 우선하는 규칙 엔진으로 11개 범주 또는 `unknown` 판정 |
    | `correlating` | 로그 경로·파일명·코드 토큰·범주 친화도로 변경 파일 점수화 |
    | `diagnosing` | 규칙 진단을 먼저 만들고, `trusted` 입력이면 LLM Structured Outputs 결과를 근거·경로·분류 충돌 검증 후 채택 |
    | `publishing` | PR이 있으면 멱등 PR 코멘트, 없으면 Commit Check 생성 또는 갱신 |
@@ -65,7 +65,13 @@ flowchart LR
 분류 범주: `test_failure`, `build_failure`, `dependency_installation_failure`,
 `lint_or_formatter_failure`, `docker_build_failure`, `deployment_authentication_failure`,
 `missing_environment_variable`, `timeout`, `resource_exhaustion`,
-`github_actions_workflow_error` (해당 없음은 억지로 매핑하지 않고 `unknown`).
+`github_actions_workflow_error`, `security_scan_failure` (해당 없음은 억지로 매핑하지 않고
+`unknown`).
+
+`security_scan_failure`는 Trivy·npm audit·pip-audit·Dependency Review의 HIGH/CRITICAL 취약점,
+gitleaks 등의 secret 탐지, CodeQL·Semgrep 경고로 실행이 차단된 경우입니다. 스캐너 시작 안내나
+발견 0건 같은 출력은 차단 신호로 보지 않으며, 하위 유형은 `security.vulnerability`,
+`security.secret`, `security.code_scanning` 규칙 ID로 남습니다.
 
 자세한 설계는 [아키텍처 문서](docs/architecture.md)를 참고하세요.
 
@@ -97,7 +103,7 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
 - 대용량 로그의 chunk별 마스킹과 오류 구간 추출 — 원본 로그 전체는 저장하지 않음
 
 **진단**
-- 최초 오류를 우선하는 10개 범주 규칙 분류와 관련 파일 점수화
+- 최초 오류를 우선하는 11개 범주 규칙 분류와 관련 파일 점수화
 - 교체 가능한 LLM provider와 OpenAI Responses API Structured Outputs
 - 입력에 실제 존재하는 근거·파일 경로만 허용하고 규칙 분류와 충돌하면 규칙 진단 유지
 - LLM 장애·검증 실패 시에도 규칙 기반 fallback 진단을 항상 보존
@@ -202,8 +208,9 @@ CI는 지원 범위 하한인 Python 3.12에서 전체 통합 검사를, 상한 
 
 ### 진단 정확도 평가
 
-[`evaluation/scenarios.json`](evaluation/scenarios.json)에는 10개 요구 범주와 실제 PipeLens CI
-실패 3건을 재현한 13개 고정 로그가 있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두
+[`evaluation/scenarios.json`](evaluation/scenarios.json)에는 10개 요구 범주, 실제 PipeLens CI
+실패 3건, 보안 검사 차단(이미지 취약점·npm audit·secret 탐지) 3건을 재현한 16개 고정 로그가
+있습니다. 평가 러너는 예상 범주와 최초 원인 근거를 모두
 채점하며 기본 통과 기준은 80%입니다.
 
 ```bash

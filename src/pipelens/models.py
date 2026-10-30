@@ -37,6 +37,7 @@ class ErrorCategory(StrEnum):
     TIMEOUT = "timeout"
     RESOURCE = "resource_exhaustion"
     WORKFLOW = "github_actions_workflow_error"
+    SECURITY = "security_scan_failure"
     UNKNOWN = "unknown"
 
 

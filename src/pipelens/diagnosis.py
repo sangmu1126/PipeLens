@@ -51,6 +51,11 @@ MESSAGES: dict[ErrorCategory, tuple[str, str, str]] = {
         "Workflow YAML 표현식 또는 구문 검증에 실패했습니다.",
         "표시된 workflow 위치의 YAML과 Actions 표현식을 수정하세요.",
     ),
+    ErrorCategory.SECURITY: (
+        "보안 검사가 실행을 차단했습니다.",
+        "취약점·secret·코드 스캔 도구가 허용 기준을 넘는 발견 사항을 보고했습니다.",
+        "보고된 package를 수정 버전으로 올리고, secret은 즉시 폐기·교체한 뒤 다시 검사하세요.",
+    ),
     ErrorCategory.UNKNOWN: (
         "실패 원인을 자동 분류하지 못했습니다.",
         "현재 로그만으로 원인을 확인할 수 없습니다.",

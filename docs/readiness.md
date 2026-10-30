@@ -8,11 +8,11 @@
 | --- | --- | --- |
 | MVP 기능 코드 | 완료 | root `README.md` 기능 목록과 자동 테스트 |
 | MVP 요구사항 추적성 | 완료 | FR-01~FR-12·비기능 요구를 구현·자동 검증·외부 인수 상태에 매핑 |
-| 고정 진단 평가 | 통과 | 13/13, 100%; 요구 범주 10건과 실제 CI 회귀 3건, CI 최소 기준은 80% |
+| 고정 진단 평가 | 통과 | 16/16, 100%; 요구 범주 10건, 실제 CI 회귀 3건, 보안 검사 차단 3건, CI 최소 기준은 80% |
 | 백엔드 테스트 | 통과 | 로컬 447 passed, integration 2 skipped, DB resource warning 0; CI에서 service integration 별도 통과 |
 | Python 정적 타입 | 통과 | production·operations·tests 98개 모듈이 mypy 2.3.1 strict mode 통과, backend CI 필수 gate |
 | Python coverage | 기준선 | branch 포함 전체 74.73%; production 86.50%, operations 67.15%; XML·JSON CI artifact 14일 보관 |
-| Python 호환성 | 통과 | 지원 범위 `>=3.12,<3.16`; 3.12 전체 integration, 3.14 비통합 테스트, 3.15 final의 binary driver·integration·worker 복구와 진단 평가 13/13 |
+| Python 호환성 | 통과 | 지원 범위 `>=3.12,<3.16`; 3.12 전체 integration, 3.14 비통합 테스트, 3.15 final의 binary driver·integration·worker 복구와 진단 평가 |
 | ASGI 테스트 클라이언트 | 통과 | Starlette 1.6이 dev 전용 httpx2 2.12.0을 선택, fallback 경고 0 |
 | 대시보드 테스트 | 통과 | Vitest 5에서 6/6, Chromium OAuth·session·dashboard E2E 1/1과 Vite production build |
 | 자동 해결 추적 | 통과 | 같은 Workflow·PR/브랜치와 run attempt의 후속 성공·계속 실패, 복구 시간 회귀 검증 |
@@ -268,7 +268,7 @@
 10. Compose에 digest로 고정한 PostgreSQL 18과 Redis 8.2를 각각 pull·기동해 integration test 실행
 11. `pipelens-evaluate --minimum-accuracy 0.8`
 
-별도 compatibility job은 Python 3.14에서 integration directory를 제외한 테스트와 13개 진단 평가를
+별도 compatibility job은 Python 3.14에서 integration directory를 제외한 테스트와 고정 진단 평가를
 실행한다. 지원 범위는 `>=3.12,<3.16`이며 3.12는 하한 전체 통합 검증, 3.14는 Docker image runtime
 호환성, 3.15는 상한 검증을 담당한다.
 

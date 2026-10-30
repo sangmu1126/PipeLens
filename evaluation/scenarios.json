@@ -11,5 +11,8 @@
   {"case_id":"workflow-yaml","log_file":"logs/10-workflow.log","expected_category":"github_actions_workflow_error","expected_evidence":"Invalid workflow file"},
   {"case_id":"alert-routing-timeout","log_file":"logs/11-alert-routing-timeout.log","expected_category":"timeout","expected_evidence":"alert state not observed"},
   {"case_id":"bind-mount-permission","log_file":"logs/12-bind-mount-permission.log","expected_category":"unknown","expected_evidence":"permission denied"},
-  {"case_id":"python-wheel-resolution","log_file":"logs/13-python-wheel-resolution.log","expected_category":"dependency_installation_failure","expected_evidence":"Could not find a version"}
+  {"case_id":"python-wheel-resolution","log_file":"logs/13-python-wheel-resolution.log","expected_category":"dependency_installation_failure","expected_evidence":"Could not find a version"},
+  {"case_id":"image-vulnerability","log_file":"logs/14-image-vulnerability.log","expected_category":"security_scan_failure","expected_evidence":"CRITICAL: 1"},
+  {"case_id":"npm-audit","log_file":"logs/15-npm-audit.log","expected_category":"security_scan_failure","expected_evidence":"high severity vulnerability"},
+  {"case_id":"secret-scan","log_file":"logs/16-secret-scan.log","expected_category":"security_scan_failure","expected_evidence":"leaks found: 1"}
 ]
