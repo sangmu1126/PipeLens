@@ -213,6 +213,11 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: pytest -q --ignore=tests/integration
       - run: pipelens-evaluate --minimum-accuracy 0.8
+      - name: Verify hashed runtime lock is current
+        run: |
+          pip install pip-tools==7.6.2
+          pip-compile --quiet --generate-hashes --strip-extras --output-file=requirements.txt requirements.in
+          git diff --exit-code requirements.txt
 
   python-latest:
     name: Python 3.15 compatibility

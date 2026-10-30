@@ -1690,6 +1690,18 @@ Nginx는 별도 PR로 분리했다.
 - backend job의 integration service 기동·정리를 `ops/ci/integration-services.sh`로 분리해 두 job이
   공유한다. 판단은 D-087에 기록했다.
 
+### Python runtime dependency 해시 lock
+
+- 공급망 고정 범위를 점검하다 API·worker image가 `pip install .`로 Python package 36개를 범위만으로
+  설치해 build마다 version이 달라질 수 있음을 확인했다. base image digest 고정(D-055)의 재현성 목적과
+  어긋나는 공백이었다.
+- `requirements.in`(pyproject runtime dependency와 동일)에서 pip-tools 7.6.2로 해시 포함
+  `requirements.txt`를 생성하고, 두 image가 `--require-hashes --only-binary=:all:`로 lock만 설치하게
+  바꿨다. 새 venv에서 lock 설치 뒤 `pip check`, API·worker import, binary driver와 Alembic upgrade를
+  확인했다.
+- worker soak Dockerfile이 Dependabot 대상에서 빠져 이전 base digest에 머물러 있어 대상에 추가하고
+  digest를 맞췄다. 판단은 D-088에 기록했다.
+
 ## 현재까지의 검증 방식
 
 개발 과정에서 다음 gate가 누적됐다.

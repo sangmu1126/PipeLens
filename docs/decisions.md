@@ -1366,3 +1366,27 @@
 - 관련: `pyproject.toml`, `.github/workflows/ci.yml`, `ops/ci/integration-services.sh`,
   `ops/governance/audit_repository.py`, D-046, D-076,
   [Python 3.15 지원 #71](https://github.com/sangmu1126/PipeLens/issues/71).
+
+## D-088. Image의 Python dependency는 해시 고정 lock으로만 설치
+
+- 결정: API와 worker image는 `pip install .` 대신 `requirements.txt`를
+  `--require-hashes --only-binary=:all:`로 설치하고 소스는 `PYTHONPATH=/app/src`로 실행한다. lock은
+  `requirements.in`에서 Python 3.14 pip-compile로 생성하며, `requirements.in`은 `pyproject.toml`의
+  runtime dependency와 같아야 한다. CI는 lock 재생성 diff와 두 목록의 일치를 검사한다.
+  `apt-get upgrade`는 유지한다.
+- 이유: base image와 Action은 불변 참조로 고정했지만(D-030, D-038, D-055) image 안의 Python package
+  36개는 범위만 지정돼 build 날짜마다 다른 version이 설치됐다. PyPI dependency는 base image보다 넓은
+  공급망 면적이며, 해시 없이 설치하면 같은 version 이름의 다른 artifact도 막지 못한다. `pip install .`은
+  build backend를 고정 없이 내려받으므로 runtime image에서 package 설치 자체를 제거했다. Dependabot의
+  pip-compile 지원은 `.in` 원본이 있는 `.txt` lock만 갱신하므로 `pyproject.toml`에서 직접 만든 lock은
+  쓰지 않는다.
+- `apt-get upgrade`를 유지하는 이유: OS layer의 build 재현성보다 base image 갱신 전 공개된 보안
+  patch 적용과 fixable HIGH/CRITICAL scan gate 통과를 우선한다. 결과 image의 OS package는 SBOM으로
+  기록된다.
+- 대안: `pyproject.toml` 기반 lock, uv lockfile과 uv binary 도입, hatchling을 lock에 포함한 package
+  설치, 범위 지정 유지.
+- 결과: 같은 commit의 Python dependency는 version과 artifact 해시까지 재현되고 lock에 없는 package나
+  sdist build는 설치가 실패한다. worker image의 누락된 Dependabot 대상과 낡은 base digest도 함께
+  바로잡았다.
+- 관련: `requirements.in`, `requirements.txt`, `Dockerfile`, `ops/worker/Dockerfile`,
+  `tests/test_dependency_lock.py`, `.github/dependabot.yml`.

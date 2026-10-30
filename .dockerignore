@@ -2,6 +2,7 @@
 **
 !Dockerfile
 !pyproject.toml
+!requirements.txt
 !README.md
 !alembic.ini
 !migrations/

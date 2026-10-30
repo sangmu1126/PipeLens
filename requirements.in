@@ -1,0 +1,13 @@
+# Runtime dependencies for the API and worker images. Keep identical to
+# [project].dependencies in pyproject.toml; tests/test_dependency_lock.py enforces it.
+alembic>=1.20.0,<2
+cryptography>=50.0.1,<51
+fastapi>=0.141.1,<1
+httpx>=0.28.1,<1
+pydantic-settings>=2.15.0,<3
+prometheus-client>=0.26.0,<1
+PyJWT[crypto]>=2.13.0,<3
+redis>=8.1.0,<9
+SQLAlchemy>=2.0.54,<3
+psycopg[binary]>=3.3.6,<4
+uvicorn[standard]>=0.53.0,<1
