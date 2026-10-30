@@ -1407,3 +1407,22 @@
   스캐너 안내·0건 출력을 고정한다. 관련 파일 점수는 lockfile·manifest와 Dockerfile에 가중치를 둔다.
 - 관련: `src/pipelens/classifier.py`, `src/pipelens/diagnosis.py`, `src/pipelens/relevance.py`,
   `evaluation/logs/14-image-vulnerability.log`–`16-secret-scan.log`, `tests/test_classifier.py`.
+
+## D-090. 수정 diff는 실패 commit 파일에 적용되는 것만 쓰기 권한 없이 제안
+
+- 결정: 진단 뒤 `trusted` 실행에 한해 수정 diff를 제안한다. 로그가 목표 버전을 직접 주는 경우(pip
+  `from versions`, 스캐너 `fixed` 행)는 규칙으로 버전 고정 diff를 만들고, LLM diff와 함께 head SHA의 실제
+  파일에 엄격히 적용되는지 검증한다. 게시는 기존 PR 코멘트·Commit Check로만 하며 App에 Contents 쓰기
+  권한을 추가하지 않는다.
+- 이유: 기존 LLM schema에는 `patch`가 있었지만 파일 경로만 확인하고 내용은 검증하지 않아, 근거 기반이라는
+  제품 원칙 중 수정 제안만 검증 밖에 있었다. 수정 브랜치를 직접 push하면 CI로 패치를 검증할 수 있지만
+  사용자 저장소 쓰기 권한과 fork·secret 경계를 다시 설계해야 한다. 적용 가능성과 publish 안전성은 읽기
+  권한만으로 확인할 수 있고, 실제 효과는 D-084의 다음 관련 실행 해결 추적으로 측정한다.
+- 대안: 수정 브랜치·PR 자동 생성, 검증 없이 LLM diff 게시, 규칙 diff만 허용, LLM에 파일 전체를 다시 보내
+  재작성.
+- 결과: 문맥·삭제 줄이 head 파일과 다르거나 위치가 유일하지 않은 diff, 대상 외 파일, 크기 초과, secret
+  마스킹 대상이 포함된 diff는 설명만 남기고 제거된다. 해시 고정 lock 항목은 재생성을 안내한다. 비신뢰
+  실행은 파일을 읽지 않는다. 출처·결과별 `pipelens_patch_proposals_total`을 기록하며 LLM prompt는
+  `diagnosis-v2`로 갱신했다.
+- 관련: `src/pipelens/patching.py`, `src/pipelens/pipeline.py`, `src/pipelens/github.py`,
+  `src/pipelens/publication.py`, `tests/test_patching.py`, D-084, D-085.

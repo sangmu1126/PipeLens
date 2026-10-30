@@ -24,6 +24,8 @@ export interface Suggestion {
   description: string;
   file: string | null;
   patch: string | null;
+  source?: "rule" | "llm" | null;
+  patch_verified?: boolean;
 }
 
 export interface Feedback {

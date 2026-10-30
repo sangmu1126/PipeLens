@@ -178,7 +178,7 @@ async def test_llm_failure_records_attempt_and_uses_rule_fallback(
     assert result.classification.category == "test_failure"
     assert "LLM 분석에 실패" in result.diagnosis.notes[0]
     assert result.model_name == "test-model"
-    assert result.prompt_version == "diagnosis-v1"
+    assert result.prompt_version == "diagnosis-v2"
     metrics = generate_latest(pipeline.metrics.registry).decode()
     assert 'pipelens_llm_requests_total{model="test-model",status="failed"} 1.0' in metrics
 
@@ -411,3 +411,96 @@ async def test_new_attempt_fences_resumed_stale_pipeline(store: AnalysisStore) -
     metrics = generate_latest(pipeline.metrics.registry).decode()
     assert 'pipelens_analyses_total{status="completed"} 1.0' in metrics
     assert 'pipelens_analyses_total{status="superseded"} 1.0' in metrics
+
+
+PIP_FAILURE_LOG = (
+    "ERROR: Could not find a version that satisfies the requirement pip==0.0.0 "
+    "(from versions: 26.1.2, 26.2.2)\n"
+    "ERROR: No matching distribution found for pip==0.0.0"
+)
+PIP_WORKFLOW = "jobs:\n  test:\n    steps:\n      - run: python -m pip install pip==0.0.0\n"
+
+
+def _pip_failure_github(trust_level: TrustLevel) -> MagicMock:
+    github = MagicMock()
+    github.installation_token = AsyncMock(return_value="token")
+    github.failed_jobs = AsyncMock(
+        return_value=[FailedJob(job_id=1, name="install", failed_steps=("Install",))]
+    )
+    github.download_logs = AsyncMock(
+        return_value=[JobLog(job_name="install", text=PIP_FAILURE_LOG)]
+    )
+    github.repository_context = AsyncMock(
+        return_value=RepositoryContext(
+            trust_level=trust_level,
+            workflow_path=".github/workflows/ci.yml",
+            workflow_content=PIP_WORKFLOW,
+            pull_request_number=9,
+        )
+    )
+    github.file_contents = AsyncMock(return_value={})
+    github.upsert_pull_request_comment = AsyncMock()
+    github.upsert_check = AsyncMock()
+    return github
+
+
+def _pip_failure_record(run_id: int) -> AnalysisRecord:
+    return AnalysisRecord(
+        run_id=run_id,
+        delivery_id=f"delivery-{run_id}",
+        repository="acme/example",
+        workflow_name="CI",
+        head_sha="abc123def4567",
+        html_url=f"https://github.com/acme/example/actions/runs/{run_id}",
+        installation_id=7,
+    )
+
+
+@pytest.mark.asyncio
+async def test_trusted_run_publishes_a_verified_rule_patch(store: AnalysisStore) -> None:
+    store.create_if_absent(_pip_failure_record(60))
+    github = _pip_failure_github(TrustLevel.TRUSTED)
+    pipeline = AnalysisPipeline(
+        Settings(database_path=store.database_path, publish_checks=True), store, github
+    )
+
+    await pipeline.analyze(
+        AnalysisRequest(
+            run_id=60, repository="acme/example", installation_id=7, head_sha="abc123def4567"
+        )
+    )
+
+    result = store.get(60)
+    assert result is not None and result.diagnosis is not None
+    patch_suggestion = result.diagnosis.suggestions[0]
+    assert patch_suggestion.file == ".github/workflows/ci.yml"
+    assert patch_suggestion.patch_verified is True
+    assert "+      - run: python -m pip install pip==26.2.2" in (patch_suggestion.patch or "")
+    body = github.upsert_pull_request_comment.await_args.args[4]
+    assert "검증된 수정 diff (규칙)" in body
+    assert "abc123def456" in body
+    metrics = generate_latest(pipeline.metrics.registry).decode()
+    assert 'pipelens_patch_proposals_total{outcome="verified",source="rule"} 1.0' in metrics
+
+
+@pytest.mark.asyncio
+async def test_untrusted_fork_never_reads_files_or_publishes_patches(
+    store: AnalysisStore,
+) -> None:
+    store.create_if_absent(_pip_failure_record(61))
+    github = _pip_failure_github(TrustLevel.UNTRUSTED_FORK)
+    pipeline = AnalysisPipeline(
+        Settings(database_path=store.database_path, publish_checks=True), store, github
+    )
+
+    await pipeline.analyze(
+        AnalysisRequest(
+            run_id=61, repository="acme/example", installation_id=7, head_sha="abc123def4567"
+        )
+    )
+
+    result = store.get(61)
+    assert result is not None and result.diagnosis is not None
+    assert all(item.patch is None for item in result.diagnosis.suggestions)
+    github.file_contents.assert_not_awaited()
+    assert "검증된 수정 diff" not in github.upsert_pull_request_comment.await_args.args[4]

@@ -153,6 +153,19 @@ token·지연·추정 비용은 별도로 기록한다.
 LLM은 신뢰 수준이 명시적으로 `trusted`인 경우에만 호출한다. `untrusted_fork`와 `unverified`에서는
 로그, diff와 workflow를 외부 provider로 보내지 않고 규칙 진단만 사용한다.
 
+수정 diff도 `trusted`에서만 다룬다. 규칙은 로그가 목표 버전을 직접 제공하는 경우(pip `from versions`,
+스캐너 표의 `fixed` 행)에 관련 변경 파일과 workflow의 정확한 `name==version` 고정을 바꾸는 diff를 만든다.
+규칙·LLM diff는 모두 같은 검증을 통과해야 유지된다.
+
+- 대상 파일이 관련 변경 파일 또는 workflow이고 head SHA 내용을 읽을 수 있는가
+- diff header가 제안 대상 파일만 가리키고 크기·변경 줄 수 제한 안인가
+- 모든 문맥·삭제 줄이 head 파일과 일치하는가(줄 번호가 다르면 유일한 위치로만 보정)
+- diff에 secret 마스킹 규칙이 하나도 걸리지 않는가
+
+검증에 실패하면 diff만 제거하고 설명은 남긴다. 해시가 고정된 lock 항목은 텍스트 치환으로 해시가
+깨지므로 diff 대신 재생성을 안내한다. `untrusted_fork`와 `unverified`에서는 파일을 읽지 않고 모든 diff를
+제거한다.
+
 ### 4.6 publishing
 
 `PIPELENS_PUBLISH_CHECKS=true`일 때만 게시한다.
@@ -162,6 +175,7 @@ LLM은 신뢰 수준이 명시적으로 `trusted`인 경우에만 호출한다. 
 - 외부 fork이며 PR을 확인하지 못하면 fork SHA에 Check를 만들지 않는다.
 - `unverified` 실행은 PR 코멘트와 Commit Check를 모두 만들지 않는다.
 - 게시물에는 상세 대시보드 URL, 비교 SHA 범위와 신뢰 경계를 포함한다.
+- 검증된 수정 diff만 출처(규칙/LLM)와 적용 확인한 head SHA를 함께 게시한다. 저장소 쓰기 권한은 쓰지 않는다.
 
 ## 5. Queue 신뢰성 모델
 

@@ -1,6 +1,12 @@
 import html
 
-from pipelens.models import Classification, Diagnosis, RelatedFile, TrustLevel
+from pipelens.models import (
+    Classification,
+    Diagnosis,
+    RelatedFile,
+    SuggestionSource,
+    TrustLevel,
+)
 
 MAX_GITHUB_BODY_CHARS = 60_000
 
@@ -77,8 +83,17 @@ def render_github_diagnosis(
     for index, suggestion in enumerate(diagnosis.suggestions, 1):
         target = f" (`{_safe(suggestion.file)}`)" if suggestion.file else ""
         sections.append(f"{index}. {_safe(suggestion.description)}{target}")
-        if suggestion.patch:
-            sections.extend(["", _code_block(suggestion.patch), ""])
+        if suggestion.patch and suggestion.patch_verified:
+            origin = "규칙" if suggestion.source is SuggestionSource.RULE else "LLM"
+            commit = f" `{_safe(head_sha[:12])}`" if head_sha else ""
+            sections.extend(
+                [
+                    "",
+                    f"   검증된 수정 diff ({origin}) — head{commit}에 그대로 적용됨을 확인",
+                    _code_block(suggestion.patch),
+                    "",
+                ]
+            )
     if not diagnosis.suggestions:
         sections.append("검증 가능한 수정 제안을 생성하지 못했습니다.")
 

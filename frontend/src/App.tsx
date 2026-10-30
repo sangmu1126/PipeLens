@@ -479,7 +479,7 @@ function AnalysisDetail({ analysis, onFeedback }: { analysis: Analysis; onFeedba
 
         <DetailSection number="04" title="권장 해결 방법">
           <ol className="suggestions">{diagnosis.suggestions.map((item, index) => <li key={`${item.description}-${index}`}>
-            <span>{String(index + 1).padStart(2, "0")}</span><div><p>{item.description}</p>{item.file && <code>{item.file}</code>}{item.patch && <pre>{item.patch}</pre>}</div>
+            <span>{String(index + 1).padStart(2, "0")}</span><div><p>{item.description}</p>{item.file && <code>{item.file}</code>}{item.patch && item.patch_verified && <><small className="patch-verified">검증된 수정 diff · {item.source === "rule" ? "규칙" : "LLM"} · head에 적용 확인</small><pre>{item.patch}</pre></>}</div>
           </li>)}</ol>
         </DetailSection>
 

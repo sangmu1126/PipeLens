@@ -15,11 +15,19 @@ from pipelens.models import (
     AnalysisRequest,
     AnalysisStage,
     AnalysisStatus,
+    Diagnosis,
     ExecutionContext,
     FailedJobContext,
+    RelatedFile,
     RepositoryContext,
     StageStatus,
     TrustLevel,
+)
+from pipelens.patching import (
+    find_version_bumps,
+    propose_version_patches,
+    strip_patches,
+    verify_patch_suggestions,
 )
 from pipelens.preprocessing import preprocess_logs
 from pipelens.publication import render_github_diagnosis
@@ -222,6 +230,12 @@ class AnalysisPipeline:
                     fallback_diagnosis.notes.append(
                         "LLM 분석에 실패하여 규칙 기반 진단 결과를 제공했습니다."
                     )
+            if is_trusted:
+                diagnosis = await self._attach_verified_patches(
+                    request, access_token, diagnosis, context, related_files, repository_context
+                )
+            else:
+                diagnosis = strip_patches(diagnosis)
             if not related_files:
                 diagnosis.notes.append("로그와 직접 연결되는 변경 파일을 찾지 못했습니다.")
 
@@ -272,6 +286,54 @@ class AnalysisPipeline:
                         body,
                         details_url,
                     )
+
+    async def _attach_verified_patches(
+        self,
+        request: AnalysisRequest,
+        access_token: str,
+        diagnosis: Diagnosis,
+        log: str,
+        related_files: list[RelatedFile],
+        repository_context: RepositoryContext,
+    ) -> Diagnosis:
+        bumps = find_version_bumps(log)
+        llm_patch_files = [item.file for item in diagnosis.suggestions if item.patch and item.file]
+        if not bumps and not llm_patch_files:
+            return diagnosis
+
+        files: dict[str, str] = {}
+        if repository_context.workflow_path and repository_context.workflow_content:
+            files[repository_context.workflow_path] = repository_context.workflow_content
+        targets = [
+            path
+            for path in dict.fromkeys([item.filename for item in related_files] + llm_patch_files)
+            if path not in files
+        ]
+        if targets:
+            try:
+                files.update(
+                    await self.github.file_contents(
+                        request.repository, targets, request.head_sha, access_token
+                    )
+                )
+            except Exception:
+                logger.warning(
+                    "Patch target fetch failed for run %s; skipping unfetched files",
+                    request.run_id,
+                    exc_info=True,
+                )
+
+        rule_suggestions, rule_notes = propose_version_patches(bumps, files)
+        combined = diagnosis.model_copy(
+            update={
+                "suggestions": [*rule_suggestions, *diagnosis.suggestions],
+                "notes": [*diagnosis.notes, *rule_notes],
+            }
+        )
+        verified, outcomes = verify_patch_suggestions(combined, files)
+        for (source, outcome), count in outcomes.items():
+            self.metrics.patch_proposals.labels(source=source, outcome=outcome).inc(count)
+        return verified
 
     @contextmanager
     def _stage(self, run_id: int, stage: AnalysisStage, attempt_token: str) -> Iterator[None]:
