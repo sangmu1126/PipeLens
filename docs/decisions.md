@@ -1489,3 +1489,17 @@
 - 결과: `trusted` 실행에서 추가 GitHub contents 요청이 최대 5건 늘 수 있다. 비신뢰 실행은 여전히 파일을
   읽지 않는다.
 - 관련: `src/pipelens/patching.py`, `src/pipelens/pipeline.py`, D-090.
+
+## D-095. 해시 lock 항목에는 diff 대신 정확한 재생성 명령을 안내
+
+- 결정: 수정 대상이 해시가 고정된 lock 항목이면 diff를 만들지 않고, pip-compile 머리의 생성 명령에
+  `--upgrade-package 이름==수정버전`을 붙인 명령을 안내한다. 명령에 `://`가 있거나 secret 마스킹 규칙에
+  걸리면 명령 없이 일반 안내만 남긴다.
+- 이유: 해시 lock은 텍스트 치환으로 고칠 수 없고 재생성이 유일한 올바른 방법인데, "lock을 다시
+  생성하세요"만으로는 어떤 명령과 옵션으로 무엇을 올려야 하는지 사용자가 다시 찾아야 했다. 머리의 명령은
+  저장소 내용이라 사설 index URL과 자격 증명을 담을 수 있으므로 게시 전에 걸러야 한다.
+- 대안: lock 원본(`.in`)에 diff 제안, pip-compile을 서버에서 실행해 lock diff 생성, 일반 안내 유지.
+- 결과: 이 저장소 구조(`requirements.in` → `requirements.txt`)와 같은 lock에는 그대로 실행 가능한 명령이
+  게시된다. 서버에서 패키지 해석을 실행하지 않으므로 네트워크·실행 위험이 늘지 않는다.
+- 관련: `src/pipelens/patching.py`, `tests/test_patching.py`, `evaluation/patches/pins-locked.fixture`,
+  D-088, D-090.

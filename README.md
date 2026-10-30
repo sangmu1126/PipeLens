@@ -116,7 +116,8 @@ secret manager, 실제 호출 알림 채널은 제품 배포 범위로 이 포�
   비밀값 포함 diff는 제외
 - 로그를 통한 prompt injection에 대비해 원격 스크립트 실행, secret·토큰 참조, workflow 권한·트리거 변경을
   담은 diff를 거부하고, 적용 결과가 YAML·TOML·JSON으로 파싱되지 않으면 제외
-- 해시가 고정된 lock 항목은 diff 대신 lock 재생성을 안내
+- 해시가 고정된 lock 항목은 diff 대신 lock 재생성을 안내하며, pip-compile lock이면 `--upgrade-package`를 붙인
+  정확한 재생성 명령을 제시
 - 저장소 쓰기 권한 없이 PR 코멘트로만 제안하며, 반영 여부는 다음 관련 실행의 해결 추적으로 측정
 
 **게시와 대시보드**

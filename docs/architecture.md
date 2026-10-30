@@ -169,7 +169,8 @@ LLM은 신뢰 수준이 명시적으로 `trusted`인 경우에만 호출한다. 
 - 적용 결과가 YAML·TOML·JSON 파일이면 해당 형식으로 파싱되는가
 
 검증에 실패하면 diff만 제거하고 설명은 남긴다. 해시가 고정된 lock 항목은 텍스트 치환으로 해시가
-깨지므로 diff 대신 재생성을 안내한다. `untrusted_fork`와 `unverified`에서는 파일을 읽지 않고 모든 diff를
+깨지므로 diff 대신 재생성을 안내한다. pip-compile lock이면 파일 머리의 생성 명령에
+`--upgrade-package 이름==수정버전`을 붙인 명령을 제시하되, URL이나 비밀값이 든 명령은 노출하지 않는다. `untrusted_fork`와 `unverified`에서는 파일을 읽지 않고 모든 diff를
 제거한다.
 
 ### 4.6 publishing
