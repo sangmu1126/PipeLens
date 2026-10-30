@@ -72,6 +72,7 @@ WORKFLOW_SENSITIVE: tuple[tuple[str, re.Pattern[str]], ...] = (
 
 
 MAX_LOG_NAMED_MANIFESTS = 5
+PIP_COMPILE_HEADER = re.compile(r"^#\s+(pip-compile\s[^\n]*)$")
 LOG_NAMED_MANIFEST = re.compile(
     r"(?<![\w./-])((?:\./)?(?:[\w-][\w.-]*/)*(?:requirements[\w.-]*\.txt|constraints[\w.-]*\.txt|"
     r"pyproject\.toml))(?![\w.-])",
@@ -173,10 +174,7 @@ def propose_version_patches(
             if not pattern.search(content):
                 continue
             if _is_hash_locked(content, pattern):
-                notes.append(
-                    f"`{path}`의 {bump.package}=={bump.current}는 해시가 고정된 lock 항목이라 "
-                    "diff를 만들지 않았습니다. 버전을 올린 뒤 lock을 다시 생성하세요."
-                )
+                notes.append(_lock_regeneration_note(path, content, bump))
                 continue
             updated = pattern.sub(f"{bump.package}=={bump.target}", content)
             suggestions.append(
@@ -358,6 +356,24 @@ def _locate_hunk(lines: list[str], hunk: _Hunk, cursor: int) -> int:
 
 def _strip_newline(line: str) -> str:
     return line.rstrip("\r\n")
+
+
+def _lock_regeneration_note(path: str, content: str, bump: VersionBump) -> str:
+    prefix = (
+        f"`{path}`의 {bump.package}=={bump.current}는 해시가 고정된 lock 항목이라 diff를 만들지 "
+        "않았습니다."
+    )
+    command = None
+    for line in content.splitlines():
+        header = PIP_COMPILE_HEADER.match(line)
+        if header:
+            command = header.group(1).strip()
+            break
+    # The header is repository content: never echo commands that carry URLs or credentials.
+    if command and "://" not in command and not sanitize_log(command)[1]:
+        upgraded = f"{command} --upgrade-package {bump.package}=={bump.target}"
+        return f"{prefix} `{upgraded}`로 lock을 다시 생성하세요."
+    return f"{prefix} 버전을 {bump.target}로 올린 뒤 lock을 다시 생성하세요."
 
 
 def _is_hash_locked(content: str, pattern: re.Pattern[str]) -> bool:

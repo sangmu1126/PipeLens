@@ -311,3 +311,41 @@ def test_manifest_paths_in_log_are_relative_and_bounded() -> None:
         "extra/requirements-1.txt",
     ]
 
+
+LOCK_ENTRY = "msgpack==1.1.2 \\\n    --hash=sha256:" + "a" * 64 + "\n"
+MSGPACK_BUMP = VersionBump("msgpack", "1.1.2", "1.2.1", "GHSA")
+
+
+def test_hash_locked_entry_gets_an_exact_pip_compile_command() -> None:
+    lock = (
+        "# by the following command:\n#\n"
+        "#    pip-compile --generate-hashes --output-file=requirements.txt requirements.in\n#\n"
+        + LOCK_ENTRY
+    )
+
+    suggestions, notes = propose_version_patches([MSGPACK_BUMP], {"requirements.txt": lock})
+
+    assert suggestions == []
+    assert (
+        "`pip-compile --generate-hashes --output-file=requirements.txt requirements.in "
+        "--upgrade-package msgpack==1.2.1`로 lock을 다시 생성하세요."
+    ) in notes[0]
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "#    pip-compile --index-url=https://user:token@pypi.example/simple requirements.in\n",
+        "#    pip-compile --generate-hashes requirements.in PASSWORD=hunter22\n",
+        "",
+    ],
+)
+def test_hash_locked_entry_falls_back_without_a_safe_command(header: str) -> None:
+    _, notes = propose_version_patches(
+        [MSGPACK_BUMP], {"requirements.txt": header + LOCK_ENTRY}
+    )
+
+    assert "버전을 1.2.1로 올린 뒤 lock을 다시 생성하세요." in notes[0]
+    assert "pip-compile" not in notes[0]
+    assert "token" not in notes[0] and "hunter22" not in notes[0]
+
